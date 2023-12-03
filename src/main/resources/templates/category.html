@@ -42,6 +42,9 @@ table {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: fixed;
+  top: 0;
+  width: 100%;
 }
 
 .topnav a {
@@ -75,13 +78,8 @@ table {
 <body>
 
 <div class="topnav">
-  <div>
-    		<!-- <a class="active" href="http://192.168.1.5:8086/api/showMenu">Home</a> -->
-			<a href="http://192.168.1.5:8086/api/showMenu">RF Menu</a>
-    		<a class="active" href="http://192.168.1.5:8086/api/categoryInfo">Category</a>
-    		<a href="http://192.168.1.5:8086/api/itemInfo">Item</a>
-    		<a href="#location">Location</a>
-    		<a href="#lpnl">LPN</a>
+  <div id="links">
+    		
   </div>
   <div class="title">Warehouse Management System</div>
 </div>
@@ -149,6 +147,15 @@ table {
 	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script type='text/javascript'>
+
+
+var hostname = location.hostname;
+        var linksDiv = document.getElementById("links");
+        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/showMenu">RF Menu</a>';
+        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/categoryInfo" class="active">Category</a>';
+        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/itemInfo">Item</a>';
+		linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/locationInfo">Location</a>';
+        linksDiv.innerHTML += '<a href="#lpnl">LPN</a>';		
 	/* Toggle between adding and removing the "responsive" class to topnav when the user clicks on the icon */
 	// Get all the menu items
 var menuItems = document.querySelectorAll('.topnav a');
@@ -222,6 +229,8 @@ for (var i = 0; i < menuItems.length; i++) {
 
 		    // Show the Add Category button
 		    document.getElementById('addCategoryButton').style.display = 'block';
+			document.getElementById('category').value = null;
+
 		}
 
 		function editCategory(category_id, category_name) {

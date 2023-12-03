@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<title>Menu Details</title>
+<title>RF Menu</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -10,6 +10,7 @@ body {
 
 	background-color: #f8f9fa;
 	animation: colorchange 20s infinite;
+	
 }
 
 .header {
@@ -41,6 +42,10 @@ body {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+	position: fixed;
+    top: 0;
+    width: 100%;
+	z-index: 999; /* add this line */
 }
 
 .topnav a {
@@ -68,17 +73,15 @@ body {
 	font-size: 20px;
 	font-weight: bold;
 }
+/* .container {
+	padding-top: 70px; 
+} */
 </style>
 </head>
 <body>
 	<div class="topnav">
-		<div>
-			<!-- <a class="active" href="http://192.168.1.5:8086/api/showMenu">Home</a> -->
-			<a class="active" href="http://192.168.1.5:8086/api/showMenu">RF Menu</a>
-    		<a href="http://192.168.1.5:8086/api/categoryInfo">Category</a>
-    		<a href="http://192.168.1.5:8086/api/itemInfo">Item</a>
-    		<a href="#location">Location</a>
-    		<a href="#lpnl">LPN</a>
+		<div id="links">
+			
 			<!-- <a href="#orders">Orders</a>
     <a href="#reports">Reports</a>
     <a href="#settings">Settings</a> -->
@@ -100,6 +103,15 @@ body {
 	<script
 		src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 	<script type='text/javascript'>
+
+var hostname = location.hostname;
+        var linksDiv = document.getElementById("links");
+        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/showMenu" class="active">RF Menu</a>';
+        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/categoryInfo">Category</a>';
+        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/itemInfo">Item</a>';
+		linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/locationInfo">Location</a>';
+        linksDiv.innerHTML += '<a href="#lpnl">LPN</a>';		
+
 	var menuItems = document.querySelectorAll('.topnav a');
 
 	// Loop through the menu items

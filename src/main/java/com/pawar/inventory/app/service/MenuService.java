@@ -8,6 +8,7 @@ import org.apache.http.client.ClientProtocolException;
 import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.model.Category;
 import com.pawar.inventory.model.Item;
+import com.pawar.inventory.model.Location;
 
 public interface MenuService {
 
@@ -28,5 +29,21 @@ public interface MenuService {
 	void deleteCategory(int category_id) throws ClientProtocolException, IOException;
 
 	Iterable<Item> getItems() throws ClientProtocolException, IOException;
+
+    String itemAdd(String description,String category,float length,float width,float height) throws ClientProtocolException, IOException;
+
+	void deleteItem(String description) throws ClientProtocolException, IOException;
+
+    String itemEdit(String description, String category, float length, float width, float height) throws ClientProtocolException, IOException;
+
+	Iterable<Location> getLocations() throws ClientProtocolException, IOException;
+
+    String locationAdd(String locn_brcd, String locn_class, float length, float width, float height, float max_volume,
+            float max_qty, float max_weight) throws ClientProtocolException, IOException;
+
+	String locationEdit(String locn_brcd, String locn_class, float length, float width, float height, float max_volume,
+			float max_qty, float max_weight) throws ClientProtocolException, IOException;;
+
+    void deleteLocation(String locn_brcd) throws ClientProtocolException, IOException;;
 
 }

@@ -1,14 +1,10 @@
 package com.pawar.inventory.app.repository;
 
 import java.io.IOException;
-
 import org.apache.http.client.ClientProtocolException;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.model.Category;
 import com.pawar.inventory.model.Item;
+import com.pawar.inventory.model.Location;
 
 
 public interface MenuRepositoryCustom  {
@@ -28,6 +24,22 @@ public interface MenuRepositoryCustom  {
 	void deleteCategory(int category_id) throws ClientProtocolException, IOException;
 
 	Iterable<Item> getItems() throws ClientProtocolException, IOException;
+
+    String itemAdd(String description,String category,float length,float width,float height) throws ClientProtocolException, IOException;
+
+	void deleteItem(String description) throws ClientProtocolException, IOException;
+
+	String itemEdit(String description, String category, float length, float width, float height) throws ClientProtocolException, IOException;
+
+	Iterable<Location> getLocations() throws ClientProtocolException, IOException;
+
+	String locationAdd(String locn_brcd, String locn_class, float length, float width, float height, float max_volume,
+            float max_qty, float max_weight) throws ClientProtocolException, IOException;
+
+    String locationEdit(String locn_brcd, String locn_class, float length, float width, float height, float max_volume,
+            float max_qty, float max_weight)throws ClientProtocolException, IOException;
+
+    void deleteLocation(String locn_brcd)throws ClientProtocolException, IOException;
 
 }
 
