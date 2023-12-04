@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Item Inquiry</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Item Inquiry</h1>
+
+        <!-- Item Inquiry form -->
+        <form id="itemForm" method="post" onsubmit="event.preventDefault(); fetchItem();">
+            <div class="form-group">
+                <label for="item_name">Item:</label>
+                <input type="text" id="item" name="item_name" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+
+        <!-- Item Details -->
+        <div id="itemDetails" style="display: none;">
+            <h2>Item Details</h2>
+            <p id="itemName"></p>
+            <p id="itemDescription"></p>
+            <p id="itemPrice"></p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    
+    <!-- Add this script to fetch item details -->
+    <script type='text/javascript'>
+        function fetchItem() {
+            var item_name = document.getElementById('item').value;
+
+            $.ajax({
+                url: '/api/getItem/' + item_name,
+                type: 'get',
+                success: function(response) {
+                	console.log(response.name);
+                    document.getElementById('itemName').innerText = response.name;
+                    document.getElementById('itemDescription').innerText = response.description;
+                    document.getElementById('itemPrice').innerText = response.category;
+                    document.getElementById('itemDetails').style.display = 'block';
+                },
+                error: function(response) {
+                    alert('Error fetching item');
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>

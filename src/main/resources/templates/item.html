@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Item Management</title>
+<link rel="stylesheet"
+	href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+body {
+	background-color: #f8f9fa;
+}
+
+.container {
+	max-width: 960px;
+	margin-top: 2rem;
+	padding: 2rem;
+	background-color: #fff;
+	border-radius: 0.5rem;
+	box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+table {
+	margin-top: 2rem;
+}
+
+.table th, .table td {
+	vertical-align: middle;
+}
+
+.form-group {
+	margin-top: 2rem;
+}
+
+#saveCategoryButton, #toggleButton {
+	display: inline-block;
+	margin-right: 10px; /* Add a little space between buttons */
+}
+
+.topnav {
+	overflow: hidden;
+	background-color: #333;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	position: fixed;
+    top: 0;
+    width: 100%;
+}
+
+.topnav a {
+	float: left;
+	display: block;
+	color: #f2f2f2;
+	text-align: center;
+	padding: 20px 16px; /* Increase the vertical padding */
+	text-decoration: none;
+	font-size: 17px;
+}
+
+.topnav a:hover {
+	background-color: #ddd;
+	color: black;
+}
+
+.topnav a.active {
+	background-color: royalblue;
+	color: white;
+}
+
+.topnav .title {
+	color: #f2f2f2;
+	font-size: 20px;
+	font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+	<div class="topnav">
+		<div id="links">
+		</div>
+		<div class="title">Warehouse Management System</div>
+	</div>
+
+	</div>
+	<div class="container">
+		
+		<h1 class="text-center">Item Management</h1>
+		<!-- Category table -->
+		<div style="width: 100%; height: 100%; overflow: auto;">
+			<input data-toggle="modal" data-target="#exampleModal" type="button" class="btn btn-primary" value="Add Item" id="addItemButton" onclick="showButtons()">
+			<table class="table table-striped">
+				<thead class="thead-dark">
+					<tr>
+						<th scope="col">#</th>
+						<th scope="col">Item Name</th>
+						<th scope="col">Category</th>
+						<th scope="col">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="item : ${items}">
+						<th scope="row" th:text="${item.item_id}"></th>
+						<td th:text="${item.description}"></td>
+						<td th:text="${item.category.category_name}"></td>
+						<td>
+							<button type="button" class="btn btn-primary" data-toggle="modal"
+								data-target="#exampleModal" 
+								th:data-item-id="${item.item_id}"
+								th:data-description="${item.description}"
+								th:data-category="${item.category.category_name}"
+								th:data-length="${item.unit_length}"
+								th:data-width="${item.unit_width}"
+								th:data-height="${item.unit_height}"
+								th:data-volume="${item.unit_volume}"
+								onclick="showItem(this.getAttribute('data-item-id'),this.getAttribute('data-description'),
+								this.getAttribute('data-category'),this.getAttribute('data-length'),this.getAttribute('data-width'),
+								this.getAttribute('data-height'),this.getAttribute('data-volume'), true)">
+								View</button>
+							<button th:data-item-id="${item.item_id}"
+								th:data-description="${item.description}"
+								onclick="confirmItemDeletion(this.getAttribute('data-item-id'),this.getAttribute('data-description'), true)"
+								class="btn btn-danger">Delete</button>
+
+
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<!-- Modal -->
+			<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
+    aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Item Details</h5>
+                <button type="button" class="close" data-dismiss="modal"
+                    aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Text fields for item details -->
+                <form id="itemForm">
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="itemId">Item ID</label> <input type="text"
+                                    class="form-control" id="itemId" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="itemName">Item Name</label> <input type="text"
+                                    class="form-control" id="itemName">
+                            </div>
+                            <div class="form-group">
+                                <label for="category">Category</label>
+                                <input class="form-control" id="category" rows="3"></input>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="length">Length</label>
+                                <input class="form-control" id="length" rows="3"></input>
+                            </div>
+                            <div class="form-group">
+                                <label for="width">Width</label>
+                                <input class="form-control" id="width" rows="3"></input>
+                            </div>
+                            <div class="form-group">
+                                <label for="height">Height</label>
+                                <input class="form-control" id="height" rows="3"></input>
+                            </div>
+                            <div class="form-group">
+                                <label for="volume">Volume</label>
+                                <input class="form-control" id="volume" rows="3"></input>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div id= "saveItemButton" class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+				onclick="canelViewItem()" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary"
+                    onclick="saveItem()">Save</button>
+            </div>
+			<div id= "editItemButton" class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+				onclick="canelViewItem()" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary"
+                    onclick="saveEditItem()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+	
+		</div>
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+		<script
+			src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+		<script
+			src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script type='text/javascript'>
+		
+		function showButtons(){
+			document.getElementById("editItemButton").style.display = 'none';
+			document.getElementById("saveItemButton").style.display = 'block';
+
+		}
+		
+		var hostname = location.hostname;
+        var linksDiv = document.getElementById("links");
+        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/showMenu">RF Menu</a>';
+        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/categoryInfo">Category</a>';
+        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/itemInfo" class="active">Item</a>';
+		linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/locationInfo">Location</a>';
+        linksDiv.innerHTML += '<a href="#lpnl">LPN</a>';	
+
+	/* Toggle between adding and removing the "responsive" class to topnav when the user clicks on the icon */
+	// Get all the menu items
+var menuItems = document.querySelectorAll('.topnav a');
+
+// Loop through the menu items
+for (var i = 0; i < menuItems.length; i++) {
+  // Add a click event listener to each menu item
+  menuItems[i].addEventListener('click', function() {
+    // Remove the 'active' class from all menu items
+    for (var i = 0; i < menuItems.length; i++) {
+      menuItems[i].classList.remove('active');
+    }
+    // Add the 'active' class to the clicked menu item
+    this.classList.add('active');
+  });
+}
+
+		var isButtonShown = false;
+		var currentItemName = null;
+
+		function showFields() {
+			if (!isButtonShown) {
+				document.getElementById('itemDiv').style.display = 'block';
+				document.getElementById('saveButton').style.display = 'block';
+				document.getElementById('toggleCancelButton').style.display = 'block';
+				document.getElementById('addItemButton').style.display = 'none';
+				isItemShown = true;
+			} else {
+				submitForm();
+			}
+		}
+		function cancelAddItem() {
+		    // Hide the category input field, save button, and cancel button
+		    document.getElementById('itemDiv').style.display = 'none';
+		    document.getElementById('saveItemButton').style.display = 'none';
+		    document.getElementById('toggleCancelButton').style.display = 'none';
+			
+		    // Show the Add Category button
+		    document.getElementById('addItemButton').style.display = 'block';
+		    isItemShown = false;
+		}
+
+		function canelViewItem(){
+			document.getElementById('itemId').value = null;
+			document.getElementById('itemName').value = null;
+			document.getElementById('category').value = null;
+			document.getElementById('length').value = null;
+			document.getElementById('width').value = null;
+			document.getElementById('height').value = null;
+			document.getElementById('volume').value = null;
+		}
+		function showItem(item_id,description,category,length,width,height,volume ){
+			document.getElementById('itemId').value = item_id;
+			document.getElementById('itemName').value = description;
+			document.getElementById('category').value = category;
+			document.getElementById('length').value = length;
+			document.getElementById('width').value = width;
+			document.getElementById('height').value = height;
+			document.getElementById('volume').value = volume;
+			document.getElementById("editItemButton").style.display = 'block';
+			document.getElementById("saveItemButton").style.display = 'none';
+
+		}
+		function saveItem() {
+			var description = document.getElementById('itemName').value;
+			var category = document.getElementById('category').value;
+			var length = document.getElementById('length').value;
+			var width = document.getElementById('width').value;
+			var height = document.getElementById('height').value;
+
+
+			console.log("Item Description : " + description);
+			const ajaxRequest = {
+				url : 'itemAdd',
+				type : 'post',
+				data:{description: description,category: category,length: length,width: width,height: height },
+				success : function(response, textStatus, xhr) {
+					console.log("Status Code:", xhr.status
+							+ ", Status Message " + textStatus);
+					alert('Item added successfully');
+					
+					isItemShown = false;
+					location.reload();
+
+				},
+				error : function(response) {
+					alert('Error adding item');
+					location.reload();
+				}
+			};
+
+			$.ajax(ajaxRequest);
+		}
+		function cancelEdit() {
+		    // Hide the category input field, save button, and cancel button
+		    document.getElementById('itemDiv').style.display = 'none';
+		    document.getElementById('saveItemButton').style.display = 'none';
+		    document.getElementById('toggleButton').style.display = 'none';
+
+		    // Show the Add Category button
+		    document.getElementById('addItemButton').style.display = 'block';
+			document.getElementById('item').value = '';
+
+		}
+
+		function editItem(item_id, description) {
+			console.log("Editing : " + description);
+			// Show the category input field with the current category name
+			document.getElementById('itemDiv').style.display = 'block';
+			document.getElementById('item').value = description;
+			document.getElementById('saveButton').style.display = 'none';
+			document.getElementById('addItemButton').style.display = 'none';
+			document.getElementById('toggleButton').style.display = 'block';
+			document.getElementById('saveItemButton').style.display = 'block';
+			isItemShown = true;
+			currentItemName = description;
+		}
+
+		function saveEditItem() {
+			var description = document.getElementById('itemName').value;
+			var category = document.getElementById('category').value;
+			var length = document.getElementById('length').value;
+			var width = document.getElementById('width').value;
+			var height = document.getElementById('height').value;
+
+
+			console.log("Item Description : " + description);
+			const ajaxRequest = {
+				url : 'itemEdit',
+				type : 'put',
+				data:{description: description,category: category,length: length,width: width,height: height },
+				success : function(response, textStatus, xhr) {
+					console.log("Status Code:", xhr.status
+							+ ", Status Message " + textStatus);
+					alert('Item edited successfully');
+					
+					isItemShown = false;
+					location.reload();
+
+				},
+				error : function(response) {
+					alert('Error editing item');
+					location.reload();
+				}
+			};
+
+			$.ajax(ajaxRequest);
+		}
+		function confirmItemDeletion(item_id,description, deleteFlag) {
+			if (deleteFlag) {
+//				const confirmation = window
+//						.confirm(`Are you sure you want to delete category '${category_name}'?`);
+//				if (confirmation) {
+	//				deleteCategory(category_name);
+			//	}
+				 Swal.fire({
+			            title: 'Are you sure?',
+			            text: `Are you sure you want to delete item '${description}'?`,
+			            icon: 'warning',
+			            showCancelButton: true,
+			            confirmButtonColor: '#3085d6',
+			            cancelButtonColor: '#d33',
+			            confirmButtonText: 'Yes, delete it!',
+			            cancelButtonText: 'No, cancel!'
+			        }).then((result) => {
+			            if (result.isConfirmed) {
+			                deleteCategory(description);
+			            }
+			        });
+			    }
+		}
+
+		function deleteCategory(description) {
+			console.log(description);
+
+			// Proceed with deletion if user clicks "Yes" button
+			$
+					.ajax({
+						url : '/api/deleteItem/' + description,
+						type : 'delete',
+						 success: function(response, textStatus, xhr) {
+					            console.log("Status code:", xhr.status + ", " + textStatus);
+					            Swal.fire('Deleted!', 'Item deleted successfully', 'success').then((result) => {
+					                if (result.isConfirmed) {
+					                    location.reload(); // Reload the page
+					                }
+					            });
+					        },
+	
+					        error: function(response) {
+					            Swal.fire('Error!', 'Error deleting Item', 'error');
+					        }
+					});
+		}
+	</script>
+</body>
+</html>

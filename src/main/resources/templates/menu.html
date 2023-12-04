@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>RF Menu</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+body {
+
+	background-color: #f8f9fa;
+	animation: colorchange 20s infinite;
+	
+}
+
+.header {
+	text-align: center;
+	margin-bottom: 20px;
+	color: #6c757d;
+	font-size: 2em;
+	text-shadow: 2px 2px #999999;
+}
+
+.list-group-item {
+	font-size: 18px;
+	border-radius: 20px;
+	margin-bottom: 10px;
+	transition: transform .2s;
+}
+
+.list-group-item:hover {
+	transform: scale(1.05);
+}
+
+.btn-primary {
+	width: 100%;
+}
+
+.topnav {
+	overflow: hidden;
+	background-color: #333;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	position: fixed;
+    top: 0;
+    width: 100%;
+	z-index: 999; /* add this line */
+}
+
+.topnav a {
+	float: left;
+	display: block;
+	color: #f2f2f2;
+	text-align: center;
+	padding: 20px 16px; /* Increase the vertical padding */
+	text-decoration: none;
+	font-size: 17px;
+}
+
+.topnav a:hover {
+	background-color: #ddd;
+	color: black;
+}
+
+.topnav a.active {
+	background-color: royalblue;
+	color: white;
+}
+
+.topnav .title {
+	color: #f2f2f2;
+	font-size: 20px;
+	font-weight: bold;
+}
+/* .container {
+	padding-top: 70px; 
+} */
+</style>
+</head>
+<body>
+	<div class="topnav">
+		<div id="links">
+			
+			<!-- <a href="#orders">Orders</a>
+    <a href="#reports">Reports</a>
+    <a href="#settings">Settings</a> -->
+		</div>
+		<div class="title">Warehouse Management System</div>
+	</div>
+	<div class="container">
+		<h1 class="header">RF Menu</h1>
+
+		<ul class="list-group" th:each="menu : ${menus}">
+			<li class="list-group-item"><a class="btn btn-primary"
+				th:href="@{${menu.menu_link}}" th:text="${menu.menu_name}"></a></li>
+		</ul>
+	</div>
+
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+	<script
+		src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+	<script
+		src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+	<script type='text/javascript'>
+
+var hostname = location.hostname;
+        var linksDiv = document.getElementById("links");
+        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/showMenu" class="active">RF Menu</a>';
+        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/categoryInfo">Category</a>';
+        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/itemInfo">Item</a>';
+		linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/locationInfo">Location</a>';
+        linksDiv.innerHTML += '<a href="#lpnl">LPN</a>';		
+
+	var menuItems = document.querySelectorAll('.topnav a');
+
+	// Loop through the menu items
+	for (var i = 0; i < menuItems.length; i++) {
+	  // Add a click event listener to each menu item
+	  menuItems[i].addEventListener('click', function() {
+	    // Remove the 'active' class from all menu items
+	    for (var i = 0; i < menuItems.length; i++) {
+	      menuItems[i].classList.remove('active');
+	    }
+	    // Add the 'active' class to the clicked menu item
+	    this.classList.add('active');
+	  });
+	}
+	</script>
+</body>
+</html>
