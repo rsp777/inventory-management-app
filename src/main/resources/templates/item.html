@@ -42,9 +42,9 @@ table {
 	overflow: hidden;
 	background-color: #333;
 	display: flex;
-	justify-content: space-between;
+	justify-content: space-around;
 	align-items: center;
-	position: fixed;
+	position: sticky;
     top: 0;
     width: 100%;
 }
@@ -219,7 +219,8 @@ table {
         linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/categoryInfo">Category</a>';
         linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/itemInfo" class="active">Item</a>';
 		linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/locationInfo">Location</a>';
-        linksDiv.innerHTML += '<a href="#lpnl">LPN</a>';	
+        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/lpnInfo" >LPN</a>';
+		linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/inventoryInfo">Inventory</a>';		
 
 	/* Toggle between adding and removing the "responsive" class to topnav when the user clicks on the icon */
 	// Get all the menu items

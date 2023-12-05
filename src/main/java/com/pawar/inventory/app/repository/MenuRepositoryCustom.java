@@ -3,8 +3,10 @@ package com.pawar.inventory.app.repository;
 import java.io.IOException;
 import org.apache.http.client.ClientProtocolException;
 import com.pawar.inventory.model.Category;
+import com.pawar.inventory.model.Inventory;
 import com.pawar.inventory.model.Item;
 import com.pawar.inventory.model.Location;
+import com.pawar.inventory.model.Lpn;
 
 
 public interface MenuRepositoryCustom  {
@@ -40,6 +42,10 @@ public interface MenuRepositoryCustom  {
             float max_qty, float max_weight)throws ClientProtocolException, IOException;
 
     void deleteLocation(String locn_brcd)throws ClientProtocolException, IOException;
+
+    Iterable<Lpn> getLpns() throws ClientProtocolException, IOException;
+
+    Iterable<Inventory> getInventories() throws ClientProtocolException, IOException;
 
 }
 

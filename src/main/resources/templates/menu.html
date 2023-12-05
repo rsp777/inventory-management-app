@@ -40,9 +40,9 @@ body {
 	overflow: hidden;
 	background-color: #333;
 	display: flex;
-	justify-content: space-between;
+	justify-content: space-around;
 	align-items: center;
-	position: fixed;
+	position: sticky;
     top: 0;
     width: 100%;
 	z-index: 999; /* add this line */
@@ -110,7 +110,8 @@ var hostname = location.hostname;
         linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/categoryInfo">Category</a>';
         linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/itemInfo">Item</a>';
 		linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/locationInfo">Location</a>';
-        linksDiv.innerHTML += '<a href="#lpnl">LPN</a>';		
+        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/lpnInfo">LPN</a>';
+		linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/inventoryInfo">Inventory</a>';			
 
 	var menuItems = document.querySelectorAll('.topnav a');
 

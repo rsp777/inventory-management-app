@@ -23,8 +23,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pawar.inventory.model.Category;
+import com.pawar.inventory.model.Inventory;
 import com.pawar.inventory.model.Item;
 import com.pawar.inventory.model.Location;
+import com.pawar.inventory.model.Lpn;
+
 import jakarta.persistence.EntityManager;
 //import jakarta.persistence.PersistenceContext;
 
@@ -561,6 +564,44 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 			logger.info("Location does not exists : " + locn_brcd);
 		}
 
+	}
+
+	@Override
+	public Iterable<Lpn> getLpns() throws ClientProtocolException, IOException {
+		String url = "http://localhost:8085/lpns/list";
+		logger.info("URL : " + url);
+		logger.info("Fetching Lpns");
+
+		HttpGet request = new HttpGet(url);
+		HttpResponse response = httpClient.execute(request);
+		org.apache.http.HttpEntity entity = response.getEntity();
+		String json = EntityUtils.toString(entity);
+		logger.info("Fetched Lpns : " + json);
+		// List<Category> fetchedCategory = objectMapper.readValue(json,
+		// Category.class);
+		List<Lpn> fetchedLpn = objectMapper.readValue(json, new TypeReference<List<Lpn>>() {
+		});
+
+		return fetchedLpn;
+	}
+
+	@Override
+	public Iterable<Inventory> getInventories() throws ClientProtocolException, IOException {
+		String url = "http://localhost:8085/inventory/list";
+		logger.info("URL : " + url);
+		logger.info("Fetching Inventories");
+
+		HttpGet request = new HttpGet(url);
+		HttpResponse response = httpClient.execute(request);
+		org.apache.http.HttpEntity entity = response.getEntity();
+		String json = EntityUtils.toString(entity);
+		logger.info("Fetched Inventories : " + json);
+		// List<Category> fetchedCategory = objectMapper.readValue(json,
+		// Category.class);
+		List<Inventory> fetchedInventory = objectMapper.readValue(json, new TypeReference<List<Inventory>>() {
+		});
+
+		return fetchedInventory;
 	}
 
 }

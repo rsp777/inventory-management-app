@@ -11,8 +11,10 @@ import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.app.repository.MenuRepository;
 import com.pawar.inventory.app.repository.MenuRepositoryCustom;
 import com.pawar.inventory.model.Category;
+import com.pawar.inventory.model.Inventory;
 import com.pawar.inventory.model.Item;
 import com.pawar.inventory.model.Location;
+import com.pawar.inventory.model.Lpn;
 
 @Service
 public class MenuServiceImp implements MenuService {
@@ -113,6 +115,16 @@ public class MenuServiceImp implements MenuService {
 	@Override
 	public void deleteLocation(String locn_brcd) throws ClientProtocolException, IOException {
 		menuRepositoryCustom.deleteLocation(locn_brcd);
+	}
+
+	@Override
+	public Iterable<Lpn> getLpns() throws ClientProtocolException, IOException {
+		return menuRepositoryCustom.getLpns();
+	}
+
+	@Override
+	public Iterable<Inventory> getInventories() throws ClientProtocolException, IOException {
+		return menuRepositoryCustom.getInventories();
 	}
 
 }

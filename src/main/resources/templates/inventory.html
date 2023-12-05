@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<title>Location Management</title>
+<title>Inventory Management</title>
 <link rel="stylesheet"
 	href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 <link rel="stylesheet"
@@ -23,7 +23,10 @@ body {
 
 table {
 	margin-top: 2rem;
+    width: 100%;
+   
 }
+
 
 .table th, .table td {
 	vertical-align: middle;
@@ -39,7 +42,7 @@ table {
 }
 
 .topnav {
-	overflow: hidden;
+	overflow: auto;
 	background-color: #333;
 	display: flex;
 	justify-content: space-around;
@@ -74,6 +77,16 @@ table {
 	font-size: 20px;
 	font-weight: bold;
 }
+.indicator {
+        width: 20px;
+        height:20px;
+        border-radius: 50%;
+        display: inline-block;
+       
+    }
+.red { background-color: red; }
+.green { background-color: green; }
+.grey { background-color: grey; }
 </style>
 </head>
 <body>
@@ -87,45 +100,70 @@ table {
 	</div>
 	<div class="container">
 		
-		<h1 class="text-center">Location Management</h1>
+		<h1 class="text-decoration">Inventory Management</h1>
 		<!-- Category table -->
-		<div style="width: 100%; height: 100%; overflow: auto;">
-			<input data-toggle="modal" data-target="#exampleModal" type="button" class="btn btn-primary" value="Add Location" id="addLocationButton" onclick="showButtons()">
-			<table class="table table-striped">
+		<div style="width: 100%; height: 100%;">
+			<!-- <input data-toggle="modal" data-target="#exampleModal" type="button" 
+            class="btn btn-primary" value="Add Location" id="addLocationButton" onclick="showButtons()"> -->
+			<table class="table table-striped sortable">
 				<thead class="thead-dark">
 					<tr>
 						<th scope="col">#</th>
-						<th scope="col">Location</th>
-						<th scope="col">Location Class(A/R)</th>
-						<th scope="col">Actions</th>
+						<th scope="col">LPN</th>
+						<th scope="col">Item</th>
+                        <th scope="col">On Hand Quanity</th>
+                        <th scope="col">Location</th>
+                        <th scope="col">Occupied Quanity</th>
+                        <th scope="col">Location Class</th>
+                        <th scope="col">Indicator</th>
+                        <th scope="col">Actions</th>
 					</tr>
 				</thead>
-				<tbody>
-					<tr th:each="location : ${locations}">
-						<th scope="row" th:text="${location.locn_id}"></th>
-						<td th:text="${location.locn_brcd}"></td>
-						<td th:text="${location.locn_class}"></td>
+				<tbody style="overflow-y: scroll;" >
+					<tr th:each="inventory : ${inventories}">
+						<th scope="row" th:text="${inventory.inventory_id}"></th>
+						<div th:with="inv_lpn = ${inventory != null and inventory.lpn != null}">
+                            <td th:text="${inv_lpn ? inventory.lpn.lpn_name : ' '}"></td>
+                        </div>
+                                                    
+						<td th:text="${inventory.item.description}"></td>
+                        <td th:text="${inventory.on_hand_qty}"></td>
+                        <div th:with="inv_loc = ${inventory != null and inventory.location != null}">
+                            <td th:text="${inv_loc ? inventory.location.locn_brcd : ' '}"></td>
+                            <td th:text="${inv_loc ? inventory.location.occupied_qty : ' '}"></td>
+                            <td th:text="${inv_loc ? inventory.locn_class : null}"></td>
+                           
+                        </div>
+                        <div th:with="inv_loc = ${inventory != null and inventory.location != null}">
+                            <!-- ... -->
+                            <td>
+                                <div class="indicator" th:class="${inv_loc ? (inventory.on_hand_qty >= inventory.location.max_qty ? 'indicator red' : 'indicator green') : 'indicator grey'}"></div>
+                                <div th:text="${inv_loc ? (inventory.on_hand_qty >= inventory.location.max_qty ? 'Full' : 'Available') : ''}"></div>
+
+                            </td>
+                            <!-- ... -->
+                        </div>
 						<td>
-							<button type="button" class="btn btn-primary" data-toggle="modal"
+							<!-- <button type="button" class="btn btn-primary" data-toggle="modal"
 								data-target="#exampleModal" 
-								th:data-locn-id="${location.locn_id}"
-								th:data-locn-brcd="${location.locn_brcd}"
-								th:data-locn-class="${location.locn_class}"
-								th:data-length="${location.length}"
-								th:data-width="${location.width}"
-								th:data-height="${location.height}"
-								th:data-max-volume="${location.max_volume}"
-								th:data-max-weight="${location.max_weight}"
-								th:data-max-qty="${location.max_qty}"
-								onclick="showLocation(this.getAttribute('data-locn-id'),this.getAttribute('data-locn-brcd'),
-								this.getAttribute('data-locn-class'),this.getAttribute('data-length'),this.getAttribute('data-width'),
-								this.getAttribute('data-height'),this.getAttribute('data-max-volume'),
-								this.getAttribute('data-max-qty'),this.getAttribute('data-max-weight'), true)">
+								th:data-lpn-id="${lpn.lpn_id}"
+								th:data-lpn-name="${lpn.lpn_name}"
+								th:data-description="${lpn.item.description}"
+								th:data-quantity="${lpn.quantity}"
+								th:data-length="${lpn.length}"
+								th:data-width="${lpn.width}"
+								th:data-height="${lpn.height}"
+								th:data-volume="${lpn.volume}"
+								
+								onclick="showLpn(this.getAttribute('data-lpn-id'),this.getAttribute('data-lpn-name'),
+								this.getAttribute('data-description'),this.getAttribute('data-quantity'),
+                                this.getAttribute('data-length'),this.getAttribute('data-width'),
+								this.getAttribute('data-height'),this.getAttribute('data-volume'),true)">
 								View</button>
-							<button th:data-locn-id="${location.locn_id}"
-								th:data-locn-brcd="${location.locn_brcd}"
-								onclick="confirmLocationDeletion(this.getAttribute('data-locn-id'),this.getAttribute('data-locn-brcd'), true)"
-								class="btn btn-danger">Delete</button>
+							<button th:data-lpn-id="${lpn.lpn_id}"
+                                    th:data-lpn-name="${lpn.lpn_name}"
+							    	onclick="confirmLpnDeletion(this.getAttribute('data-lpn-id'),this.getAttribute('data-lpn-name'), true)"
+								    class="btn btn-danger">Delete</button> -->
 
 
 						</td>
@@ -135,10 +173,10 @@ table {
 			<!-- Modal -->
 			<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
     aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog" role="document" style="max-width: 800px;">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Location Details</h5>
+                <h5 class="modal-title" id="exampleModalLabel">LPN Details</h5>
                 <button type="button" class="close" data-dismiss="modal"
                     aria-label="Close">
                     <span aria-hidden="true">×</span>
@@ -146,50 +184,45 @@ table {
             </div>
             <div class="modal-body">
                 <!-- Text fields for item details -->
-                <form id="locationForm">
+                <form id="lpnForm">
                     <div class="row">
                         <div class="col">
                             <div class="form-group">
-                                <label for="locationId">Location ID</label> <input type="text"
-                                    class="form-control" id="locationId" readonly>
+                                <label for="lpn_id">LPN ID</label> <input type="text"
+                                    class="form-control" id="lpn_id" readonly>
                             </div>
                             <div class="form-group">
-                                <label for="locn_brcd">Location Barcode</label> <input type="text"
-                                    class="form-control" id="locn_brcd">
+                                <label for="lpn_name">LPN</label> <input type="text"
+                                    class="form-control" id="lpn_name" readonly>
                             </div>
                             <div class="form-group">
-                                <label for="locn_class">Location Class</label>
-                                <input class="form-control" id="locn_class" rows="3"></input>
+                                <label for="item_desc">Item</label>
+                                <input class="form-control" id="item_desc" rows="3" readonly></input>
                             </div>
                         </div>
                         <div class="col">
                             <div class="form-group">
                                 <label for="length">Length</label>
-                                <input class="form-control" id="length" rows="3"></input>
+                                <input class="form-control" id="length" rows="3" readonly></input>
                             </div>
                             <div class="form-group">
                                 <label for="width">Width</label>
-                                <input class="form-control" id="width" rows="3"></input>
+                                <input class="form-control" id="width" rows="3" readonly></input>
                             </div>
                             <div class="form-group">
                                 <label for="height">Height</label>
-                                <input class="form-control" id="height" rows="3"></input>
+                                <input class="form-control" id="height" rows="3" readonly></input>
                             </div>
 						</div>
 						<div class="col">	
                             <div class="form-group">
-                                <label for="max_vol">Max Volume</label>
-                                <input class="form-control" id="max_vol" rows="3"></input>
+                                <label for="quantity">Quantity</label>
+                                <input class="form-control" id="quantity" rows="3"></input>
                             </div>
 							<div class="form-group">
-                                <label for="max_weight">Max Weight</label>
-                                <input class="form-control" id="max_weight" rows="3"></input>
+                                <label for="volume">Volume</label>
+                                <input class="form-control" id="volume" rows="3" readonly></input>
                             </div>
-							<div class="form-group">
-                                <label for="max_qty">Max Quanity</label>
-                                <input class="form-control" id="max_qty" rows="3"></input>
-                            </div>
-
                         </div>
                     </div>
                 </form>
@@ -215,6 +248,7 @@ table {
 			src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
 		<script type='text/javascript'>
 		
 		function showButtons(){
@@ -228,10 +262,10 @@ table {
         linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/showMenu">RF Menu</a>';
         linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/categoryInfo">Category</a>';
         linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/itemInfo">Item</a>';
-		linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/locationInfo"  class="active">Location</a>';
+		linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/locationInfo">Location</a>';
         linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/lpnInfo">LPN</a>';
-		linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/inventoryInfo">Inventory</a>';		
-
+        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/inventoryInfo" class="active">Inventory</a>';	
+        
 	/* Toggle between adding and removing the "responsive" class to topnav when the user clicks on the icon */
 	// Get all the menu items
 var menuItems = document.querySelectorAll('.topnav a');
@@ -274,63 +308,28 @@ for (var i = 0; i < menuItems.length; i++) {
 		    isItemShown = false;
 		}
 
-		function cancelViewLocation(){
-			document.getElementById('locationId').value = null;
-			document.getElementById('locn_brcd').value = null;
-			document.getElementById('locn_class').value = null;
+		function cancelViewLpn(){
+			document.getElementById('lpn_id').value = null;
+			document.getElementById('lpn_name').value = null;
+			document.getElementById('item_desc').value = null;
+            document.getElementById('quantity').value = null;
 			document.getElementById('length').value = null;
 			document.getElementById('width').value = null;
 			document.getElementById('height').value = null;
-			document.getElementById('max_vol').value = null;
-			document.getElementById('max_qty').value = null;
-			document.getElementById('max_weight').value = null;
+			document.getElementById('volume').value = null;
 		}
-		function showLocation(locn_id,locn_brcd,locn_class,length,width,height,max_volume,max_qty,max_weight ){
-			document.getElementById('locationId').value = locn_id;
-			document.getElementById('locn_brcd').value = locn_brcd;
-			document.getElementById('locn_class').value = locn_class;
+		function showLpn(lpn_id,lpn_name,description,quantity,length,width,height,volume){
+			document.getElementById('lpn_id').value = lpn_id;
+			document.getElementById('lpn_name').value = lpn_name;
+			document.getElementById('item_desc').value = description;
+            document.getElementById('quantity').value = quantity;
 			document.getElementById('length').value = length;
 			document.getElementById('width').value = width;
 			document.getElementById('height').value = height;
-			document.getElementById('max_vol').value = max_volume;
-			document.getElementById('max_qty').value = max_qty;
-			document.getElementById('max_weight').value = max_weight;
+			document.getElementById('volume').value = volume;
 			document.getElementById("editLocationButton").style.display = 'block';
 			document.getElementById("saveLocationButton").style.display = 'none';
 
-		}
-		function saveLocationButton() {
-			var locn_brcd  = document.getElementById('locn_brcd').value 
-			var locn_class = document.getElementById('locn_class').value 
-			var length     = document.getElementById('length').value 
-			var width      = document.getElementById('width').value 
-			var height     = document.getElementById('height').value
-			var max_vol    = document.getElementById('max_vol').value 
-			var max_qty    = document.getElementById('max_qty').value
-			var max_weight = document.getElementById('max_weight').value	
-
-
-			console.log("Location : " + locn_brcd);
-			const ajaxRequest = {
-				url : 'locationAdd',
-				type : 'post',
-				data:{locn_brcd: locn_brcd,locn_class: locn_class,length: length,width: width,height: height,max_vol: max_vol,max_qty : max_qty,max_weight: max_weight},
-				success : function(response, textStatus, xhr) {
-					console.log("Status Code:", xhr.status
-							+ ", Status Message " + textStatus);
-					alert('Location added successfully');
-					
-					isItemShown = false;
-					location.reload();
-
-				},
-				error : function(response) {
-					alert('Error adding Location');
-					location.reload();
-				}
-			};
-
-			$.ajax(ajaxRequest);
 		}
 		function cancelEdit() {
 		    // Hide the category input field, save button, and cancel button

@@ -21,8 +21,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.app.service.MenuService;
 import com.pawar.inventory.model.Category;
+import com.pawar.inventory.model.Inventory;
 import com.pawar.inventory.model.Item;
 import com.pawar.inventory.model.Location;
+import com.pawar.inventory.model.Lpn;
 
 @Controller
 @RequestMapping("/api")
@@ -360,7 +362,41 @@ public class MenuController {
 
 	}
 
+	@GetMapping("/lpnInfo")
+	public String lpnInfo(Model model) {
+		logger.info("LPN");
+		Iterable<Lpn> lpns;
+		try {
+			lpns = menuService.getLpns();
+			logger.info("Fetched Lpns : " + lpns);
+			model.addAttribute("lpns", lpns);
+			// model.addAttribute("newCategory", new Category());
+			return "lpn";
+		} catch (IOException e) {
 
+			e.printStackTrace();
+			return "lpn";
+		}
+
+	}
+
+	@GetMapping("/inventoryInfo")
+	public String inventoryInfo(Model model) {
+		logger.info("Inventory");
+		Iterable<Inventory> inventories;
+		try {
+			inventories = menuService.getInventories();
+			logger.info("Fetched Inventories : " + inventories);
+			model.addAttribute("inventories", inventories);
+			// model.addAttribute("newCategory", new Category());
+			return "inventory";
+		} catch (IOException e) {
+
+			e.printStackTrace();
+			return "inventory";
+		}
+
+	}
 	@GetMapping("/locationInquiry")
 	public String locationInquiry(Model model) {
 		List<Menu> menus = menuService.getAllMenus();

@@ -1,48 +1,116 @@
-2023-11-27 21:06:57 [background-preinit] INFO Version - HV000001: Hibernate Validator 8.0.1.Final (Version.java:21)
-2023-11-27 21:06:57 [restartedMain] INFO InventoryManagementApp - Starting InventoryManagementApp using Java 20 with PID 30956 (C:\Users\Ravi\spring_practice\InventoryManagementApp\target\classes started by Ravi in C:\Users\Ravi\spring_practice\InventoryManagementApp) (StartupInfoLogger.java:51)
-2023-11-27 21:06:57 [restartedMain] INFO InventoryManagementApp - No active profile set, falling back to 1 default profile: "default" (SpringApplication.java:638)
-2023-11-27 21:06:57 [restartedMain] INFO ChangeableUrls - The Class-Path manifest attribute in C:\Users\Ravi\.m2\repository\org\glassfish\hk2\hk2\3.0.4\hk2-3.0.4.jar referenced one or more files that do not exist: file:/C:/Users/Ravi/.m2/repository/org/glassfish/hk2/hk2/3.0.4/hk2-utils.jar,file:/C:/Users/Ravi/.m2/repository/org/glassfish/hk2/hk2/3.0.4/jakarta.annotation-api.jar,file:/C:/Users/Ravi/.m2/repository/org/glassfish/hk2/hk2/3.0.4/jakarta.inject-api.jar,file:/C:/Users/Ravi/.m2/repository/org/glassfish/hk2/hk2/3.0.4/hk2-api.jar,file:/C:/Users/Ravi/.m2/repository/org/glassfish/hk2/hk2/3.0.4/aopalliance-repackaged.jar,file:/C:/Users/Ravi/.m2/repository/org/glassfish/hk2/hk2/3.0.4/hk2-core.jar,file:/C:/Users/Ravi/.m2/repository/org/glassfish/hk2/hk2/3.0.4/hk2-locator.jar,file:/C:/Users/Ravi/.m2/repository/org/glassfish/hk2/hk2/3.0.4/javassist.jar,file:/C:/Users/Ravi/.m2/repository/org/glassfish/hk2/hk2/3.0.4/hk2-runlevel.jar,file:/C:/Users/Ravi/.m2/repository/org/glassfish/hk2/hk2/3.0.4/class-model.jar,file:/C:/Users/Ravi/.m2/repository/org/glassfish/hk2/hk2/3.0.4/asm.jar,file:/C:/Users/Ravi/.m2/repository/org/glassfish/hk2/hk2/3.0.4/asm-analysis.jar,file:/C:/Users/Ravi/.m2/repository/org/glassfish/hk2/hk2/3.0.4/asm-commons.jar,file:/C:/Users/Ravi/.m2/repository/org/glassfish/hk2/hk2/3.0.4/asm-tree.jar,file:/C:/Users/Ravi/.m2/repository/org/glassfish/hk2/hk2/3.0.4/asm-util.jar (DeferredLog.java:250)
-2023-11-27 21:06:57 [restartedMain] INFO DevToolsPropertyDefaultsPostProcessor - Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable (DeferredLog.java:250)
-2023-11-27 21:06:57 [restartedMain] INFO DevToolsPropertyDefaultsPostProcessor - For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG' (DeferredLog.java:250)
-2023-11-27 21:06:57 [restartedMain] INFO RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode (RepositoryConfigurationDelegate.java:291)
-2023-11-27 21:06:57 [restartedMain] INFO RepositoryConfigurationDelegate - Bootstrapping Spring Data JDBC repositories in DEFAULT mode. (RepositoryConfigurationDelegate.java:138)
-2023-11-27 21:06:57 [restartedMain] INFO RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 5 ms. Found 0 JDBC repository interfaces. (RepositoryConfigurationDelegate.java:208)
-2023-11-27 21:06:58 [restartedMain] INFO RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode (RepositoryConfigurationDelegate.java:291)
-2023-11-27 21:06:58 [restartedMain] INFO RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode. (RepositoryConfigurationDelegate.java:138)
-2023-11-27 21:06:58 [restartedMain] INFO RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 40 ms. Found 1 JPA repository interfaces. (RepositoryConfigurationDelegate.java:208)
-2023-11-27 21:06:58 [restartedMain] INFO TomcatWebServer - Tomcat initialized with port(s): 8085 (http) (TomcatWebServer.java:108)
-2023-11-27 21:06:58 [restartedMain] INFO Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8085"] (DirectJDKLog.java:173)
-2023-11-27 21:06:58 [restartedMain] INFO StandardService - Starting service [Tomcat] (DirectJDKLog.java:173)
-2023-11-27 21:06:58 [restartedMain] INFO StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.15] (DirectJDKLog.java:173)
-2023-11-27 21:06:58 [restartedMain] INFO [/] - Initializing Spring embedded WebApplicationContext (DirectJDKLog.java:173)
-2023-11-27 21:06:58 [restartedMain] INFO ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1609 ms (ServletWebServerApplicationContext.java:291)
-2023-11-27 21:06:59 [restartedMain] INFO LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default] (LogHelper.java:31)
-2023-11-27 21:06:59 [restartedMain] INFO Version - HHH000412: Hibernate ORM core version 6.2.13.Final (Version.java:44)
-2023-11-27 21:06:59 [restartedMain] INFO Environment - HHH000406: Using bytecode reflection optimizer (Environment.java:191)
-2023-11-27 21:06:59 [restartedMain] INFO SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer (SpringPersistenceUnitInfo.java:87)
-2023-11-27 21:06:59 [restartedMain] INFO HikariDataSource - HikariPool-1 - Starting... (HikariDataSource.java:110)
-2023-11-27 21:06:59 [restartedMain] INFO HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@44c76c98 (HikariPool.java:565)
-2023-11-27 21:06:59 [restartedMain] INFO HikariDataSource - HikariPool-1 - Start completed. (HikariDataSource.java:123)
-2023-11-27 21:06:59 [restartedMain] WARN Dialect - HHH000511: The 5.5.0 version for [org.hibernate.dialect.MySQLDialect] is no longer supported, hence certain features may not work properly. The minimum supported version is 5.7.0. Check the community dialects project for available legacy versions. (Dialect.java:351)
-2023-11-27 21:07:00 [restartedMain] INFO JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration) (JtaPlatformInitiator.java:55)
-2023-11-27 21:07:00 [restartedMain] INFO LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default' (AbstractEntityManagerFactoryBean.java:437)
-2023-11-27 21:07:00 [restartedMain] DEBUG JpaMetamodelMappingContextFactoryBean - Initializing JpaMetamodelMappingContext… (JpaMetamodelMappingContextFactoryBean.java:65)
-2023-11-27 21:07:00 [restartedMain] DEBUG JpaMetamodelMappingContextFactoryBean - Finished initializing JpaMetamodelMappingContext (JpaMetamodelMappingContextFactoryBean.java:72)
-2023-11-27 21:07:00 [restartedMain] WARN JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning (JpaBaseConfiguration.java:231)
-2023-11-27 21:07:01 [restartedMain] WARN ThymeleafAutoConfiguration$DefaultTemplateResolverConfiguration - Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false) (ThymeleafAutoConfiguration.java:101)
-2023-11-27 21:07:01 [restartedMain] INFO OptionalLiveReloadServer - LiveReload server is running on port 35729 (OptionalLiveReloadServer.java:59)
-2023-11-27 21:07:01 [restartedMain] INFO EndpointLinksResolver - Exposing 15 endpoint(s) beneath base path '/actuator' (EndpointLinksResolver.java:58)
-2023-11-27 21:07:01 [restartedMain] INFO Http11NioProtocol - Starting ProtocolHandler ["http-nio-8085"] (DirectJDKLog.java:173)
-2023-11-27 21:07:01 [restartedMain] INFO TomcatWebServer - Tomcat started on port(s): 8085 (http) with context path '' (TomcatWebServer.java:220)
-2023-11-27 21:07:01 [restartedMain] INFO InventoryManagementApp - Started InventoryManagementApp in 4.892 seconds (process running for 5.774) (StartupInfoLogger.java:57)
-2023-11-27 21:07:02 [RMI TCP Connection(3)-127.0.0.1] INFO [/] - Initializing Spring DispatcherServlet 'dispatcherServlet' (DirectJDKLog.java:173)
-2023-11-27 21:07:02 [RMI TCP Connection(3)-127.0.0.1] INFO DispatcherServlet - Initializing Servlet 'dispatcherServlet' (FrameworkServlet.java:532)
-2023-11-27 21:07:02 [RMI TCP Connection(3)-127.0.0.1] INFO DispatcherServlet - Completed initialization in 0 ms (FrameworkServlet.java:554)
-2023-11-27 21:07:05 [RMI TCP Connection(2)-127.0.0.1] INFO SpringApplicationAdminMXBeanRegistrar$SpringApplicationAdmin - Application shutdown requested. (SpringApplicationAdminMXBeanRegistrar.java:159)
-2023-11-27 21:07:05 [RMI TCP Connection(2)-127.0.0.1] INFO Http11NioProtocol - Pausing ProtocolHandler ["http-nio-8085"] (DirectJDKLog.java:173)
-2023-11-27 21:07:05 [RMI TCP Connection(2)-127.0.0.1] INFO StandardService - Stopping service [Tomcat] (DirectJDKLog.java:173)
-2023-11-27 21:07:05 [RMI TCP Connection(2)-127.0.0.1] INFO [/] - Destroying Spring FrameworkServlet 'dispatcherServlet' (DirectJDKLog.java:173)
-2023-11-27 21:07:05 [RMI TCP Connection(2)-127.0.0.1] INFO Http11NioProtocol - Stopping ProtocolHandler ["http-nio-8085"] (DirectJDKLog.java:173)
-2023-11-27 21:07:05 [RMI TCP Connection(2)-127.0.0.1] INFO LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default' (AbstractEntityManagerFactoryBean.java:650)
-2023-11-27 21:07:05 [RMI TCP Connection(2)-127.0.0.1] INFO HikariDataSource - HikariPool-1 - Shutdown initiated... (HikariDataSource.java:350)
-2023-11-27 21:07:05 [RMI TCP Connection(2)-127.0.0.1] INFO HikariDataSource - HikariPool-1 - Shutdown completed. (HikariDataSource.java:352)
+2023-12-05 21:53:53 [restartedMain] INFO InventoryManagementApp - Starting InventoryManagementApp using Java 20 with PID 39128 (started by Ravi in C:\Users\Ravi\spring_practice\InventoryManagementApp) (StartupInfoLogger.java:51)
+2023-12-05 21:53:53 [restartedMain] INFO InventoryManagementApp - No active profile set, falling back to 1 default profile: "default" (SpringApplication.java:638)
+2023-12-05 21:53:54 [restartedMain] INFO RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode (RepositoryConfigurationDelegate.java:291)
+2023-12-05 21:53:54 [restartedMain] INFO RepositoryConfigurationDelegate - Bootstrapping Spring Data JDBC repositories in DEFAULT mode. (RepositoryConfigurationDelegate.java:138)
+2023-12-05 21:53:54 [restartedMain] INFO RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 1 ms. Found 0 JDBC repository interfaces. (RepositoryConfigurationDelegate.java:208)
+2023-12-05 21:53:54 [restartedMain] INFO RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode (RepositoryConfigurationDelegate.java:291)
+2023-12-05 21:53:54 [restartedMain] INFO RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode. (RepositoryConfigurationDelegate.java:138)
+2023-12-05 21:53:54 [restartedMain] INFO RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 1 ms. Found 0 JPA repository interfaces. (RepositoryConfigurationDelegate.java:208)
+2023-12-05 21:53:54 [restartedMain] INFO TomcatWebServer - Tomcat initialized with port(s): 8085 (http) (TomcatWebServer.java:108)
+2023-12-05 21:53:54 [restartedMain] INFO Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8085"] (DirectJDKLog.java:173)
+2023-12-05 21:53:54 [restartedMain] INFO StandardService - Starting service [Tomcat] (DirectJDKLog.java:173)
+2023-12-05 21:53:54 [restartedMain] INFO StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.15] (DirectJDKLog.java:173)
+2023-12-05 21:53:54 [restartedMain] INFO [/] - Initializing Spring embedded WebApplicationContext (DirectJDKLog.java:173)
+2023-12-05 21:53:54 [restartedMain] INFO ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 690 ms (ServletWebServerApplicationContext.java:291)
+2023-12-05 21:53:54 [restartedMain] INFO LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default] (LogHelper.java:31)
+2023-12-05 21:53:54 [restartedMain] INFO SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer (SpringPersistenceUnitInfo.java:87)
+2023-12-05 21:53:54 [restartedMain] INFO HikariDataSource - HikariPool-2 - Starting... (HikariDataSource.java:110)
+2023-12-05 21:53:54 [restartedMain] INFO HikariPool - HikariPool-2 - Added connection com.mysql.cj.jdbc.ConnectionImpl@3078bf94 (HikariPool.java:565)
+2023-12-05 21:53:54 [restartedMain] INFO HikariDataSource - HikariPool-2 - Start completed. (HikariDataSource.java:123)
+2023-12-05 21:53:54 [restartedMain] WARN Dialect - HHH000511: The 5.5.0 version for [org.hibernate.dialect.MySQLDialect] is no longer supported, hence certain features may not work properly. The minimum supported version is 5.7.0. Check the community dialects project for available legacy versions. (Dialect.java:351)
+2023-12-05 21:53:54 [restartedMain] INFO JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration) (JtaPlatformInitiator.java:55)
+2023-12-05 21:53:54 [restartedMain] INFO LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default' (AbstractEntityManagerFactoryBean.java:437)
+2023-12-05 21:53:54 [restartedMain] WARN JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning (JpaBaseConfiguration.java:231)
+2023-12-05 21:53:54 [restartedMain] WARN ThymeleafAutoConfiguration$DefaultTemplateResolverConfiguration - Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false) (ThymeleafAutoConfiguration.java:101)
+2023-12-05 21:53:54 [restartedMain] WARN OptionalLiveReloadServer - Unable to start LiveReload server (OptionalLiveReloadServer.java:62)
+2023-12-05 21:53:54 [restartedMain] INFO EndpointLinksResolver - Exposing 15 endpoint(s) beneath base path '/actuator' (EndpointLinksResolver.java:58)
+2023-12-05 21:53:54 [restartedMain] INFO Http11NioProtocol - Starting ProtocolHandler ["http-nio-8085"] (DirectJDKLog.java:173)
+2023-12-05 21:53:54 [restartedMain] WARN AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop' (AbstractApplicationContext.java:624)
+2023-12-05 21:53:54 [restartedMain] INFO LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default' (AbstractEntityManagerFactoryBean.java:650)
+2023-12-05 21:53:54 [restartedMain] INFO HikariDataSource - HikariPool-2 - Shutdown initiated... (HikariDataSource.java:350)
+2023-12-05 21:53:54 [restartedMain] INFO HikariDataSource - HikariPool-2 - Shutdown completed. (HikariDataSource.java:352)
+2023-12-05 21:53:54 [restartedMain] INFO Http11NioProtocol - Pausing ProtocolHandler ["http-nio-8085"] (DirectJDKLog.java:173)
+2023-12-05 21:53:54 [restartedMain] INFO StandardService - Stopping service [Tomcat] (DirectJDKLog.java:173)
+2023-12-05 21:53:54 [restartedMain] INFO Http11NioProtocol - Stopping ProtocolHandler ["http-nio-8085"] (DirectJDKLog.java:173)
+2023-12-05 21:53:54 [restartedMain] INFO Http11NioProtocol - Destroying ProtocolHandler ["http-nio-8085"] (DirectJDKLog.java:173)
+2023-12-05 21:53:54 [restartedMain] INFO ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled. (ConditionEvaluationReportLogger.java:82)
+2023-12-05 21:53:55 [restartedMain] ERROR LoggingFailureAnalysisReporter - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8085 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8085 or configure this application to listen on another port.
+ (LoggingFailureAnalysisReporter.java:40)
+2023-12-05 21:55:33 [restartedMain] INFO InventoryManagementApp - Starting InventoryManagementApp using Java 20 with PID 39128 (C:\Users\Ravi\spring_practice\InventoryManagementApp\target\classes started by Ravi in C:\Users\Ravi\spring_practice\InventoryManagementApp) (StartupInfoLogger.java:51)
+2023-12-05 21:55:33 [restartedMain] INFO InventoryManagementApp - No active profile set, falling back to 1 default profile: "default" (SpringApplication.java:638)
+2023-12-05 21:55:33 [restartedMain] INFO RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode (RepositoryConfigurationDelegate.java:291)
+2023-12-05 21:55:33 [restartedMain] INFO RepositoryConfigurationDelegate - Bootstrapping Spring Data JDBC repositories in DEFAULT mode. (RepositoryConfigurationDelegate.java:138)
+2023-12-05 21:55:33 [restartedMain] INFO RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 0 ms. Found 0 JDBC repository interfaces. (RepositoryConfigurationDelegate.java:208)
+2023-12-05 21:55:33 [restartedMain] INFO RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode (RepositoryConfigurationDelegate.java:291)
+2023-12-05 21:55:33 [restartedMain] INFO RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode. (RepositoryConfigurationDelegate.java:138)
+2023-12-05 21:55:33 [restartedMain] INFO RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 0 ms. Found 0 JPA repository interfaces. (RepositoryConfigurationDelegate.java:208)
+2023-12-05 21:55:34 [restartedMain] INFO TomcatWebServer - Tomcat initialized with port(s): 8086 (http) (TomcatWebServer.java:108)
+2023-12-05 21:55:34 [restartedMain] INFO Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8086"] (DirectJDKLog.java:173)
+2023-12-05 21:55:34 [restartedMain] INFO StandardService - Starting service [Tomcat] (DirectJDKLog.java:173)
+2023-12-05 21:55:34 [restartedMain] INFO StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.15] (DirectJDKLog.java:173)
+2023-12-05 21:55:34 [restartedMain] INFO [/] - Initializing Spring embedded WebApplicationContext (DirectJDKLog.java:173)
+2023-12-05 21:55:34 [restartedMain] INFO ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 436 ms (ServletWebServerApplicationContext.java:291)
+2023-12-05 21:55:34 [restartedMain] INFO LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default] (LogHelper.java:31)
+2023-12-05 21:55:34 [restartedMain] INFO SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer (SpringPersistenceUnitInfo.java:87)
+2023-12-05 21:55:34 [restartedMain] INFO HikariDataSource - HikariPool-3 - Starting... (HikariDataSource.java:110)
+2023-12-05 21:55:34 [restartedMain] INFO HikariPool - HikariPool-3 - Added connection com.mysql.cj.jdbc.ConnectionImpl@26ff96d1 (HikariPool.java:565)
+2023-12-05 21:55:34 [restartedMain] INFO HikariDataSource - HikariPool-3 - Start completed. (HikariDataSource.java:123)
+2023-12-05 21:55:34 [restartedMain] WARN Dialect - HHH000511: The 5.5.0 version for [org.hibernate.dialect.MySQLDialect] is no longer supported, hence certain features may not work properly. The minimum supported version is 5.7.0. Check the community dialects project for available legacy versions. (Dialect.java:351)
+2023-12-05 21:55:34 [restartedMain] INFO JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration) (JtaPlatformInitiator.java:55)
+2023-12-05 21:55:34 [restartedMain] INFO LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default' (AbstractEntityManagerFactoryBean.java:437)
+2023-12-05 21:55:34 [restartedMain] WARN JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning (JpaBaseConfiguration.java:231)
+2023-12-05 21:55:34 [restartedMain] WARN OptionalLiveReloadServer - Unable to start LiveReload server (OptionalLiveReloadServer.java:62)
+2023-12-05 21:55:34 [restartedMain] INFO EndpointLinksResolver - Exposing 15 endpoint(s) beneath base path '/actuator' (EndpointLinksResolver.java:58)
+2023-12-05 21:55:34 [restartedMain] INFO TomcatWebServer - Tomcat started on port(s): 8086 (http) with context path '' (TomcatWebServer.java:220)
+2023-12-05 21:55:34 [restartedMain] INFO InventoryManagementApp - Started InventoryManagementApp in 0.847 seconds (process running for 5786.764) (StartupInfoLogger.java:57)
+2023-12-05 21:55:34 [restartedMain] INFO ConditionEvaluationDeltaLoggingListener - Condition evaluation delta:
+
+
+==========================
+CONDITION EVALUATION DELTA
+==========================
+
+
+Positive matches:
+-----------------
+
+   JdbcRepositoriesAutoConfiguration.JdbcRepositoriesConfiguration matched:
+      - @ConditionalOnMissingBean (types: org.springframework.data.jdbc.repository.config.JdbcRepositoryConfigExtension; SearchStrategy: all) did not find any beans (OnBeanCondition)
+
+
+Negative matches:
+-----------------
+
+    None
+
+
+Exclusions:
+-----------
+
+    None
+
+
+Unconditional classes:
+----------------------
+
+    None
+
+
+ (ConditionEvaluationDeltaLoggingListener.java:58)
+2023-12-05 21:55:34 [SpringApplicationShutdownHook] INFO LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default' (AbstractEntityManagerFactoryBean.java:650)
+2023-12-05 21:55:34 [SpringApplicationShutdownHook] INFO HikariDataSource - HikariPool-3 - Shutdown initiated... (HikariDataSource.java:350)
+2023-12-05 21:55:34 [SpringApplicationShutdownHook] INFO HikariDataSource - HikariPool-3 - Shutdown completed. (HikariDataSource.java:352)
