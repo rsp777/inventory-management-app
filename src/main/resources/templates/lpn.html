@@ -39,7 +39,7 @@ table {
 }
 
 .topnav {
-	overflow: hidden;
+	overflow: visible;
 	background-color: #333;
 	display: flex;
 	justify-content: space-around;
@@ -74,22 +74,156 @@ table {
 	font-size: 20px;
 	font-weight: bold;
 }
+.scrollable-container {
+    width: 100%;
+    height: 600px; 
+    overflow-y: auto; 
+}
+
+  .scrollable-container table {
+    width: 100%;
+  }
+
+  .scrollable-container thead {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa; 
+	z-index: 0; 
+
+  }
+
+  .scrollable-container th {
+   
+  }
+  .bi bi-person-circle{
+	font-size: 10px;
+ }
+ /* .icon-container {
+    display: flex;
+    align-items: right;
+   
+} */
+
+.icon-name {
+    margin-left: 200px; /* Adjust spacing between icon and name */
+    /* Add styles for the name (e.g., font-size, color) */
+	color: white;
+}
+.title{
+	margin-left: 579px;
+}
+.links{
+	margin-left: 75px;
+}
+.dropdown {
+            position: relative;
+            display: inline-flex;
+			
+        }
+
+        .dropdown-button {
+            background-color: #f9f9f9;
+            border: none;
+            padding: 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            min-width: 120px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		
+        }
+
+        .dropdown-content a {
+            color: #333;
+            padding: 8px 12px;
+            text-decoration: none;
+            display: block;
+			
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f5f5f5;
+        }
+
+.dropdown-menu {
+/* background-color: aqua;	 */
+	width: auto;
+   /* padding: 0px 0px 0px 0px 0px !important; */
+}		
+.dropdown-menu-left {
+  left: auto !important;
+  margin-left: -105px !important;
+}
+.dropdown-item {
+	white-space: initial !important;
+	margin-left: 0px;
+    margin-right: 0px;
+    margin-top: -9px;
+    margin-bottom: -9px;
+	height: 80px !important;
+	width: 160px;
+	color: black !important;
+}
+.dropdown-menu-main{
+	/* background-color: #333; */
+	margin-left: 0px;
+	height: 70px ;
+	
+}
+.dropdown-menu-main-content{
+color: white;
+margin-left: 0px;
+margin-right: 0px;
+margin-top: -9px;
+margin-bottom: -9px;	
+}
 </style>
 </head>
 <body>
 
 	<div class="topnav">
-		<div id="links">
-		</div>
+		<div class="links"> 
+			<button style="background-color: #333;border: none;" class=" btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Menu</button>
+			 <div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
+				  <a class="dropdown-item dropdown-menu-main-content" th:each="menu : ${nav_menus}" th:href="@{${menu.menu_link}}" th:text="${menu.menu_name}" th:classappend="${#strings.contains(menu.menu_link, currentMenu) ? 'active' : ''}"></a>
+				<!-- <a class="dropdown-item dropdown-menu-main-content" href="#orders">RF Menu</a>
+				<a class="dropdown-item dropdown-menu-main-content" href="#reports">Category</a>
+				<a class="dropdown-item dropdown-menu-main-content" href="#settings">Item</a>
+				<a class="dropdown-item dropdown-menu-main-content" href="#orders">Location</a>
+				<a class="dropdown-item dropdown-menu-main-content" href="#reports">LPN</a>
+				<a class="dropdown-item dropdown-menu-main-content" href="#settings">Inventory</a>  -->
+			 </div>	
+		 </div>
+		
 		<div class="title">Warehouse Management System</div>
-	</div>
-
-	</div>
+	   <span class="icon-name" th:text="${user_name}"></span>
+	   &nbsp;&nbsp;&nbsp;&nbsp;
+	  
+	  <div class="dropdown">
+		<button style="background-color: #333;border: none;" class=" btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+		  <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-person-circle" viewBox="0 0 16 16">
+			<path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+			<path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+		  </svg>
+		</button>
+		<div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
+		  <a class="dropdown-item"  href="#">Account</a>
+		  <a class="dropdown-item" href="#">Settings</a>
+		  <a class="dropdown-item" th:href="@{${logout_url.menu_link}}"th:text="${logout_url.menu_name}"></a>
+		</div>
+		</div>
+		&nbsp;&nbsp;&nbsp;&nbsp;
+	  </div>
 	<div class="container">
 		
 		<h1 class="text-decoration">LPN</h1>
 		<!-- Category table -->
-		<div style="width: 100%; height: 100%; overflow: auto;">
+		<div class="scrollable-container">
 			<!-- <input data-toggle="modal" data-target="#exampleModal" type="button" 
             class="btn btn-primary" value="Add Location" id="addLocationButton" onclick="showButtons()"> -->
 			<table class="table table-striped">
@@ -99,6 +233,7 @@ table {
 						<th scope="col">LPN</th>
 						<th scope="col">Item</th>
                         <th scope="col">Quanity</th>
+						<th scope="col">Status</th>
                         <th scope="col">Actions</th>
 					</tr>
 				</thead>
@@ -108,6 +243,13 @@ table {
 						<td th:text="${lpn.lpn_name}"></td>
 						<td th:text="${lpn.item.description}"></td>
                         <td th:text="${lpn.quantity}"></td>
+						<td th:switch="${lpn.lpn_facility_status}">
+							<span th:case="10">CREATED</span>
+							<span th:case="30">PUTAWAY</span>
+							<span th:case="96">CONSUME TO ACTIVE</span>
+							<span th:case="99">CANCELLED</span>
+						</td>
+						
 						<td>
 							<button type="button" class="btn btn-primary" data-toggle="modal"
 								data-target="#exampleModal" 
@@ -115,20 +257,21 @@ table {
 								th:data-lpn-name="${lpn.lpn_name}"
 								th:data-description="${lpn.item.description}"
 								th:data-quantity="${lpn.quantity}"
+								th:data-lpn_facility_status="${lpn.lpn_facility_status}"
 								th:data-length="${lpn.length}"
 								th:data-width="${lpn.width}"
 								th:data-height="${lpn.height}"
 								th:data-volume="${lpn.volume}"
 								
 								onclick="showLpn(this.getAttribute('data-lpn-id'),this.getAttribute('data-lpn-name'),
-								this.getAttribute('data-description'),this.getAttribute('data-quantity'),
+								this.getAttribute('data-description'),this.getAttribute('data-quantity'),this.getAttribute('data-lpn_facility_status'),
                                 this.getAttribute('data-length'),this.getAttribute('data-width'),
 								this.getAttribute('data-height'),this.getAttribute('data-volume'),true)">
 								View</button>
 							<button th:data-lpn-id="${lpn.lpn_id}"
                                     th:data-lpn-name="${lpn.lpn_name}"
-							    	onclick="confirmLpnDeletion(this.getAttribute('data-lpn-id'),this.getAttribute('data-lpn-name'), true)"
-								    class="btn btn-danger">Delete</button>
+							    	onclick="confirmDeallocateLpn(this.getAttribute('data-lpn-id'),this.getAttribute('data-lpn-name'),true)"
+								    class="btn btn-danger">Deallocate</button>
 
 
 						</td>
@@ -182,7 +325,16 @@ table {
 						<div class="col">	
                             <div class="form-group">
                                 <label for="quantity">Quantity</label>
-                                <input class="form-control" id="quantity" rows="3"></input>
+                                <input class="form-control" id="quantity" 
+								pattern="[0-9]{10}" rows="3" readonly></input>
+                            </div>
+							<div class="form-group">
+                                <label for="adjustQty">Adjustment Quantity</label>
+                                <input class="form-control" value="0" id="adjustQty" rows="3" ></input>
+                            </div>
+							<div class="form-group">
+                                <label for="lpn_facility_status">LPN Status</label>
+                                <input class="form-control" id="lpn_facility_status" rows="3" readonly></input>
                             </div>
 							<div class="form-group">
                                 <label for="volume">Volume</label>
@@ -192,13 +344,14 @@ table {
                     </div>
                 </form>
             </div>
-            <div id= "saveLocationButton" class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="cancelViewLocation()" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary"   onclick="saveLocationButton()">Save</button>
-            </div>
-			<div id= "editLocationButton" class="modal-footer">
-                <button type="button" class="btn btn-secondary"	onclick="cancelViewLocation()" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary"   onclick="saveEditLocation()">Save</button>
+            <!-- <div id= "saveLpnButton" class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="cancelViewLpn()" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary"   onclick="saveLpnButton()">Save</button>
+            </div> -->
+			<div id= "editLpnButton" class="modal-footer">
+				<button type="button" class="btn btn-primary"   onclick="adjustQty()">Adjust Quanity</button>
+                <button type="button" class="btn btn-secondary"	onclick="cancelViewLpn()" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary"   onclick="saveEditLpn()">Save</button>
             </div>
         </div>
     </div>
@@ -214,63 +367,6 @@ table {
 		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 		<script type='text/javascript'>
-		
-		function showButtons(){
-			document.getElementById("editLocationButton").style.display = 'none';
-			document.getElementById("saveLocationButton").style.display = 'block';
-
-		}
-		
-		var hostname = location.hostname;
-        var linksDiv = document.getElementById("links");
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/showMenu">RF Menu</a>';
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/categoryInfo">Category</a>';
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/itemInfo">Item</a>';
-		linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/locationInfo">Location</a>';
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/lpnInfo" class="active">LPN</a>';
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/inventoryInfo">Inventory</a>';	
-        
-	/* Toggle between adding and removing the "responsive" class to topnav when the user clicks on the icon */
-	// Get all the menu items
-var menuItems = document.querySelectorAll('.topnav a');
-
-// Loop through the menu items
-for (var i = 0; i < menuItems.length; i++) {
-  // Add a click event listener to each menu item
-  menuItems[i].addEventListener('click', function() {
-    // Remove the 'active' class from all menu items
-    for (var i = 0; i < menuItems.length; i++) {
-      menuItems[i].classList.remove('active');
-    }
-    // Add the 'active' class to the clicked menu item
-    this.classList.add('active');
-  });
-}
-
-		var isButtonShown = false;
-		var currentItemName = null;
-
-		function showFields() {
-			if (!isButtonShown) {
-				document.getElementById('itemDiv').style.display = 'block';
-				document.getElementById('saveButton').style.display = 'block';
-				document.getElementById('toggleCancelButton').style.display = 'block';
-				document.getElementById('addItemButton').style.display = 'none';
-				isItemShown = true;
-			} else {
-				submitForm();
-			}
-		}
-		function cancelAddItem() {
-		    // Hide the category input field, save button, and cancel button
-		    document.getElementById('itemDiv').style.display = 'none';
-		    document.getElementById('saveItemButton').style.display = 'none';
-		    document.getElementById('toggleCancelButton').style.display = 'none';
-			
-		    // Show the Add Category button
-		    document.getElementById('addItemButton').style.display = 'block';
-		    isItemShown = false;
-		}
 
 		function cancelViewLpn(){
 			document.getElementById('lpn_id').value = null;
@@ -282,80 +378,72 @@ for (var i = 0; i < menuItems.length; i++) {
 			document.getElementById('height').value = null;
 			document.getElementById('volume').value = null;
 		}
-		function showLpn(lpn_id,lpn_name,description,quantity,length,width,height,volume){
+		function showLpn(lpn_id,lpn_name,description,quantity,lpn_facility_status,length,width,height,volume){
 			document.getElementById('lpn_id').value = lpn_id;
 			document.getElementById('lpn_name').value = lpn_name;
 			document.getElementById('item_desc').value = description;
             document.getElementById('quantity').value = quantity;
+			document.getElementById('lpn_facility_status').value = lpn_facility_status;
 			document.getElementById('length').value = length;
 			document.getElementById('width').value = width;
 			document.getElementById('height').value = height;
 			document.getElementById('volume').value = volume;
-			document.getElementById("editLocationButton").style.display = 'block';
-			document.getElementById("saveLocationButton").style.display = 'none';
+			// document.getElementById("editLocationButton").style.display = 'block';
+			// document.getElementById("saveLocationButton").style.display = 'none';
 
 		}
-		function cancelEdit() {
-		    // Hide the category input field, save button, and cancel button
-		    document.getElementById('itemDiv').style.display = 'none';
-		    document.getElementById('saveItemButton').style.display = 'none';
-		    document.getElementById('toggleButton').style.display = 'none';
-
-		    // Show the Add Category button
-		    document.getElementById('addItemButton').style.display = 'block';
-			document.getElementById('item').value = '';
-
+		
+		function adjustQty(){
+			const adjustQty = Number(document.getElementById('adjustQty').value);
+			const quantity  = Number(document.getElementById('quantity').value);
+			console.log("Adjusted Quantity : "+adjustQty);
+			console.log("Lpn Quantity : "+quantity);
+			console.log("Quantity : "+(quantity >= adjustQty));
+			
+			if (quantity >= adjustQty) {
+				console.log("New Lpn  Quantity : "+(quantity - adjustQty));
+				const newQuantity = quantity - adjustQty;
+				document.getElementById('quantity').value = newQuantity;
+			}
 		}
+		
 
-		function editItem(item_id, description) {
-			console.log("Editing : " + description);
-			// Show the category input field with the current category name
-			document.getElementById('itemDiv').style.display = 'block';
-			document.getElementById('item').value = description;
-			document.getElementById('saveButton').style.display = 'none';
-			document.getElementById('addItemButton').style.display = 'none';
-			document.getElementById('toggleButton').style.display = 'block';
-			document.getElementById('saveItemButton').style.display = 'block';
-			isItemShown = true;
-			currentItemName = description;
-		}
+		function saveEditLpn() {
+			var lpn_id                 = document.getElementById('lpn_id').value
+			var lpn_name               = document.getElementById('lpn_name').value 
+			var item_desc              = document.getElementById('item_desc').value
+			var length                 = document.getElementById('length').value 
+			var width                  = document.getElementById('width').value 
+			var height                 = document.getElementById('height').value
+			var quantity               = document.getElementById('quantity').value
+			var adjustQty               = document.getElementById('adjustQty').value 
+			var lpn_facility_status    = document.getElementById('lpn_facility_status').value
+			var volume				   = document.getElementById('volume').value
 
-		function saveEditLocation() {
-			var locationId = document.getElementById('locationId').value
-			var locn_brcd  = document.getElementById('locn_brcd').value 
-			var locn_class = document.getElementById('locn_class').value
-			var length     = document.getElementById('length').value 
-			var width      = document.getElementById('width').value 
-			var height     = document.getElementById('height').value
-			var max_vol    = document.getElementById('max_vol').value 
-			var max_qty    = document.getElementById('max_qty').value
-			var max_weight = document.getElementById('max_weight').value
-
-
-			console.log("Location : " + locn_brcd);
+			console.log("Lpn : " + lpn_name);
 			const ajaxRequest = {
-				url : 'locationEdit',
+				url : 'lpnEdit',
 				type : 'put',
-				data:{locn_id: locn_id,locn_brcd: locn_brcd,locn_class: locn_class,length: length,width: width,height: height,max_volume: max_volume,max_qty : max_qty,max_weight: max_weight},
+				data:{lpn_id: lpn_id,lpn_name: lpn_name,item_desc: item_desc,length: length,width: width,height: height,quantity: quantity,adjustQty: adjustQty,lpn_facility_status : lpn_facility_status,volume: volume},
 				success : function(response, textStatus, xhr) {
 					console.log("Status Code:", xhr.status
 							+ ", Status Message " + textStatus);
-					alert('Location edited successfully');
+					alert('Lpn edited successfully');
 					
 					isItemShown = false;
 					location.reload();
 
 				},
 				error : function(response) {
-					alert('Error editing Location');
+					alert('Error editing Lpn');
 					location.reload();
 				}
 			};
 
 			$.ajax(ajaxRequest);
 		}
-		function confirmLocationDeletion(locn_id,locn_brcd, deleteFlag) {
-			if (deleteFlag) {
+		function confirmDeallocateLpn(lpn_id,lpn_name, deallocateFlag) {
+			if (deallocateFlag) {
 //				const confirmation = window
 //						.confirm(`Are you sure you want to delete category '${category_name}'?`);
 //				if (confirmation) {
@@ -363,32 +451,32 @@ for (var i = 0; i < menuItems.length; i++) {
 			//	}
 				 Swal.fire({
 			            title: 'Are you sure?',
-			            text: `Are you sure you want to delete location '${locn_brcd}'?`,
-			            icon: 'warning',
+			            text: `Are you sure you want to deallocate lpn '${lpn_name}'?`,
+			            // icon: 'warning',
 			            showCancelButton: true,
 			            confirmButtonColor: '#3085d6',
 			            cancelButtonColor: '#d33',
-			            confirmButtonText: 'Yes, delete it!',
+			            confirmButtonText: 'Yes',
 			            cancelButtonText: 'No, cancel!'
 			        }).then((result) => {
 			            if (result.isConfirmed) {
-			                deleteLocation(locn_brcd);
+			                deallocateLpn(lpn_name);
 			            }
 			        });
 			    }
 		}
 
-		function deleteLocation(locn_brcd) {
-			console.log(locn_brcd);
+		function deallocateLpn(lpn_name) {
+			console.log(lpn_name);
 
 			// Proceed with deletion if user clicks "Yes" button
 			$
 					.ajax({
-						url : '/api/deleteLocation/' + locn_brcd,
-						type : 'delete',
+						url : '/api/deallocate/' + lpn_name,
+						type : 'put',
 						 success: function(response, textStatus, xhr) {
 					            console.log("Status code:", xhr.status + ", " + textStatus);
-					            Swal.fire('Deleted!', 'Location deleted successfully', 'success').then((result) => {
+					            Swal.fire('Deallocated!', 'Lpn deallocated successfully', 'success').then((result) => {
 					                if (result.isConfirmed) {
 					                    location.reload(); // Reload the page
 					                }
@@ -396,7 +484,7 @@ for (var i = 0; i < menuItems.length; i++) {
 					        },
 	
 					        error: function(response) {
-					            Swal.fire('Error!', 'Error deleting Location', 'error');
+					            Swal.fire('Error!', 'Error deallocating Lpn', 'error');
 					        }
 					});
 		}

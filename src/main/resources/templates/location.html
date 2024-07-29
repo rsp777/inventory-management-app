@@ -39,7 +39,7 @@ table {
 }
 
 .topnav {
-	overflow: hidden;
+	overflow: visible;
 	background-color: #333;
 	display: flex;
 	justify-content: space-around;
@@ -74,23 +74,158 @@ table {
 	font-size: 20px;
 	font-weight: bold;
 }
+.scrollable-container {
+    width: 100%;
+    height: 600px; 
+    overflow-y: auto; 
+}
+
+  .scrollable-container table {
+    width: 100%;
+  }
+
+  .scrollable-container thead {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa; 
+	z-index: 0; 
+
+  }
+
+  .scrollable-container th {
+   
+  }
+ 
+  .bi bi-person-circle{
+	font-size: 10px;
+ }
+ /* .icon-container {
+    display: flex;
+    align-items: right;
+   
+} */
+
+.icon-name {
+    margin-left: 200px; /* Adjust spacing between icon and name */
+    /* Add styles for the name (e.g., font-size, color) */
+	color: white;
+}
+.title{
+	margin-left: 579px;
+}
+.links{
+	margin-left: 75px;
+}
+.dropdown {
+            position: relative;
+            display: inline-flex;
+			
+        }
+
+        .dropdown-button {
+            background-color: #f9f9f9;
+            border: none;
+            padding: 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            min-width: 120px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		
+        }
+
+        .dropdown-content a {
+            color: #333;
+            padding: 8px 12px;
+            text-decoration: none;
+            display: block;
+			
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f5f5f5;
+        }
+
+.dropdown-menu {
+/* background-color: aqua;	 */
+	width: auto;
+   /* padding: 0px 0px 0px 0px 0px !important; */
+}		
+.dropdown-menu-left {
+  left: auto !important;
+  margin-left: -105px !important;
+}
+.dropdown-item {
+	white-space: initial !important;
+	margin-left: 0px;
+    margin-right: 0px;
+    margin-top: -9px;
+    margin-bottom: -9px;	;
+	height: 80px !important;
+	width: 160px;
+	color: black !important;
+}
+.dropdown-menu-main{
+	/* background-color: #333; */
+	margin-left: 0px;
+	height: 70px ;
+	
+}
+.dropdown-menu-main-content{
+color: white;
+margin-left: 0px;
+margin-right: 0px;
+margin-top: -9px;
+margin-bottom: -9px;	
+}
 </style>
 </head>
 <body>
 
 	<div class="topnav">
-		<div id="links">
+		<div class="links"> 
+			<button style="background-color: #333;border: none;" class=" btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Menu</button>
+			<div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
+				  <a class="dropdown-item dropdown-menu-main-content" th:each="menu : ${nav_menus}" th:href="@{${menu.menu_link}}" th:text="${menu.menu_name}" th:classappend="${#strings.contains(menu.menu_link, currentMenu) ? 'active' : ''}"></a>
+				<!-- <a class="dropdown-item dropdown-menu-main-content" href="#orders">RF Menu</a>
+				<a class="dropdown-item dropdown-menu-main-content" href="#reports">Category</a>
+				<a class="dropdown-item dropdown-menu-main-content" href="#settings">Item</a>
+				<a class="dropdown-item dropdown-menu-main-content" href="#orders">Location</a>
+				<a class="dropdown-item dropdown-menu-main-content" href="#reports">LPN</a>
+				<a class="dropdown-item dropdown-menu-main-content" href="#settings">Inventory</a>  -->
+			</div>	
 		</div>
 		<div class="title">Warehouse Management System</div>
-	</div>
-
-	</div>
+	   <span class="icon-name" th:text="${user_name}"></span>
+	   &nbsp;&nbsp;&nbsp;&nbsp;
+	  
+	  <div class="dropdown">
+		<button style="background-color: #333;border: none;" class=" btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+		  <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-person-circle" viewBox="0 0 16 16">
+			<path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+			<path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+		  </svg>
+		</button>
+		<div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
+		  <a class="dropdown-item"  href="#">Account</a>
+		  <a class="dropdown-item" href="#">Settings</a>
+		  <a class="dropdown-item" th:href="@{${logout_url.menu_link}}"th:text="${logout_url.menu_name}"  th:onclick="javascript:ajaxLogout('{{decodedToken}}')"></a>
+		</div>
+		</div>
+		&nbsp;&nbsp;&nbsp;&nbsp;
+	  </div>
 	<div class="container">
 		
 		<h1 class="text-center">Location Management</h1>
+		<input type="hidden" id="responseMessage" th:value="${responseMessage}"></input>
 		<!-- Category table -->
-		<div style="width: 100%; height: 100%; overflow: auto;">
-			<input data-toggle="modal" data-target="#exampleModal" type="button" class="btn btn-primary" value="Add Location" id="addLocationButton" onclick="showButtons()">
+		<input data-toggle="modal" data-target="#exampleModal" type="button" class="btn btn-primary" value="Add Location" id="addLocationButton" onclick="showButtons()">
+		<div class="scrollable-container">
 			<table class="table table-striped">
 				<thead class="thead-dark">
 					<tr>
@@ -220,72 +355,20 @@ table {
 		function showButtons(){
 			document.getElementById("editLocationButton").style.display = 'none';
 			document.getElementById("saveLocationButton").style.display = 'block';
+			cancelViewLocation();
 
 		}
-		
-		var hostname = location.hostname;
-        var linksDiv = document.getElementById("links");
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/showMenu">RF Menu</a>';
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/categoryInfo">Category</a>';
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/itemInfo">Item</a>';
-		linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/locationInfo"  class="active">Location</a>';
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/lpnInfo">LPN</a>';
-		linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/inventoryInfo">Inventory</a>';		
 
-	/* Toggle between adding and removing the "responsive" class to topnav when the user clicks on the icon */
-	// Get all the menu items
-var menuItems = document.querySelectorAll('.topnav a');
-
-// Loop through the menu items
-for (var i = 0; i < menuItems.length; i++) {
-  // Add a click event listener to each menu item
-  menuItems[i].addEventListener('click', function() {
-    // Remove the 'active' class from all menu items
-    for (var i = 0; i < menuItems.length; i++) {
-      menuItems[i].classList.remove('active');
-    }
-    // Add the 'active' class to the clicked menu item
-    this.classList.add('active');
-  });
-}
-
-		var isButtonShown = false;
-		var currentItemName = null;
-
-		function showFields() {
-			if (!isButtonShown) {
-				document.getElementById('itemDiv').style.display = 'block';
-				document.getElementById('saveButton').style.display = 'block';
-				document.getElementById('toggleCancelButton').style.display = 'block';
-				document.getElementById('addItemButton').style.display = 'none';
-				isItemShown = true;
-			} else {
-				submitForm();
-			}
-		}
-		function cancelAddItem() {
-		    // Hide the category input field, save button, and cancel button
-		    document.getElementById('itemDiv').style.display = 'none';
-		    document.getElementById('saveItemButton').style.display = 'none';
-		    document.getElementById('toggleCancelButton').style.display = 'none';
-			
-		    // Show the Add Category button
-		    document.getElementById('addItemButton').style.display = 'block';
-		    isItemShown = false;
-		}
 
 		function cancelViewLocation(){
 			document.getElementById('locationId').value = null;
-			document.getElementById('locn_brcd').value = null;
-			document.getElementById('locn_class').value = null;
-			document.getElementById('length').value = null;
-			document.getElementById('width').value = null;
-			document.getElementById('height').value = null;
-			document.getElementById('max_vol').value = null;
-			document.getElementById('max_qty').value = null;
-			document.getElementById('max_weight').value = null;
+			const emptyFields = ['locn_brcd', 'locn_class', 'length', 'width', 'height','max_vol','max_qty','max_weight']
+			.filter(fieldId => !deColourFieldAndNull(fieldId));
 		}
+		
 		function showLocation(locn_id,locn_brcd,locn_class,length,width,height,max_volume,max_qty,max_weight ){
+			const emptyFields = ['locn_brcd', 'locn_class', 'length', 'width', 'height','max_vol','max_qty','max_weight']
+			.filter(fieldId => !deColourFieldAndNull(fieldId));
 			document.getElementById('locationId').value = locn_id;
 			document.getElementById('locn_brcd').value = locn_brcd;
 			document.getElementById('locn_class').value = locn_class;
@@ -297,8 +380,41 @@ for (var i = 0; i < menuItems.length; i++) {
 			document.getElementById('max_weight').value = max_weight;
 			document.getElementById("editLocationButton").style.display = 'block';
 			document.getElementById("saveLocationButton").style.display = 'none';
-
 		}
+
+		function handleFormSubmission() {
+         const emptyFields = ['locn_brcd', 'locn_class', 'length', 'width', 'height','max_vol','max_qty','max_weight']
+        .filter(fieldId => !validateField(fieldId));
+
+		 if (emptyFields.length == 1) {
+			console.log(emptyFields.length == 1);
+			alert('One field is blank!');
+			return true;
+		 }
+         else if (emptyFields.length > 1) {
+             alert('More than one field is blank!');
+             return true;
+         }
+		 else{
+			return false;
+		 }
+		
+}
+function deColourFieldAndNull(fieldId){
+	document.getElementById(fieldId).style.borderColor = 'grey';
+	document.getElementById(fieldId).value = null;
+ }
+
+function validateField(fieldId) {
+    const fieldValue = document.getElementById(fieldId).value;
+	// console.log();
+    if (fieldValue === '') {
+        document.getElementById(fieldId).style.borderColor = 'red';
+        return false;
+    }
+	return true;	
+}
+       
 		function saveLocationButton() {
 			var locn_brcd  = document.getElementById('locn_brcd').value 
 			var locn_class = document.getElementById('locn_class').value 
@@ -311,6 +427,7 @@ for (var i = 0; i < menuItems.length; i++) {
 
 
 			console.log("Location : " + locn_brcd);
+			if (!handleFormSubmission()) {
 			const ajaxRequest = {
 				url : 'locationAdd',
 				type : 'post',
@@ -318,7 +435,15 @@ for (var i = 0; i < menuItems.length; i++) {
 				success : function(response, textStatus, xhr) {
 					console.log("Status Code:", xhr.status
 							+ ", Status Message " + textStatus);
-					alert('Location added successfully');
+						
+						var parser = new DOMParser();
+						var xmlDoc = parser.parseFromString(xhr.responseText, "text/html");
+						console.log(xmlDoc);
+						var targetTag = xmlDoc.querySelector("#responseMessage"); // Replace with your actual tag ID
+						// console.log(xmlDoc);
+						console.log('Response Message '+targetTag.value);
+                    
+					alert(targetTag.value);
 					
 					isItemShown = false;
 					location.reload();
@@ -331,34 +456,12 @@ for (var i = 0; i < menuItems.length; i++) {
 			};
 
 			$.ajax(ajaxRequest);
+		 }
 		}
-		function cancelEdit() {
-		    // Hide the category input field, save button, and cancel button
-		    document.getElementById('itemDiv').style.display = 'none';
-		    document.getElementById('saveItemButton').style.display = 'none';
-		    document.getElementById('toggleButton').style.display = 'none';
-
-		    // Show the Add Category button
-		    document.getElementById('addItemButton').style.display = 'block';
-			document.getElementById('item').value = '';
-
-		}
-
-		function editItem(item_id, description) {
-			console.log("Editing : " + description);
-			// Show the category input field with the current category name
-			document.getElementById('itemDiv').style.display = 'block';
-			document.getElementById('item').value = description;
-			document.getElementById('saveButton').style.display = 'none';
-			document.getElementById('addItemButton').style.display = 'none';
-			document.getElementById('toggleButton').style.display = 'block';
-			document.getElementById('saveItemButton').style.display = 'block';
-			isItemShown = true;
-			currentItemName = description;
-		}
-
+		
+	
 		function saveEditLocation() {
-			var locationId = document.getElementById('locationId').value
+			var locn_id = document.getElementById('locationId').value
 			var locn_brcd  = document.getElementById('locn_brcd').value 
 			var locn_class = document.getElementById('locn_class').value
 			var length     = document.getElementById('length').value 
@@ -370,14 +473,21 @@ for (var i = 0; i < menuItems.length; i++) {
 
 
 			console.log("Location : " + locn_brcd);
+			if (!handleFormSubmission()) {
 			const ajaxRequest = {
 				url : 'locationEdit',
 				type : 'put',
-				data:{locn_id: locn_id,locn_brcd: locn_brcd,locn_class: locn_class,length: length,width: width,height: height,max_volume: max_volume,max_qty : max_qty,max_weight: max_weight},
+				data:{locn_id: locn_id,locn_brcd: locn_brcd,locn_class: locn_class,length: length,width: width,height: height,max_vol: max_vol,max_qty : max_qty,max_weight: max_weight},
 				success : function(response, textStatus, xhr) {
 					console.log("Status Code:", xhr.status
 							+ ", Status Message " + textStatus);
-					alert('Location edited successfully');
+							var parser = new DOMParser();
+						var xmlDoc = parser.parseFromString(xhr.responseText, "text/html");
+						var targetTag = xmlDoc.querySelector("#responseMessage"); // Replace with your actual tag ID
+						// console.log(xmlDoc);
+						console.log('Response Message '+targetTag.value);
+                    
+					alert(targetTag.value);
 					
 					isItemShown = false;
 					location.reload();
@@ -390,6 +500,7 @@ for (var i = 0; i < menuItems.length; i++) {
 			};
 
 			$.ajax(ajaxRequest);
+		  }
 		}
 		function confirmLocationDeletion(locn_id,locn_brcd, deleteFlag) {
 			if (deleteFlag) {

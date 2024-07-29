@@ -46,7 +46,7 @@
         display: flex;
         justify-content: space-around;
         align-items: center;
-        position: sticky;
+        position: relative;
         top: 0;
         width: 100%;
        /* add this line */
@@ -100,7 +100,7 @@
 }
 .dropdown {
             position: relative;
-            display: inline-flex;
+            display: inline-block;
 			
         }
 
@@ -137,6 +137,8 @@
 /* background-color: aqua;	 */
 	width: auto;
    /* padding: 0px 0px 0px 0px 0px !important; */
+  z-index: 1000;
+  overflow: auto;
 }		
 .dropdown-menu-left {
   left: auto !important;
@@ -144,25 +146,70 @@
 }
 .dropdown-item {
 	white-space: initial !important;
-	margin-left: 0px;
-  margin-right: 0px;
-  margin-top: -9px;
-  margin-bottom: -9px;	;
-	height: 80px !important;
-
+	margin-right: 10px;
+	height: 60px !important;
 	width: 160px;
 	color: black !important;
 }
-
-.dropdown-menu-main-content{
-color: white;
-margin-left: 0px;
-margin-right: 0px;
-margin-top: -9px;
-margin-bottom: -9px;
+.sidebar {
+  background-color: #333;
+  padding: 20px;
+  height: 100vh;
+  overflow-y: hidden;
+  z-index: 1;
 }
-	
-  </style>
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar li {
+  margin-bottom: 10px;
+}
+
+.sidebar a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.sidebar a:hover {
+  color: #ccc;
+}
+
+.sidebar a.active {
+  background-color: royalblue;
+  color: #fff;
+  border-radius: 20px;
+}
+
+.sidebar i {
+  margin-right: 10px;
+}
+
+.collapse ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.collapse li {
+  margin-bottom: 10px;
+}
+
+.collapse a {
+  color: #fff;
+  text-decoration: none;
+  padding-left: 30px;
+}
+
+.collapse a:hover {
+  color: #ccc;
+}
+
+
+    </style>
   </head>
   <body>
     <div class="topnav">
@@ -197,23 +244,58 @@ margin-bottom: -9px;
       </div>
       &nbsp;&nbsp;&nbsp;&nbsp;
     </div>
-    <div class="container">
-      <h1 class="header">RF Menu</h1>
-
-      <ul class="list-group" th:each="menu : ${menus}">
-        <li class="list-group-item">
-          <a
-            class="btn btn-primary"
-            th:href="@{${menu.menu_link}}"
-            th:text="${menu.menu_name}"
-          ></a>
-        </li>
-      </ul>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-2 sidebar">
+          <h1 style="color: white;" class="header">Settings</h1>
+          <!-- <ul class="nav flex-column" th:each="menu : ${menus}">
+            <li class="nav-link active">
+              <a
+                class="nav-link active"
+                th:href="@{${menu.menu_link}}"
+                th:text="${menu.menu_name}"
+              ></a>
+            </li>
+          </ul> -->
+          <ul class="nav nav-pills nav-fill flex-column justify-content-center">
+            <li class="nav-item" th:each="menu : ${side_menus}">
+              <a class="nav-link" data-toggle="collapse" th:href="'#submenu-' + ${menu.menu_id}" role="button" aria-expanded="false" aria-controls="submenu1">
+                <i class="fa fa-user" aria-hidden="true"></i> [[${menu.menu_name}]]<!--User Adminstration-->
+              </a>
+              <div class="collapse" th:id="'submenu-' + ${menu.menu_id}">
+                <ul class="nav flex-column">
+                  <li th:each="submenu : ${menu.children}" class="nav-item">
+                    <a class="nav-link" href="" th:data-url="${submenu.menu_link}" onclick="loadContent(this.getAttribute('data-url')); return false;" >[[${submenu.menu_name}]]</a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+         
+        </div> 
+        <div class="col-md-10 main-content">
+          <div id="content-container"></div>
+        </div> 
+      </div>  
     </div>
-
+    <!-- JavaScript to load submenu content on click -->
+     
+    
+    
+    <script>
+   function loadContent(url) {
+  $.ajax({
+    type: "GET",
+    url: url,
+    success: function(data) {
+      $("#content-container").html(data);
+    }
+  });
+}
+    </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script type="text/javascript"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
   </body>
 </html>

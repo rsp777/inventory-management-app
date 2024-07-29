@@ -23,6 +23,13 @@ body {
 table {
 	margin-top: 2rem;
 }
+table.scrolldown {
+            width: 100%;
+
+            /* border-collapse: collapse; */
+            border-spacing: 0;
+            border: 2px solid black;
+        }
 
 .table th, .table td {
 	vertical-align: middle;
@@ -37,7 +44,7 @@ table {
   margin-right: 10px; /* Add a little space between buttons */
 }
 .topnav {
-  overflow: hidden;
+  overflow: visible;
   background-color: #333;
   display: flex;
   justify-content: space-around;
@@ -45,6 +52,7 @@ table {
   position: sticky;
   top: 0;
   width: 100%;
+  
 }
 
 .topnav a {
@@ -55,6 +63,7 @@ table {
   padding: 20px 16px; /* Increase the vertical padding */
   text-decoration: none;
   font-size: 17px;
+
 }
 
 
@@ -73,22 +82,154 @@ table {
   font-size: 20px;
   font-weight: bold;
 }
+.scrollable-container {
+    width: 100%;
+    height: 600px; 
+    overflow-y: auto; 
+}
+
+  .scrollable-container table {
+    width: 100%;
+  }
+
+  .scrollable-container thead {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa; 
+	z-index: 0; 
+
+  }
+
+
+ .bi bi-person-circle{
+	font-size: 10px;
+ }
+ /* .icon-container {
+    display: flex;
+    align-items: right;
+   
+} */
+
+.icon-name {
+    margin-left: 200px; /* Adjust spacing between icon and name */
+    /* Add styles for the name (e.g., font-size, color) */
+	color: white;
+}
+.title{
+	margin-left: 579px;
+}
+.links{
+	margin-left: 75px;
+}
+.dropdown {
+            position: relative;
+            display: inline-flex;
+			
+        }
+
+        .dropdown-button {
+            background-color: #f9f9f9;
+            border: none;
+            padding: 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            min-width: 120px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		
+        }
+
+        .dropdown-content a {
+            color: #333;
+            padding: 8px 12px;
+            text-decoration: none;
+            display: block;
+			
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f5f5f5;
+        }
+
+.dropdown-menu {
+/* background-color: aqua;	 */
+	width: auto;
+   /* padding: 0px 0px 0px 0px 0px !important; */
+}		
+.dropdown-menu-left {
+  left: auto !important;
+  margin-left: -105px !important;
+}
+.dropdown-item {
+	white-space: initial !important;
+	margin-right: 0px;
+	margin-top: -8px ;
+	margin-bottom: -8px ;
+	height: 80px !important;
+	width: 160px;
+	color: black !important;
+}
+.dropdown-menu-main{
+	/* background-color: #333; */
+	margin-left: 0px;
+	height: 70px ;
+	
+}
+.dropdown-menu-main-content{
+color: white;
+margin-left: 0px;	
+}
+		
 </style>
 </head>
 <body>
 
 <div class="topnav">
-  <div id="links">
-    		
-  </div>
+	 <div class="links"> 
+		<button style="background-color: #333;border: none;" class=" btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Menu</button>
+		<div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
+      	    <a class="dropdown-item dropdown-menu-main-content" th:each="menu : ${nav_menus}" th:href="@{${menu.menu_link}}" th:text="${menu.menu_name}" th:classappend="${#strings.contains(menu.menu_link, currentMenu) ? 'active' : ''}"></a>
+			<!-- <a class="dropdown-item dropdown-menu-main-content" href="#orders">RF Menu</a>
+			<a class="dropdown-item dropdown-menu-main-content" href="#reports">Category</a>
+			<a class="dropdown-item dropdown-menu-main-content" href="#settings">Item</a>
+			<a class="dropdown-item dropdown-menu-main-content" href="#orders">Location</a>
+			<a class="dropdown-item dropdown-menu-main-content" href="#reports">LPN</a>
+			<a class="dropdown-item dropdown-menu-main-content" href="#settings">Inventory</a>  -->
+	    </div>
+	</div>
   <div class="title">Warehouse Management System</div>
+ <span class="icon-name" th:text="${user_name}"></span>
+ &nbsp;&nbsp;&nbsp;&nbsp;
+
+<div class="dropdown">
+	<button style="background-color: #333;border: none;" class=" btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+		<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-person-circle" viewBox="0 0 16 16">
+			<path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+			<path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+		</svg>
+	</button>
+	<div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
+	  <a class="dropdown-item"  href="#">Account</a>
+	  <a class="dropdown-item" href="#">Settings</a>
+	  <a class="dropdown-item" th:href="@{${logout_url.menu_link}}"th:text="${logout_url.menu_name}"></a>
+	  <!-- <a class="dropdown-item"  href="#">Logout</a> -->
+	</div>
+  </div>
+  &nbsp;&nbsp;&nbsp;&nbsp;
 </div>
 
-</div>
+<!-- </div> -->
 	<div class="container">
+		
 		<h1 class="text-center">Category Management</h1>
+		<input type="hidden" id="responseMessage" th:value="${responseMessage}"/></input>
 		<!-- Category table -->
-		<div style="width: 100%; height: 100%; overflow: auto;">
+		<div class="scrollable-container">	
 			<table class="table table-striped">
 				<thead class="thead-dark">
 					<tr>
@@ -97,6 +238,7 @@ table {
 						<th scope="col">Actions</th>
 					</tr>
 				</thead>
+			
 				<tbody>
 					<tr th:each="category : ${categories}">
 						<th scope="row" th:text="${category.category_id}"></th>
@@ -146,36 +288,25 @@ table {
 		src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-	<script type='text/javascript'>
-
-
-var hostname = location.hostname;
-        var linksDiv = document.getElementById("links");
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/showMenu">RF Menu</a>';
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/categoryInfo" class="active">Category</a>';
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/itemInfo">Item</a>';
-		linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/locationInfo">Location</a>';
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/lpnInfo">LPN</a>';	
-		linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/inventoryInfo">Inventory</a>';		
-	/* Toggle between adding and removing the "responsive" class to topnav when the user clicks on the icon */
-	// Get all the menu items
-var menuItems = document.querySelectorAll('.topnav a');
-
-// Loop through the menu items
-for (var i = 0; i < menuItems.length; i++) {
-  // Add a click event listener to each menu item
-  menuItems[i].addEventListener('click', function() {
-    // Remove the 'active' class from all menu items
-    for (var i = 0; i < menuItems.length; i++) {
-      menuItems[i].classList.remove('active');
-    }
-    // Add the 'active' class to the clicked menu item
-    this.classList.add('active');
-  });
-}
+	
+	<script th:inline='javascript'>
 
 		var isButtonShown = false;
 		var currentCategoryName = null;
+
+		function getUserName(jwtToken) {
+ 		 var base64Payload = jwtToken.split(".")[1];
+  		 var payload = decodeURIComponent(
+    	 atob(base64Payload)
+      	   .split("")
+           .map(function (c) {
+           return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+           })
+          .join("")
+         );
+         return JSON.parse(payload).sub;
+}
+
 
 		function showFields() {
 			if (!isButtonShown) {
@@ -196,18 +327,26 @@ for (var i = 0; i < menuItems.length; i++) {
 			
 		    // Show the Add Category button
 		    document.getElementById('addCategoryButton').style.display = 'block';
+			document.getElementById('category').value = null;
 		    isCategoryShown = false;
 		}
 		function submitForm() {
 			var category_name = document.getElementById('category').value;
-			console.log("Category Name : " + category_name);
-			const ajaxRequest = {
+			if (category_name!='') {
+				const ajaxRequest = {
 				url : 'categoryAdd/' + category_name,
 				type : 'post',
 				success : function(response, textStatus, xhr) {
 					console.log("Status Code:", xhr.status
 							+ ", Status Message " + textStatus);
-					alert('Category added successfully');
+										              
+						var parser = new DOMParser();
+						var xmlDoc = parser.parseFromString(xhr.responseText, "text/html");
+						var targetTag = xmlDoc.querySelector("#responseMessage"); // Replace with your actual tag ID
+						// console.log(xmlDoc);
+						console.log('Response Message '+targetTag.value);
+                    
+					alert(targetTag.value);
 					document.getElementById('categoryDiv').style.display = 'none';
 					document.getElementById('addCategoryButton').style.display = 'block';
 					isCategoryShown = false;
@@ -219,8 +358,13 @@ for (var i = 0; i < menuItems.length; i++) {
 					location.reload();
 				}
 			};
-
 			$.ajax(ajaxRequest);
+			}
+			else{
+				alert("Please enter category name");
+			}
+
+			
 		}
 		function cancelEdit() {
 		    // Hide the category input field, save button, and cancel button
@@ -241,6 +385,7 @@ for (var i = 0; i < menuItems.length; i++) {
 			document.getElementById('category').value = category_name;
 			document.getElementById('saveButton').style.display = 'none';
 			document.getElementById('addCategoryButton').style.display = 'none';
+			document.getElementById('toggleCancelButton').style.display = 'none';
 			document.getElementById('toggleButton').style.display = 'block';
 			document.getElementById('saveCategoryButton').style.display = 'block';
 			isCategoryShown = true;
@@ -252,8 +397,8 @@ for (var i = 0; i < menuItems.length; i++) {
 				'category_name' : updated_category_name
 			});
 			console.log(updated_category_name);
-			$
-					.ajax({
+			if (updated_category_name!='') {
+			$.ajax({
 						url : '/api/categoryEdit/' + currentCategoryName,
 						type : 'put',
 						contentType : 'application/json',
@@ -262,6 +407,7 @@ for (var i = 0; i < menuItems.length; i++) {
 						success : function(response, textStatus, xhr) {
 							console.log("Status code:", xhr.status + ", "
 									+ textStatus);
+									
 							alert('Category updated successfully');
 							document.getElementById('categoryDiv').style.display = 'none';
 							document.getElementById('toggleButton').value = 'Add Category';
@@ -275,6 +421,10 @@ for (var i = 0; i < menuItems.length; i++) {
 							location.reload();
 						}
 					});
+				}
+				else{
+					alert('Please enter a category name!');
+				}
 		}
 		function confirmCategoryDeletion(category_id,category_name, deleteFlag) {
 			if (deleteFlag) {

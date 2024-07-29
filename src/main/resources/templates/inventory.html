@@ -42,7 +42,7 @@ table {
 }
 
 .topnav {
-	overflow: auto;
+	overflow: visible;
 	background-color: #333;
 	display: flex;
 	justify-content: space-around;
@@ -87,22 +87,157 @@ table {
 .red { background-color: red; }
 .green { background-color: green; }
 .grey { background-color: grey; }
+
+.scrollable-container {
+    width: 100%;
+    height: 600px; 
+    overflow-y: auto; 
+}
+
+  .scrollable-container table {
+    width: 100%;
+  }
+
+  .scrollable-container thead {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa; 
+	z-index: 0; 
+
+  }
+
+  .scrollable-container th {
+   
+  }
+  .bi bi-person-circle{
+	font-size: 10px;
+ }
+ /* .icon-container {
+    display: flex;
+    align-items: right;
+   
+} */
+
+.icon-name {
+    margin-left: 200px; /* Adjust spacing between icon and name */
+    /* Add styles for the name (e.g., font-size, color) */
+	color: white;
+}
+.title{
+	margin-left: 579px;
+}
+.links{
+	margin-left: 75px;
+}
+.dropdown {
+            position: relative;
+            display: inline-flex;
+			
+        }
+
+        .dropdown-button {
+            background-color: #f9f9f9;
+            border: none;
+            padding: 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            min-width: 120px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		
+        }
+
+        .dropdown-content a {
+            color: #333;
+            padding: 8px 12px;
+            text-decoration: none;
+            display: block;
+			
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f5f5f5;
+        }
+
+.dropdown-menu {
+/* background-color: aqua;	 */
+	width: auto;
+   /* padding: 0px 0px 0px 0px 0px !important; */
+}		
+.dropdown-menu-left {
+  left: auto !important;
+  margin-left: -105px !important;
+}
+.dropdown-item {
+	white-space: initial !important;
+	margin-left: 0px;
+    margin-right: 0px;
+    margin-top: -9px;
+    margin-bottom: -9px;
+	height: 80px !important;
+	width: 160px;
+	color: black !important;
+}
+.dropdown-menu-main{
+	/* background-color: #333; */
+	margin-left: 0px;
+	height: 75px ;
+	
+}
+.dropdown-menu-main-content{
+height: 75px !important;	
+color: white;
+margin-left: 0px;
+margin-right: 0px;
+margin-top: -9px;
+margin-bottom: -9px;
+}
 </style>
 </head>
 <body>
 
 	<div class="topnav">
-		<div id="links">
+		<div class="links"> 
+			<button style="background-color: #333;border: none;" class=" btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Menu</button>
+			<div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
+				  <a class="dropdown-item dropdown-menu-main-content" th:each="menu : ${nav_menus}" th:href="@{${menu.menu_link}}" th:text="${menu.menu_name}" th:classappend="${#strings.contains(menu.menu_link, currentMenu) ? 'active' : ''}"></a>
+			<!--	<a class="dropdown-item dropdown-menu-main-content" href="#orders">RF Menu</a>
+				<a class="dropdown-item dropdown-menu-main-content" href="#reports">Category</a>
+				<a class="dropdown-item dropdown-menu-main-content" href="#settings">Item</a>
+				<a class="dropdown-item dropdown-menu-main-content" href="#orders">Location</a>
+				<a class="dropdown-item dropdown-menu-main-content" href="#reports">LPN</a>
+				<a class="dropdown-item dropdown-menu-main-content" href="#settings">Inventory</a> -->
+			</div>	
 		</div>
 		<div class="title">Warehouse Management System</div>
-	</div>
-
-	</div>
+	   <span class="icon-name" th:text="${user_name}"></span>
+	   &nbsp;&nbsp;&nbsp;&nbsp;
+	  
+	  <div class="dropdown">
+		<button style="background-color: #333;border: none;" class=" btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+		  <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-person-circle" viewBox="0 0 16 16">
+			<path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+			<path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+		  </svg>
+		</button>
+		<div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
+		  <a class="dropdown-item"  href="#">Account</a>
+		  <a class="dropdown-item" href="#">Settings</a>
+		  <a class="dropdown-item" th:href="@{${logout_url.menu_link}}"th:text="${logout_url.menu_name}"  th:onclick="javascript:ajaxLogout('{{decodedToken}}')"></a>
+		</div>
+		</div>
+		&nbsp;&nbsp;&nbsp;&nbsp;
+	  </div>
 	<div class="container">
 		
 		<h1 class="text-decoration">Inventory Management</h1>
 		<!-- Category table -->
-		<div style="width: 100%; height: 100%;">
+		<div class="scrollable-container">
 			<!-- <input data-toggle="modal" data-target="#exampleModal" type="button" 
             class="btn btn-primary" value="Add Location" id="addLocationButton" onclick="showButtons()"> -->
 			<table class="table table-striped sortable">
@@ -137,8 +272,8 @@ table {
                         <div th:with="inv_loc = ${inventory != null and inventory.location != null}">
                             <!-- ... -->
                             <td>
-                                <div class="indicator" th:class="${inv_loc ? (inventory.on_hand_qty >= inventory.location.max_qty ? 'indicator red' : 'indicator green') : 'indicator grey'}"></div>
-                                <div th:text="${inv_loc ? (inventory.on_hand_qty >= inventory.location.max_qty ? 'Full' : 'Available') : ''}"></div>
+                                <div class="indicator" th:class="${inv_loc ? (inventory.location.occupied_qty >= inventory.location.max_qty ? 'indicator red' : 'indicator green') : 'indicator grey'}"></div>
+                                <div th:text="${inv_loc ? (inventory.location.occupied_qty >= inventory.location.max_qty ? 'Full' : 'Available') : ''}"></div>
 
                             </td>
                             <!-- ... -->
@@ -256,32 +391,6 @@ table {
 			document.getElementById("saveLocationButton").style.display = 'block';
 
 		}
-		
-		var hostname = location.hostname;
-        var linksDiv = document.getElementById("links");
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/showMenu">RF Menu</a>';
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/categoryInfo">Category</a>';
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/itemInfo">Item</a>';
-		linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/locationInfo">Location</a>';
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/lpnInfo">LPN</a>';
-        linksDiv.innerHTML += '<a href="http://' + hostname + ':8086/api/inventoryInfo" class="active">Inventory</a>';	
-        
-	/* Toggle between adding and removing the "responsive" class to topnav when the user clicks on the icon */
-	// Get all the menu items
-var menuItems = document.querySelectorAll('.topnav a');
-
-// Loop through the menu items
-for (var i = 0; i < menuItems.length; i++) {
-  // Add a click event listener to each menu item
-  menuItems[i].addEventListener('click', function() {
-    // Remove the 'active' class from all menu items
-    for (var i = 0; i < menuItems.length; i++) {
-      menuItems[i].classList.remove('active');
-    }
-    // Add the 'active' class to the clicked menu item
-    this.classList.add('active');
-  });
-}
 
 		var isButtonShown = false;
 		var currentItemName = null;
