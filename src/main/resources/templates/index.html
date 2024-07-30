@@ -1,10 +1,211 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Insert title here</title>
-</head>
-<body>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>Warehouse Management System - Login</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <style>
+      /* Add some basic styling to make it look better */
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+      }
 
-</body>
+      .container {
+        max-width: 500px;
+        margin: 40px auto;
+        padding: 20px;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .logo {
+        width: 100px;
+        height: 100px;
+        margin: 20px auto;
+        display: block;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-control {
+        height: 40px;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        transition: border-color 0.2s ease-in-out;
+      }
+
+      .form-control:focus {
+        border-color: #337ab7;
+        box-shadow: 0 0 10px rgba(51, 122, 183, 0.5);
+      }
+
+      .form-label {
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 5px;
+        display: block;
+        font-weight: bold;
+      }
+
+      .form-label::after {
+        content: ":";
+        margin-left: 5px;
+        color: #666;
+      }
+
+      .btn-primary {
+        width: 100%;
+        font-size: 18px;
+        padding: 10px 20px;
+        margin-bottom: 20px;
+      }
+
+      .forgot-password {
+        font-size: 14px;
+        color: #337ab7;
+        text-decoration: none;
+      }
+
+      .forgot-password:hover {
+        color: #23527c;
+        text-decoration: underline;
+      }
+
+      /* Add some hover effects to the textfields */
+      .form-control:hover {
+        border-color: #aaa;
+      }
+
+      /* Add some active effects to the textfields */
+      .form-control:active {
+        border-color: #337ab7;
+        box-shadow: 0 0 10px rgba(51, 122, 183, 0.5);
+      }
+
+      /* Make it responsive */
+      @media (max-width: 768px) {
+        .container {
+          margin: 20px auto;
+          padding: 15px;
+        }
+        .logo {
+          width: 80px;
+          height: 80px;
+        }
+        .form-control {
+          height: 35px;
+          padding: 8px;
+          font-size: 14px;
+        }
+        .btn-primary {
+          font-size: 16px;
+          padding: 8px 15px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .container {
+          margin: 10px auto;
+          padding: 10px;
+        }
+        .logo {
+          width: 60px;
+          height: 60px;
+        }
+        .form-control {
+          height: 30px;
+          padding: 6px;
+          font-size: 12px;
+        }
+        .btn-primary {
+          font-size: 14px;
+          padding: 6px 10px;
+        }
+      }
+      .error-message {
+        background-color: #ffe6e6;
+        border: 1px solid #ff9999;
+        border-radius: 5px;
+        padding: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        font-size: 16px;
+        color: #cc0000;
+        display: flex;
+        align-items: center;
+      }
+
+      .error-icon {
+        margin-right: 10px;
+        font-size: 24px;
+        color: red; /* Set the icon color to red */
+      }
+
+      .error-text {
+        font-weight: bold; /* Make the error message bold */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Add your logo here -->
+      <img src="/images/logo.jpeg" alt="Logo" class="logo mb-4" />
+
+      <form th:action="@{/api/signIn}" method="post">
+        <h1 class="text-center">Warehouse Management System - Login</h1>
+
+        <div class="form-group">
+          <label for="username" class="form-label">Username</label>
+          <input
+            type="text"
+            class="form-control"
+            id="username"
+            name="username"
+            placeholder="Enter your username"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            id="password"
+            name="password"
+            placeholder="Enter your password"
+            required
+          />
+        </div>
+        <div
+          th:if="${invalidCredMessage}"
+          class="error-message alert alert-danger"
+        >
+          <span class="error-icon">&#9888;</span>
+          <p class="error-text" th:text="${invalidCredMessage}"></p>
+        </div>
+        <!-- Add a Remember Me checkbox -->
+        <div class="form-group form-check">
+          <input type="checkbox" class="form-check-input" id="rememberMe" />
+          <label class="form-check-label" for="rememberMe">Remember Me</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Login</button>
+
+        <!-- Add a Forgot Password link -->
+        <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
+      </form>
+    </div>
+  </body>
 </html>

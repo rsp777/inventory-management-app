@@ -1,10 +1,151 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>Insert title here</title>
+    <title>Putaway to Active</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
+<style>
+    body {
+ 
+ background-color: #f8f9fa;
+ animation: colorchange 20s infinite;
+ 
+ }
+ 
+ .header {
+ text-align: center;
+ margin-bottom: 20px;
+ color: #6c757d;
+ font-size: 2em;
+ text-shadow: 2px 2px #999999;
+ }
+ 
+ .list-group-item {
+ font-size: 18px;
+ border-radius: 20px;
+ margin-bottom: 10px;
+ transition: transform .2s;
+ }
+ 
+ .list-group-item:hover {
+ transform: scale(1.05);
+ }
+ 
+ .btn-primary {
+ width: 100%;
+ }
+ 
+ .topnav {
+ overflow: hidden;
+ background-color: #333;
+ display: flex;
+ justify-content: space-around;
+ align-items: center;
+ position: sticky;
+ top: 0;
+ width: 100%;
+ z-index: 999; /* add this line */
+ }
+ 
+ .topnav a {
+ float: left;
+ display: block;
+ color: #f2f2f2;
+ text-align: center;
+ padding: 20px 16px; /* Increase the vertical padding */
+ text-decoration: none;
+ font-size: 17px;
+ }
+ 
+ .topnav a:hover {
+ background-color: #ddd;
+ color: black;
+ }
+ 
+ .topnav a.active {
+ background-color: royalblue;
+ color: white;
+ }
+ 
+ .topnav .title {
+ color: #f2f2f2;
+ font-size: 20px;
+ font-weight: bold;
+ }
+ .topnav a  {
+ background-color: royalblue;
+ color: white;
+ }
+ /* .container {
+ padding-top: 70px; 
+ } */
+</style>
 <body>
+    <div class="topnav">
+		
+        <a href="http://localhost:8086/api/showMenu">Back</a>
+ 
+
+        <div class="title">Warehouse Management System</div>
+    </div>  
+    <div class="container">
+        <h1>Putaway to Active</h1>
+        <input type="hidden" id="responseMessage" th:value="${responseMessage}"></input>
+
+        <form id="lpnForm"  method="post" onsubmit="event.preventDefault(); submitForm();">
+            <div class="form-group">
+                <label for="lpn_name">LPN:</label>
+                <input type="text" id="lpn" name="lpn_name" class="form-control" required oninput="showFields()">
+            </div>
+            <div class="form-group" id="actLocnDiv" style="display: none;">
+                <label for="actLocn">Aloc:</label>
+                <input type="text" id="activeLoc" name="actLocn" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    
+    
+
+    <!-- Add this script to show/hide fields -->
+    <script type='text/javascript'>
+        function showFields() {
+            var lpn = document.getElementById('lpn').value;
+            if (lpn) {
+                document.getElementById('actLocnDiv').style.display = 'block';
+            } else {
+                document.getElementById('actLocnDiv').style.display = 'none';
+            }
+        }
+        
+        function submitForm() {
+            var lpn_name = document.getElementById('lpn').value;
+            var active_locn = document.getElementById('activeLoc').value;
+            console.log('LPN : '+lpn_name+' , Active Location : '+active_locn);
+            const ajaxRequest ={
+                url: '/api/locateLpnToActive',
+                type: 'post',
+                data: { lpn_name: lpn_name, active_locn: active_locn },
+                success: function(response, textStatus, xhr) {
+                    var parser = new DOMParser();
+						var xmlDoc = parser.parseFromString(xhr.responseText, "text/html");
+						var targetTag = xmlDoc.querySelector("#responseMessage"); // Replace with your actual tag ID
+						console.log('Response Message '+targetTag.value);
+                    
+					alert(targetTag.value);
+                },
+                error: function(response) {
+                    alert('Error consuming LPN');
+                }
+            }
+            $.ajax(ajaxRequest);
+        }
+    </script>
 
 </body>
 </html>

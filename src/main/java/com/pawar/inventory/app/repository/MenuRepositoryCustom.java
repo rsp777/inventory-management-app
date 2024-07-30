@@ -2,9 +2,17 @@ package com.pawar.inventory.app.repository;
 
 import java.io.IOException;
 import org.apache.http.client.ClientProtocolException;
+import org.hibernate.Session;
+import org.springframework.http.ResponseEntity;
+
+import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.model.Category;
+import com.pawar.inventory.model.Inventory;
 import com.pawar.inventory.model.Item;
 import com.pawar.inventory.model.Location;
+import com.pawar.inventory.model.Lpn;
+
+import jakarta.servlet.http.HttpSession;
 
 
 public interface MenuRepositoryCustom  {
@@ -29,17 +37,43 @@ public interface MenuRepositoryCustom  {
 
 	void deleteItem(String description) throws ClientProtocolException, IOException;
 
-	String itemEdit(String description, String category, float length, float width, float height) throws ClientProtocolException, IOException;
+	ResponseEntity<String> itemEdit(String description, String category, float length, float width, float height) throws ClientProtocolException, IOException;
 
 	Iterable<Location> getLocations() throws ClientProtocolException, IOException;
 
 	String locationAdd(String locn_brcd, String locn_class, float length, float width, float height, float max_volume,
             float max_qty, float max_weight) throws ClientProtocolException, IOException;
 
-    String locationEdit(String locn_brcd, String locn_class, float length, float width, float height, float max_volume,
+	ResponseEntity<String> locationEdit(String locn_brcd, String locn_class, float length, float width, float height, float max_volume,
             float max_qty, float max_weight)throws ClientProtocolException, IOException;
 
     void deleteLocation(String locn_brcd)throws ClientProtocolException, IOException;
+
+    Iterable<Lpn> getLpns() throws ClientProtocolException, IOException;
+
+    Iterable<Inventory> getInventories() throws ClientProtocolException, IOException;
+
+    String locateLpnToResv(String lpn_name, String resv_locn) throws ClientProtocolException, IOException;
+
+	String locateLpnToActive(String lpn_name, String active_locn) throws ClientProtocolException, IOException;
+
+	String lpnEdit(String lpn_name, String item_desc, float length, float width, float height, int quantity,int adjustQty,
+			int lpn_facility_status, float volume) throws ClientProtocolException, IOException;
+
+    Menu addMenu(Menu newMenu);
+
+	String signIn(String username, String password);
+
+	void updateMenu(Menu updatedMenu);
+
+	Menu getMenu(String menuName);
+
+    String getUrl(String menuName);
+
+	String signout(HttpSession httpSession) throws ClientProtocolException, IOException;
+
+	String userAdd(String firstname, String middlename, String lastname, String username, String password,
+			String email);
 
 }
 

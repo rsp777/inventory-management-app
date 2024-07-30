@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<title>Item Management</title>
+<title>User List</title>
 <link rel="stylesheet"
 	href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 <link rel="stylesheet"
@@ -184,82 +184,65 @@ margin-left: 0px;
 <body>
 
 	<body>
-		<div class="topnav">
-		  <div class="links"> 
-			<button style="background-color: #333;border: none;" class=" btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Menu</button>
-			<div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
-				  <a class="dropdown-item dropdown-menu-main-content" th:each="menu : ${nav_menus}" th:href="@{${menu.menu_link}}" th:text="${menu.menu_name}" th:classappend="${#strings.contains(menu.menu_link, currentMenu) ? 'active' : ''}"></a>
-				<!-- <a class="dropdown-item dropdown-menu-main-content" href="#orders">RF Menu</a>
-				<a class="dropdown-item dropdown-menu-main-content" href="#reports">Category</a>
-				<a class="dropdown-item dropdown-menu-main-content" href="#settings">Item</a>
-				<a class="dropdown-item dropdown-menu-main-content" href="#orders">Location</a>
-				<a class="dropdown-item dropdown-menu-main-content" href="#reports">LPN</a>
-				<a class="dropdown-item dropdown-menu-main-content" href="#settings">Inventory</a>  -->
-			</div>	
-		  </div>
-		  <div class="title">Warehouse Management System</div>
-		 <span class="icon-name" th:text="${user_name}"></span>
-		 &nbsp;&nbsp;&nbsp;&nbsp;
 		
-		<div class="dropdown">
-		  <button style="background-color: #333;border: none;" class=" btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-			<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-person-circle" viewBox="0 0 16 16">
-			  <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
-			  <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
-			</svg>
-		  </button>
-		  <div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
-			<a class="dropdown-item"  href="#">Account</a>
-			<a class="dropdown-item" href="#">Settings</a>
-			<a class="dropdown-item" th:href="@{${logout_url.menu_link}}"th:text="${logout_url.menu_name}"  th:onclick="javascript:ajaxLogout('{{decodedToken}}')"></a>
-		</div>
-		  </div>
-		  &nbsp;&nbsp;&nbsp;&nbsp;
-		</div>
 		
 	<div class="container">
 		
-		<h1 class="text-center">Item Management</h1>
+		<h1 class="text-center">User List</h1>
 		<input type="hidden" id="responseMessage" th:value="${responseMessage}"></input>
 		<!-- Category table -->
-		<input data-toggle="modal" data-target="#exampleModal" type="button" class="btn btn-primary" value="Add Item" id="addItemButton" onclick="showButtons()">
+		<input style="width: 100px;" data-toggle="modal" data-target="#exampleModal" type="button" class="btn btn-primary" value="Add User" id="addItemButton" onclick="showButtons()">
 		<div class="scrollable-container">
 			<table class="table table-striped">
 				<thead class="thead-dark">
 					<tr>
-						<th scope="col">#</th>
-						<th scope="col">Item Name</th>
-						<th scope="col">Category</th>
+						<th scope="col">User ID</th>
+						<th scope="col">Full Name</th>
+                        <th scope="col">Email</th>
+						<th scope="col">Role</th>
+                        <th scope="col">Permission</th>
+                        <!-- <th scope="col">Status</th> -->
 						<th scope="col">Actions</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr th:each="item : ${items}">
-						<th scope="row" th:text="${item.item_id}"></th>
-						<td th:text="${item.description}"></td>
-						<td th:text="${item.category.category_name}"></td>
+					<tr th:each="user : ${users}">
+						<th scope="row" th:text="${user.user_id}"></th>
+						<td th:text="${user.firstName}+' '+${user.middleName}+' '+${user.lastName}"></td>
+						<td th:text="${user.email}"></td>
+                        <td>
+                            <span th:each="role : ${user.roles}">
+                              <span th:text="${role.name}"></span>
+                            </span>
+                          </td>
+                          <td>
+                            <span th:each="role : ${user.roles}">
+                              <span th:each="permission : ${role.permissions}">
+                                <span th:text="${permission.name}"></span>
+                              </span>
+                            </span>
+                          </td>
+                        <!-- <td th:text="${user.roles.permissions}"></td> -->
+                        <!-- <td th:text="${user.status}"></td> -->
+                        
 						<td>
-							<button type="button" class="btn btn-primary" data-toggle="modal"
+							<button style="width: 60px;"type="button" class="btn btn-primary" data-toggle="modal"
 								data-target="#exampleModal" 
-								th:data-item-id="${item.item_id}"
-								th:data-description="${item.description}"
-								th:data-category="${item.category.category_name}"
-								th:data-length="${item.unit_length}"
-								th:data-width="${item.unit_width}"
-								th:data-height="${item.unit_height}"
-								th:data-volume="${item.unit_volume}"
-								onclick="showItem(this.getAttribute('data-item-id'),this.getAttribute('data-description'),
-								this.getAttribute('data-category'),this.getAttribute('data-length'),this.getAttribute('data-width'),
-								this.getAttribute('data-height'),this.getAttribute('data-volume'), true)">
+								th:data-user-id="${user.user_id}"
+								th:data-firstname="${user.firstName}"
+                                th:data-middlename="${user.middleName}"
+								th:data-lastname="${user.lastName}"
+                                th:data-username="${user.username}"
+                                th:data-email="${user.email}"
+								th:data-roles="${user.roles?.![name]}"
+								th:data-permissions-list="${user.roles.![permissions.![name]]}"
+								onclick="showUser(this.getAttribute('data-user-id'),this.getAttribute('data-firstname'),this.getAttribute('data-middlename'),this.getAttribute('data-lastname'),
+								this.getAttribute('data-username'),this.getAttribute('data-email'),this.getAttribute('data-roles'),this.getAttribute('data-permissions-list'), true)">
 								View</button>
 
-								<button th:data-item-id="${item.item_id}"
-								th:data-description="${item.description}"
-								onclick="confirmItemDeletion(this.getAttribute('data-item-id'),this.getAttribute('data-description'), true)"
+								<button style="width: 80px;"th:data-user-id="${user.user_id}" th:data-username="${user.username}"
+								onclick="confirmItemDeletion(this.getAttribute('data-user-id'),this.getAttribute('data-fullname'), true)"
 								class="btn btn-danger">Delete</button>
-
-
-
 						</td>
 					</tr>
 				</tbody>
@@ -270,7 +253,7 @@ margin-left: 0px;
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Item Details</h5>
+                <h5 class="modal-title" id="exampleModalLabel">User Details</h5>
                 <button type="button" class="close" data-dismiss="modal"
                     aria-label="Close">
                     <span aria-hidden="true">×</span>
@@ -282,40 +265,55 @@ margin-left: 0px;
                     <div class="row">
                         <div class="col">
                             <div class="form-group">
-                                <label for="itemId">Item ID</label> <input type="text"
-                                    class="form-control" id="itemId" readonly>
+                                <label for="userId">User ID</label> <input type="text"
+                                    class="form-control" id="userId" readonly>
                             </div>
                             <div class="form-group">
-                                <label for="itemName">Item Name</label> <input type="text"
-                                    class="form-control" id="itemName">
+                                <label for="firstname">First Name</label> <input type="text"
+                                    class="form-control" id="firstname">
                             </div>
-                            <div class="form-group" th:object="${category}">
-                                <label for="category">Category</label>
-                                <!-- <input class="form-control" id="category" rows="3"></input> -->
-								<select class="form-control" id="category" name="category">
-									<option value="">Select Category</option>
-									<option th:each="category : ${categories}"
-											th:value="${category.category_name}"
-											th:text="${category.category_name}"></option>
-								</select>
+                            <div class="form-group">
+                                <label for="middlename">Middle Name</label> <input type="text"
+                                    class="form-control" id="middlename">
+                            </div>
+                           
+                           
+                        </div>
+                        <div class="col">
+                            
+                            <div class="form-group">
+                                <label for="lastname">Last Name</label> <input type="text"
+                                    class="form-control" id="lastname">
+                            </div>
+                           
+                            <div class="form-group">
+                                <label for="username">Username</label> <input type="text"
+                                    class="form-control" id="username">
+                            </div>
+                            <div class="form-group">
+                                <label id="passwordlabel" for="password">Password</label> <input type="password"
+                                    class="form-control" id="password">
                             </div>
                         </div>
                         <div class="col">
                             <div class="form-group">
-                                <label for="length">Length</label>
-                                <input class="form-control" id="length" rows="3"></input>
+                                <label for="email">Email</label> <input type="email"
+                                    class="form-control" id="email">
+                            </div>
+                            
+                            <div class="form-group" th:object="${roles}">
+                                <label for="roles">Roles</label>
+                                <input class="form-control" id="roles" rows="3"></input>
+								<!-- <select class="form-control" id="roles" name="roles">
+									<option value="">Select Role</option>
+									<option th:each="category : ${categories}"
+											th:value="${category.category_name}"
+											th:text="${category.category_name}"></option>
+								</select> -->
                             </div>
                             <div class="form-group">
-                                <label for="width">Width</label>
-                                <input class="form-control" id="width" rows="3"></input>
-                            </div>
-                            <div class="form-group">
-                                <label for="height">Height</label>
-                                <input class="form-control" id="height" rows="3"></input>
-                            </div>
-                            <div class="form-group">
-                                <label for="volume">Volume</label>
-                                <input class="form-control" id="volume" rows="3" readonly></input>
+                                <label for="permissions">Permissions</label> <input type="text"
+                                    class="form-control" id="permissions">
                             </div>
                         </div>
                     </div>
@@ -324,13 +322,16 @@ margin-left: 0px;
             <div id= "saveItemButton" class="modal-footer">
                 <button type="button" class="btn btn-secondary"
 				onclick="canelViewItem()" data-dismiss="modal">Cancel</button>
-                <button id="saveButton" type="button" class="btn btn-primary"
+                &nbsp;
+                <button style="width: 60px;" id="saveButton" type="button" class="btn btn-primary"
                     onclick="saveItem()">Save</button>
             </div>
+            
 			<div id= "editItemButton" class="modal-footer">
                 <button type="button" class="btn btn-secondary"
-				onclick="canelViewItem()" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary"
+				onclick="canelViewEditItem()" data-dismiss="modal">Cancel</button>
+                &nbsp;
+                <button style="width: 60px;"  type="button" class="btn btn-primary"
                     onclick="saveEditItem()">Save</button>
             </div>
         </div>
@@ -348,6 +349,11 @@ margin-left: 0px;
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 		<script type='text/javascript'>
 		
+        function canelViewEditItem(){
+            document.getElementById("password").style.display = 'block';
+            document.getElementById("passwordlabel").style.display = 'block';
+        }    
+
 		function showButtons(){
 			document.getElementById("editItemButton").style.display = 'none';
 			document.getElementById("saveItemButton").style.display = 'block';
@@ -359,26 +365,29 @@ margin-left: 0px;
 		var currentItemName = null;
 		
 		function canelViewItem(){
-			document.getElementById('itemId').value = null;
-			const emptyFields = ['itemName', 'category', 'length', 'width', 'height','volume']
+			document.getElementById('userId').value = null;
+			const emptyFields = ['userId', 'firstname', 'middlename', 'lastname','username','password','email','roles','permissions']
 			.filter(fieldId => !deColourFieldAndNull(fieldId));	
 		}
-		function showItem(item_id,description,category,length,width,height,volume ){
-			const emptyFields = ['itemName', 'category', 'length', 'width', 'height','volume']
+		function showUser(user_id,firstname,middlename,lastname,username,email,roles,permissions ){
+			const emptyFields = ['userId', 'firstname', 'middlename', 'lastname', 'email','roles','permissions']
 			.filter(fieldId => !deColourFieldAndNull(fieldId));	
-			document.getElementById('itemId').value = item_id;
-			document.getElementById('itemName').value = description;
-			document.getElementById('category').value = category;
-			document.getElementById('length').value = length;
-			document.getElementById('width').value = width;
-			document.getElementById('height').value = height;
-			document.getElementById('volume').value = volume;
+			document.getElementById('userId').value = user_id;
+			document.getElementById('firstname').value = firstname;
+			document.getElementById('middlename').value = middlename;
+			document.getElementById('lastname').value = lastname;
+            document.getElementById('username').value = username;
+            document.getElementById("password").style.display = 'none';
+            document.getElementById("passwordlabel").style.display = 'none';
+            document.getElementById('email').value = email;
+			document.getElementById('roles').value = roles;
+			document.getElementById('permissions').value = permissions;
 			document.getElementById("editItemButton").style.display = 'block';
 			document.getElementById("saveItemButton").style.display = 'none';
 
 		}
 		function handleFormSubmission() {
-         const emptyFields = ['itemName', 'category', 'length', 'width', 'height']
+         const emptyFields = ['firstname', 'middlename', 'lastname', 'email','password','username']
         .filter(fieldId => !validateField(fieldId));
 
 		 if (emptyFields.length == 1) {
@@ -416,24 +425,27 @@ function validateField(fieldId) {
       
 // });	
 		function saveItem() {
-			var description = document.getElementById('itemName').value;
-			var category = document.getElementById('category').value;
-			var length = document.getElementById('length').value;
-			var width = document.getElementById('width').value;
-			var height = document.getElementById('height').value;
-			const fields = [description,category,length,width,height];
+			var user_id = document.getElementById('userId').value;
+			var firstname = document.getElementById('firstname').value;
+			var middlename = document.getElementById('middlename').value;
+			var lastname = document.getElementById('lastname').value;
+			var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+            var email = document.getElementById('email').value;
+			const fields = [user_id,firstname,middlename,lastname,username,password,email];
 
-			console.log("Item Description : " + description);
+			console.log("username : " + username);
 			if (!handleFormSubmission()) {
 				const ajaxRequest = {
-            	url: 'itemAdd',
+            	url: 'userAdd',
             	type: 'post',
 				data: {
-				    description: description,
-				    category: category,
-				    length: length,
-				    width: width,
-				    height: height,
+				    firstname: firstname,
+				    middlename: middlename,
+				    lastname: lastname,
+				    username: username,
+                    password: password,
+				    email: email
 				},
             success: function (response, textStatus, xhr) {
                 console.log("Status Code:", xhr.status + ", Status Message " + textStatus);
@@ -448,7 +460,7 @@ function validateField(fieldId) {
                 location.reload();
             },
             error: function (response) {
-                alert('Error adding item');
+                alert('Error adding user');
                 //location.reload();
             }
         };
@@ -486,11 +498,12 @@ function validateField(fieldId) {
 		}
 
 		function saveEditItem() {
-			var description = document.getElementById('itemName').value;
-			var category = document.getElementById('category').value;
-			var length = document.getElementById('length').value;
-			var width = document.getElementById('width').value;
-			var height = document.getElementById('height').value;
+			var user_id = document.getElementById('userId').value;
+			var firstname = document.getElementById('firstname').value;
+			var middlename = document.getElementById('middlename').value;
+			var lastname = document.getElementById('lastname').value;
+			var username = document.getElementById('username').value;
+            var email = document.getElementById('email').value;
 
 
 			console.log("Item Description : " + description);
