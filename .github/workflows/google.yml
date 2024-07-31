@@ -75,11 +75,9 @@ jobs:
         location: ${{ env.GKE_ZONE }}
         
     - name: Maven Build
-      run: |-
-       echo $GITHUB_WORKSPACE
-       cd $GITHUB_WORKSPACE
-       ls -ltr
+      run: |-    
        mvn clean install -s $GITHUB_WORKSPACE/settings.xml
+       ls -ltr
       env:
           GITHUB_TOKEN: ${{ github.token }}
     # Build the Docker image
