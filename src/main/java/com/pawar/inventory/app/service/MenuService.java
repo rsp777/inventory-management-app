@@ -9,11 +9,11 @@ import org.springframework.http.ResponseEntity;
 
 import com.pawar.inventory.app.exception.ParentMenuNotFoundException;
 import com.pawar.inventory.app.model.Menu;
-import com.pawar.inventory.model.Category;
-import com.pawar.inventory.model.Inventory;
-import com.pawar.inventory.model.Item;
-import com.pawar.inventory.model.Location;
-import com.pawar.inventory.model.Lpn;
+import com.pawar.inventory.entity.Category;
+import com.pawar.inventory.entity.Inventory;
+import com.pawar.inventory.entity.Item;
+import com.pawar.inventory.entity.Location;
+import com.pawar.inventory.entity.Lpn;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;

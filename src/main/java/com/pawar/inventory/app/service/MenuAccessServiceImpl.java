@@ -40,7 +40,7 @@ import com.pawar.inventory.app.repository.MenuAccessRepository;
 import com.pawar.inventory.app.repository.MenuRepository;
 import com.pawar.inventory.app.repository.MenuRepositoryCustom;
 import com.pawar.inventory.app.repository.RoleRepository;
-import com.pawar.inventory.model.Category;
+import com.pawar.inventory.entity.Category;
 import com.pawar.todo.dto.RoleDto;
 import com.pawar.todo.dto.UserDto;
 
