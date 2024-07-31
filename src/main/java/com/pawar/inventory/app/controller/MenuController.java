@@ -684,6 +684,7 @@ public class MenuController {
 		} catch (HttpClientErrorException httpeErr) {
 			String invalidCredMessage = "Http Client Error : " + httpeErr.getMessage();
 			redirectAttributes.addFlashAttribute("invalidCredMessage", invalidCredMessage);
+			httpeErr.printStackTrace();
 			logger.log(Level.SEVERE, "Http Client Error : " + httpeErr.getMessage());
 			return "redirect:/api/index";
 		} catch (JsonProcessingException jsonProExp) {

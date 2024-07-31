@@ -1,8 +1,9 @@
 package com.pawar.inventory.app.listeners;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jboss.logging.Logger;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
@@ -20,7 +21,7 @@ import com.pawar.inventory.app.repository.RoleRepository;
 @Service
 public class Listeners {
 
-	private static final Logger logger = LoggerFactory.getLogger(Listeners.class);
+	private static final Logger logger = Logger.getLogger(Listeners.class);
 
 	@Autowired
 	private RoleRepository roleRepository;
@@ -53,19 +54,19 @@ public class Listeners {
 			int partition = consumerRecord.partition();
 
 			Role role = mapper.readValue(value, Role.class);
-			logger.info("Consumed message : " + value + " with key : " + key + " from partition : " + partition);
-			logger.info("role : {}", role);
+			logger.infof("Consumed message : " + value + " with key : " + key + " from partition : " + partition);
+			logger.infof("role : {}", role);
 			if (value != null) {
 				roleRepository.save(role);
-				logger.info("Role saved to Menu database: {}", value);
+				logger.infof("Role saved to Menu database: {}", value);
 
 				ack.acknowledge();
 			} else {
-				logger.warn("Received null value from Kafka topic. {}", NEW_ROLE_TOPIC);
+				logger.warnf("Received null value from Kafka topic. {}", NEW_ROLE_TOPIC);
 			}
 
 		} catch (Exception e) {
-			logger.error("Error processing Kafka message: {}", e.getMessage());
+			logger.errorf("errorf processing Kafka message: {}", e.getMessage());
 		}
 
 	}
@@ -79,19 +80,19 @@ public class Listeners {
 			int partition = consumerRecord.partition();
 
 			Role role = mapper.readValue(value, Role.class);
-			logger.info("Consumed message : " + value + " with key : " + key + " from partition : " + partition);
-			logger.info("Role : {}", role);
+			logger.infof("Consumed message : " + value + " with key : " + key + " from partition : " + partition);
+			logger.infof("Role : {}", role);
 			if (value != null) {
 				roleRepository.save(role);
-				logger.info("Role Updated to Menu database: {}", value);
+				logger.infof("Role Updated to Menu database: {}", value);
 
 				ack.acknowledge();
 			} else {
-				logger.warn("Received null value from Kafka topic. {}", UPDATED_ROLE_TOPIC);
+				logger.warnf("Received null value from Kafka topic. {}", UPDATED_ROLE_TOPIC);
 			}
 
 		} catch (Exception e) {
-			logger.error("Error processing Kafka message: {}", e.getMessage());
+			logger.errorf("errorf processing Kafka message: {}", e.getMessage());
 		}
 
 	}
@@ -105,19 +106,19 @@ public class Listeners {
 			int partition = consumerRecord.partition();
 
 			Role role = mapper.readValue(value, Role.class);
-			logger.info("Consumed message : " + value + " with key : " + key + " from partition : " + partition);
-			logger.info("role : {}", role);
+			logger.infof("Consumed message : " + value + " with key : " + key + " from partition : " + partition);
+			logger.infof("role : {}", role);
 			if (value != null) {
 				roleRepository.save(role);
-				logger.info("Role updated to Menu database: {}", value);
+				logger.infof("Role updated to Menu database: {}", value);
 
 				ack.acknowledge();
 			} else {
-				logger.warn("Received null value from Kafka topic. {}", ASSIGN_ROLE_PERMISSION_TOPIC);
+				logger.warnf("Received null value from Kafka topic. {}", ASSIGN_ROLE_PERMISSION_TOPIC);
 			}
 
 		} catch (Exception e) {
-			logger.error("Error processing Kafka message: {}", e.getMessage());
+			logger.errorf("errorf processing Kafka message: {}", e.getMessage());
 		}
 
 	}
@@ -131,19 +132,19 @@ public class Listeners {
 			int partition = consumerRecord.partition();
 
 			Role role = mapper.readValue(value, Role.class);
-			logger.info("Consumed message : " + value + " with key : " + key + " from partition : " + partition);
-			logger.info("role : {}", role);
+			logger.infof("Consumed message : " + value + " with key : " + key + " from partition : " + partition);
+			logger.infof("role : {}", role);
 			if (value != null) {
 				roleRepository.save(role);
-				logger.info("Role updated to Menu database: {}", value);
+				logger.infof("Role updated to Menu database: {}", value);
 
 				ack.acknowledge();
 			} else {
-				logger.warn("Received null value from Kafka topic. {}", ASSIGN_ROLE_PERMISSION_TOPIC);
+				logger.warnf("Received null value from Kafka topic. {}", ASSIGN_ROLE_PERMISSION_TOPIC);
 			}
 
 		} catch (Exception e) {
-			logger.error("Error processing Kafka message: {}", e.getMessage());
+			logger.errorf("errorf processing Kafka message: {}", e.getMessage());
 		}
 
 	}
@@ -158,18 +159,18 @@ public class Listeners {
 
 			RoleDeleteEvent roleDeleteEvent = mapper.readValue(value, RoleDeleteEvent.class);
 			Integer roleId = roleDeleteEvent.getRoleId();
-			logger.info("value : {}", value);
-			logger.info("Consumed message : " + roleId + " with key : " + key + " from partition : " + partition);
+			logger.infof("value : {}", value);
+			logger.infof("Consumed message : " + roleId + " with key : " + key + " from partition : " + partition);
 			if (value != null) {
 				roleRepository.deleteById(roleId);
-				logger.info("Role deleted from Menu database : {}", roleId);
+				logger.infof("Role deleted from Menu database : {}", roleId);
 
 				ack.acknowledge();
 			} else {
-				logger.warn("Received null value from Kafka topic. {}", DELETE_PERMISSION_TOPIC);
+				logger.warnf("Received null value from Kafka topic. {}", DELETE_PERMISSION_TOPIC);
 			}
 		} catch (Exception e) {
-			logger.error("Error processing Kafka message: {}", e.getMessage());
+			logger.errorf("errorf processing Kafka message: {}", e.getMessage());
 			// Handle the exception (e.g., log, retry, or skip)
 		}
 	}
@@ -184,18 +185,18 @@ public class Listeners {
 
 			Permission permission = mapper.readValue(value, Permission.class);
 
-			logger.info("value : {}", value);
-			logger.info("Consumed message : " + permission + " with key : " + key + " from partition : " + partition);
+			logger.infof("value : {}", value);
+			logger.infof("Consumed message : " + permission + " with key : " + key + " from partition : " + partition);
 			if (value != null) {
 				permissionRepository.save(permission);
-				logger.info("Permission saved to Menu database : {}", permission);
+				logger.infof("Permission saved to Menu database : {}", permission);
 
 				ack.acknowledge();
 			} else {
-				logger.warn("Received null value from Kafka topic. {}", NEW_PERMISSION_TOPIC);
+				logger.warnf("Received null value from Kafka topic. {}", NEW_PERMISSION_TOPIC);
 			}
 		} catch (Exception e) {
-			logger.error("Error processing Kafka message: {}", e.getMessage());
+			logger.errorf("errorf processing Kafka message: {}", e.getMessage());
 			// Handle the exception (e.g., log, retry, or skip)
 		}
 	}
@@ -210,19 +211,19 @@ public class Listeners {
 
 			Permission updatedPermission = mapper.readValue(value, Permission.class);
 
-			logger.info("value : {}", value);
-			logger.info("Consumed message : " + updatedPermission + " with key : " + key + " from partition : "
+			logger.infof("value : {}", value);
+			logger.infof("Consumed message : " + updatedPermission + " with key : " + key + " from partition : "
 					+ partition);
 			if (value != null) {
 				permissionRepository.save(updatedPermission);
-				logger.info("Permission updated to Menu database : {}", updatedPermission);
+				logger.infof("Permission updated to Menu database : {}", updatedPermission);
 
 				ack.acknowledge();
 			} else {
-				logger.warn("Received null value from Kafka topic. {}", UPDATED_PERMISSION_TOPIC);
+				logger.warnf("Received null value from Kafka topic. {}", UPDATED_PERMISSION_TOPIC);
 			}
 		} catch (Exception e) {
-			logger.error("Error processing Kafka message: {}", e.getMessage());
+			logger.errorf("errorf processing Kafka message: {}", e.getMessage());
 			// Handle the exception (e.g., log, retry, or skip)
 		}
 	}
@@ -237,18 +238,18 @@ public class Listeners {
 
 			PermissionDeleteEvent permissionDeleteEvent = mapper.readValue(value, PermissionDeleteEvent.class);
 			Integer permissionId = permissionDeleteEvent.getPermissionId();
-			logger.info("value : {}", value);
-			logger.info("Consumed message : " + permissionId + " with key : " + key + " from partition : " + partition);
+			logger.infof("value : {}", value);
+			logger.infof("Consumed message : " + permissionId + " with key : " + key + " from partition : " + partition);
 			if (value != null) {
 				permissionRepository.deleteById(permissionId);
-				logger.info("Permission deleted from Menu database : {}", permissionId);
+				logger.infof("Permission deleted from Menu database : {}", permissionId);
 
 				ack.acknowledge();
 			} else {
-				logger.warn("Received null value from Kafka topic. {}", DELETE_PERMISSION_TOPIC);
+				logger.warnf("Received null value from Kafka topic. {}", DELETE_PERMISSION_TOPIC);
 			}
 		} catch (Exception e) {
-			logger.error("Error processing Kafka message: {}", e.getMessage());
+			logger.errorf("errorf processing Kafka message: {}", e.getMessage());
 			// Handle the exception (e.g., log, retry, or skip)
 		}
 	}

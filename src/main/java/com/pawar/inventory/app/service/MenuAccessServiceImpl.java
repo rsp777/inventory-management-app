@@ -16,8 +16,9 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jboss.logging.Logger;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +47,7 @@ import com.pawar.todo.dto.UserDto;
 @Service
 public class MenuAccessServiceImpl implements MenuAccessService {
 
-	private final static Logger logger = LoggerFactory.getLogger(MenuAccessServiceImpl.class);
+	private final static Logger logger = Logger.getLogger(MenuAccessServiceImpl.class);
 
 	@Autowired
 	private MenuService menuService;
@@ -118,7 +119,7 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 	public Set<Role> getRoles(String[] decodedToken) throws JsonMappingException, JsonProcessingException {
 
 		Set<Role> userRoles = new HashSet<>();
-		logger.info("decodedToken[3] : {}",decodedToken[2]);
+		logger.infof("decodedToken[3] : {}",decodedToken[2]);
 		for (int i = 0; i < decodedToken.length - 1; i++) {
 			if (decodedToken[i].contains("Role")) {
 //				logger.info("decodedToken in loop : {}",decodedToken[i]);
@@ -129,7 +130,7 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 	                    "\"permissions\":[{\"id\":" + result.substring(result.indexOf("id=") + 3, result.indexOf(", name")).trim() + "," +
 	                    "\"name\":\"" + result.substring(result.indexOf("name=") + 5, result.indexOf(", createdDttm")).trim() + "\"}]" +
 	                    "}";
-				logger.info("result in loop : {}",json);
+				logger.infof("result in loop : {}",json);
 				Role role =mapper.readValue(json, Role.class);
 				userRoles.add(role);
 			}
@@ -161,9 +162,9 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 		role.setMenus(assignedMenus);
 		Role savedRole = roleRepository.save(role);
 
-		logger.info("Updated Role : {} ", savedRole);
+		logger.infof("Updated Role : {} ", savedRole);
 
-		logger.info("Menus {} assigned successfully to Role ID: {}", assignedMenu.getMenu_name(), roleId);
+		logger.infof("Menus {} assigned successfully to Role ID: {}", assignedMenu.getMenu_name(), roleId);
 
 	}
 
@@ -180,7 +181,7 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 		role.getMenus().removeIf(m -> m.getMenu_id() == menuId);
 		Role savedRole = roleRepository.save(role);
 
-		logger.info("Updated Role : {} ", savedRole);
+		logger.infof("Updated Role : {} ", savedRole);
 	}
 
 	@Override
