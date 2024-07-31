@@ -1,0 +1,22 @@
+apiVersion: apps/v1                
+kind: Deployment                   
+metadata:                          
+  name: inventoryapp                      
+spec:                              
+  selector:                        
+    matchLabels:                   
+      app: inventoryapp                   
+  template:                        
+    metadata:                      
+      labels:                      
+        app: inventoryapp                 
+    spec:                          
+      containers:                  
+        - name: inventoryapp              
+          image: us-central1-docker.pkg.dev/psyched-freedom-427313-r9/inventoryapp/inventoryapp             
+          resources:               
+            limits:                
+              memory: "128Mi"      
+              cpu: "500m"          
+          ports:                   
+            - containerPort: 8086  
