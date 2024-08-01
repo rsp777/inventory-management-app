@@ -18,29 +18,8 @@ import jakarta.servlet.ServletRegistration;
 
 
 @SpringBootApplication
-@ComponentScan(basePackages = "org.glassfish.jersey.server.spring")
-public class InventoryManagementApp extends SpringBootServletInitializer{
-	
-	
-	
-	@Override
-	public void onStartup(ServletContext servletContext) throws ServletException {
-		 AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-	        context.register(SpringConfiguredConfiguration.class);
-
-	        DispatcherServlet servlet = new DispatcherServlet();
-	        servlet.setContextConfigLocation(context.getConfigLocations()+"");
-
-	        ServletRegistration.Dynamic registration = servletContext.addServlet("dispatcher", servlet);
-	        registration.setLoadOnStartup(1);
-	        registration.addMapping("/InventoryUI");
-	}
-
-	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-		return application.sources(InventoryManagementApp.class);
-	}
-
+public class InventoryManagementApp{
+		
 	public static void main(String[] args) {
 		SpringApplication.run(InventoryManagementApp.class, args);
 	}
