@@ -18,10 +18,10 @@ node {
             }
         }
     }
-    stage('Deploy to Artifactory') {
+    stage('Archive Artifacts') {
         archiveArtifacts 'target/*.jar'
-        withEnv(["MVN_HOME=$mvnHome"]){
-        sh '"$MVN_HOME/bin/mvn" -Dmaven.test.failure.ignore deploy'
+        //withEnv(["MVN_HOME=$mvnHome"]){
+        //sh '"$MVN_HOME/bin/mvn" -Dmaven.test.failure.ignore deploy'
         }
     }
 }
