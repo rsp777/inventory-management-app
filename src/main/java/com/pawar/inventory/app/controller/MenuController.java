@@ -893,7 +893,7 @@ public class MenuController {
 			e.printStackTrace();
 		}
 
-		logger.info("menuList");
-		return "menuList";
+		logger.info("menulist");
+		return "menulist";
 	}
 }
