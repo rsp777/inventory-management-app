@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -632,6 +633,31 @@ public class MenuController {
 		logger.info("putawayLpnToActive");
 		return "putawayLpnToActive";
 	}
+	
+	@GetMapping("/putawayLpnToActiveSys")
+	public String putawayLpnToActiveSys(Model model) {
+		logger.info("putawayLpnToActiveSys");
+		return "putawayLpnToActiveSys";
+	}
+	
+	@PostMapping("/checkActiveInventory")
+	@ResponseBody
+	public String checkActiveInventory(Model model, @RequestParam String lpn_name) {
+		logger.info("LPN : " + lpn_name);
+		String response = "";
+//		try {
+			response = menuService.checkActiveInventory(lpn_name);
+			logger.info("Active Location : "+response);
+//			model.addAttribute("actLoc", response);
+//			logger.info(""+model.getAttribute("actLoc"));
+			return response;
+//		} 
+//		catch (IOException e) {
+//			logger.log(Level.SEVERE, "IOException occurred: ", e);
+//			// e.printStackTrace();
+//			return "putawayLpnToActiveSys";
+//		}
+	}
 
 	@PostMapping("/locateLpnToActive")
 	public String putawayLpnToActive(Model model, @RequestParam String lpn_name, @RequestParam String active_locn) {
@@ -755,6 +781,9 @@ public class MenuController {
 		} catch (MenuNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (JWTDecodeException e) {
+			model.addAttribute("responseMessage", "Session Expired please Login Again");
+			return "redirect:/api/index";
 		}
 
 		logger.info("settings");
@@ -819,5 +848,52 @@ public class MenuController {
 		model.addAttribute("responseMessage", responseMessage.getResponseMessage());
 		logger.info("Response Message : " + responseMessage);
 		return "userlist";
+	}
+
+	@GetMapping("/menulist")
+	public String menuList(Model model, HttpServletRequest request, HttpSession httpSession) {
+		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
+		List<Menu> menus;
+		List<Menu> allMenus;
+		
+		try {
+			
+			menus = menuAccessService.getAccessibleMenus(decodedToken);
+			allMenus = menuService.getAllMenus();
+			List<Menu> rf = new ArrayList<>();
+			List<Menu> nav = new ArrayList<>();
+			List<Menu> side = new ArrayList<>();
+			// logger.info("" + menus);
+			for (Menu menu : menus) {
+				if (menu.getMenu_type().equals("RF")) {
+					rf.add(menu);
+				} else if (menu.getMenu_type().equals("UI")) {
+					nav.add(menu);
+				} else if (!menu.getMenu_type().equals("AUTH")) {
+					side.add(menu);
+				}
+			}
+			logger.info("Side Menus : " + side);
+			model.addAttribute("menus", rf);
+			model.addAttribute("currentMenu", request.getRequestURI());
+			model.addAttribute("nav_menus", nav);
+			model.addAttribute("side_menus", side);
+			model.addAttribute("allMenus", allMenus);
+			logger.info("All menus : "+allMenus);
+		} catch (JsonMappingException e) {
+			e.printStackTrace();
+		} catch (JsonProcessingException e) {
+
+			e.printStackTrace();
+		} catch (MenuNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}  catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		logger.info("menuList");
+		return "menuList";
 	}
 }

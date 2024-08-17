@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
-    <title>RF Menu</title>
+    <title>Settings</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link
       rel="stylesheet"
@@ -11,6 +11,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
     />
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <style>
       body {
         background-color: #f8f9fa;
@@ -211,10 +212,53 @@
 
     </style>
   </head>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+     <script>
+		 
+		function bindEventListeners() {
+  $(".menu_link").on("click");
+}
+bindEventListeners(); 
+		 
+		 
+function loadContent(url) {
+  $.ajax({
+    type: "GET",
+    url: url,
+    success: function(data) {
+      $("#content-container").html(data);
+      //bindEventListeners(); // Re-bind event listeners
+      //$(".menu_link").off("click"); // Remove existing event listeners
+      $(".menu_link").on("click");
+      //$(".dropdown-menu-main-content .dropdown-item .dropdown-menu-left .btn-secondary").off("click");
+      //$(".dropdown").off("click");
+      $(".dropdown").on("click");
+ 	   
+ 	  
+ 	  
+ 	  
+ 	  //$(".dropdown-item .dropdown-item-left").off("click");
+      $(".dropdown-item .dropdown-item-left").on("click"); 
+ 	  //$(".show").on("click");
+ 	  /* 
+ 	  $(".show").off("click");
+      $(".show").on("click", function(event) {
+ 		 event.preventDefault();});	
+ 	  $(".dropdown-item-left").off("click");
+      $(".dropdown-item-left").on("click", function(event) {
+ 		 event.preventDefault();});*/
+ 	  	 
+    }
+  });
+}
+    </script>
   <body>
     <div class="topnav">
       <div class="links"> 
-        <button style="background-color: #333;border: none;" class=" btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Menu</button>
+        <button style="background-color: #333;border: none;" class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Menu</button>
         <div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
             <a class="dropdown-item dropdown-menu-main-content" th:each="menu : ${nav_menus}" th:href="@{${menu.menu_link}}" th:text="${menu.menu_name}" th:classappend="${#strings.contains(menu.menu_link, currentMenu) ? 'active' : ''}"></a>
          <!-- <a class="dropdown-item dropdown-menu-main-content" href="#orders">RF Menu</a>
@@ -230,7 +274,7 @@
      &nbsp;&nbsp;&nbsp;&nbsp;
     
     <div class="dropdown">
-      <button style="background-color: #333;border: none;" class=" btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+      <button style="background-color: #333;border: none;" class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
         <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-person-circle" viewBox="0 0 16 16">
           <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
           <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
@@ -239,7 +283,7 @@
       <div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
         <a class="dropdown-item"  href="#">Account</a>
         <a class="dropdown-item"th:href="@{${settings_url.menu_link}}"th:text="${settings_url.menu_name}"></a>
-        <a class="dropdown-item" th:href="@{${logout_url.menu_link}}"th:text="${logout_url.menu_name}"  th:onclick="javascript:ajaxLogout('{{decodedToken}}')"></a>
+        <a class="dropdown-item" th:href="@{${logout_url.menu_link}}"th:text="${logout_url.menu_name}"></a>
       </div>
       </div>
       &nbsp;&nbsp;&nbsp;&nbsp;
@@ -273,29 +317,11 @@
           </ul>
          
         </div> 
-        <div class="col-md-10 main-content">
-          <div id="content-container"></div>
-        </div> 
+          
+        <!---<div style="width: 1000px;" class="col-md-09"  id="content-container"></div> -->
+          <div style="overflow: hidden;margin-left: 200px;" class="col-md-09"  id="content-container"></div>
+
       </div>  
-    </div>
-    <!-- JavaScript to load submenu content on click -->
-     
-    
-    
-    <script>
-   function loadContent(url) {
-  $.ajax({
-    type: "GET",
-    url: url,
-    success: function(data) {
-      $("#content-container").html(data);
-    }
-  });
-}
-    </script>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    </div>	
   </body>
 </html>

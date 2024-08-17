@@ -229,4 +229,10 @@ public class MenuServiceImp implements MenuService {
 			String email) {
 		return menuRepositoryCustom.userAdd(firstname, middlename, lastname, username,password, email);
 	}
+
+	@Override
+	public String checkActiveInventory(String lpn_name) {
+		// TODO Auto-generated method stub
+		return menuRepositoryCustom.checkActiveInventory(lpn_name);
+	}
 }

@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.pawar.inventory.app.exception.MenuAssignmentException;
 import com.pawar.inventory.app.exception.MenuNotFoundException;
 import com.pawar.inventory.app.model.Menu;
+import com.pawar.inventory.app.model.MenuAccess;
 import com.pawar.inventory.app.service.MenuAccessService;
 
 @RestController
@@ -108,5 +109,22 @@ public class MenuAccessController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Menu unassignment failed.");
 		}
 	}
+
+	@CrossOrigin(origins = "*", allowedHeaders = "*")
+	@GetMapping("/getMenuAccesses")
+	public ResponseEntity<List<MenuAccess>> getMenuAccesses() {
+		try {
+			List<MenuAccess> menu = menuAccessService.getMenuAccesses();
+			logger.info("Menus Accesses retrieved successfully");
+			return ResponseEntity.ok(menu);
+		} catch (MenuNotFoundException e) {
+			logger.error("Menu not found");
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
+		} catch (Exception e) {
+			logger.error("Failed to retrieve Menus Accesses", e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "User retrieval failed", e);
+		}
+	}
+
 
 }

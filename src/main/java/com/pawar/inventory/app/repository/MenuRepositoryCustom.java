@@ -75,5 +75,8 @@ public interface MenuRepositoryCustom  {
 	String userAdd(String firstname, String middlename, String lastname, String username, String password,
 			String email);
 
+	String checkActiveInventory(String lpn_name);
+
+
 }
 

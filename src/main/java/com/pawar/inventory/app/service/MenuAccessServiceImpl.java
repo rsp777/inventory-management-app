@@ -119,10 +119,9 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 	public Set<Role> getRoles(String[] decodedToken) throws JsonMappingException, JsonProcessingException {
 
 		Set<Role> userRoles = new HashSet<>();
-		logger.infof("decodedToken[3] : {}",decodedToken[2]);
+		logger.infof("decodedToken[2] : {}",decodedToken[2]);
 		for (int i = 0; i < decodedToken.length - 1; i++) {
 			if (decodedToken[i].contains("Role")) {
-//				logger.info("decodedToken in loop : {}",decodedToken[i]);
 				String result = decodedToken[i].replaceAll("^\\[", "").replaceAll("\\]$", ""); 
 				String json = "{" +
 	                    "\"role_id\":" + result.substring(result.indexOf("id=") + 3, result.indexOf(", name")).trim() + "," +
@@ -143,7 +142,7 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 		for (int i = 0; i < decodedString.length - 1; i++) {
 			user_name = user_name + " " + decodedString[i];
 		}
-		logger.info("User name : {}" + user_name);
+		logger.infof("User name : {}" , user_name);
 		return user_name;
 	}
 
@@ -198,5 +197,12 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 		});
 
 		return fetchedUsers;
+	}
+
+	@Override
+	public List<MenuAccess> getMenuAccesses() throws MenuNotFoundException{
+		List<MenuAccess> menuAccesses = menuAccessRepository.findAll();
+		return menuAccesses;
+
 	}
 }

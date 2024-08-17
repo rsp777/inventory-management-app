@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<title>User List</title>
+<title>Menu List</title>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <link rel="stylesheet"
 	href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
@@ -76,7 +76,7 @@ table {
 	font-weight: bold;
 }
 .scrollable-container {
-    width: 100%;
+    width:100%;
     height: 600px; 
     overflow-y: auto; 
 }
@@ -189,60 +189,53 @@ margin-left: 0px;
 		
 	<div class="container">
 		
-		<h1 class="text-center">User List</h1>
+		<h1 class="text-center">Menu List</h1>
 		<input type="hidden" id="responseMessage" th:value="${responseMessage}"></input>
 		<!-- Category table -->
-		<input style="width: 100px;" data-toggle="modal" data-target="#exampleModal" type="button" class="btn btn-primary" value="Add User" id="addItemButton" onclick="showButtons()">
+		<input style="width: 100px;" data-toggle="modal" data-target="#exampleModal" type="button" class="btn btn-primary" value="Add Menu" id="addItemButton" onclick="showButtons()">
 		<div class="scrollable-container">
 			<table class="table table-striped">
 				<thead class="thead-dark">
 					<tr>
-						<th scope="col">User ID</th>
-						<th scope="col">Full Name</th>
-                        <th scope="col">Email</th>
-						<th scope="col">Role</th>
-                        <th scope="col">Permission</th>
-                        <!-- <th scope="col">Status</th> -->
+						<th scope="col">Menu ID</th>
+						<th scope="col">Menu Name</th>
+                        <th scope="col">Protocol</th>
+						<th scope="col">Hostname</th>
+                        <th scope="col">Menu Link</th>
+                        <th scope="col">Menu Type</th>
+						<!-- <th scope="col">Parent Menu</th> -->
+						<th scope="col">Parent Menu ID</th>
 						<th scope="col">Actions</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr th:each="user : ${users}">
-						<th scope="row" th:text="${user.user_id}"></th>
-						<td th:text="${user.firstName}+' '+${user.middleName}+' '+${user.lastName}"></td>
-						<td th:text="${user.email}"></td>
-                        <td>
-                            <span th:each="role : ${user.roles}">
-                              <span th:text="${role.name}"></span>
-                            </span>
-                          </td>
-                          <td>
-                            <span th:each="role : ${user.roles}">
-                              <span th:each="permission : ${role.permissions}">
-                                <span th:text="${permission.name}"></span>
-                              </span>
-                            </span>
-                          </td>
-                        <!-- <td th:text="${user.roles.permissions}"></td> -->
-                        <!-- <td th:text="${user.status}"></td> -->
+					<tr th:each="menu : ${allMenus}">
+						<th scope="row" th:text="${menu.menu_id}"></th>
+						<td th:text="${menu.menu_name}"></td>
+						<td th:text="${menu.protocol}"></td>
+						<td th:text="${menu.hostname}"></td>
+						<td th:text="${menu.menu_link}"></td>
+						<td th:text="${menu.menu_type}"></td>
+                        <td th:text="${menu.parentId}"></td>
+						<!-- <td th:text="${menu.menu_type}"></td> -->
                         
 						<td>
 							<button style="width: 60px;"type="button" class="btn btn-primary" data-toggle="modal"
 								data-target="#exampleModal" 
-								th:data-user-id="${user.user_id}"
-								th:data-firstname="${user.firstName}"
-                                th:data-middlename="${user.middleName}"
-								th:data-lastname="${user.lastName}"
-                                th:data-username="${user.username}"
-                                th:data-email="${user.email}"
-								th:data-roles="${user.roles?.![name]}"
-								th:data-permissions-list="${user.roles.![permissions.![name]]}"
-								onclick="showUser(this.getAttribute('data-user-id'),this.getAttribute('data-firstname'),this.getAttribute('data-middlename'),this.getAttribute('data-lastname'),
-								this.getAttribute('data-username'),this.getAttribute('data-email'),this.getAttribute('data-roles'),this.getAttribute('data-permissions-list'), true)">
+								th:data-menu-id="${menu.menu_id}"
+								th:data-menuname="${menu.menu_name}"
+                                th:data-protocol="${menu.protocol}"
+								th:data-hostname="${menu.hostname}"
+								th:data-menu_link="${menu.menu_link}"
+                                th:data-menu_type="${menu.menu_type}"
+                                th:data-parentId="${menu.parentId}"
+								
+								onclick="showMenu(this.getAttribute('data-menu-id'),this.getAttribute('data-menuname'),this.getAttribute('data-protocol'),this.getAttribute('data-hostname'),
+								this.getAttribute('data-menu_link'),this.getAttribute('data-menu_type'),this.getAttribute('data-parentId'), true)">
 								View</button>
 
-								<button style="width: 80px;"th:data-user-id="${user.user_id}" th:data-username="${user.username}"
-								onclick="confirmItemDeletion(this.getAttribute('data-user-id'),this.getAttribute('data-fullname'), true)"
+								<button style="width: 80px;"th:data-menu-id="${menu.menu_id}" th:data-menuname="${menu.menu_name}"
+								onclick="confirmMenuDeletion(this.getAttribute('data-menu-id'),this.getAttribute('data-menuname'), true)"
 								class="btn btn-danger">Delete</button>
 						</td>
 					</tr>
@@ -266,16 +259,16 @@ margin-left: 0px;
                     <div class="row">
                         <div class="col">
                             <div class="form-group">
-                                <label for="userId">User ID</label> <input type="text"
-                                    class="form-control" id="userId" readonly>
+                                <label for="menu_id">Menu ID</label> <input type="text"
+                                    class="form-control" id="menu_id" readonly>
                             </div>
                             <div class="form-group">
-                                <label for="firstname">First Name</label> <input type="text"
-                                    class="form-control" id="firstname">
+                                <label for="menu_name">Menu Name</label> <input type="text"
+                                    class="form-control" id="menu_name">
                             </div>
                             <div class="form-group">
-                                <label for="middlename">Middle Name</label> <input type="text"
-                                    class="form-control" id="middlename">
+                                <label for="protocol">Protocol</label> <input type="text"
+                                    class="form-control" id="protocol">
                             </div>
                            
                            
@@ -283,57 +276,42 @@ margin-left: 0px;
                         <div class="col">
                             
                             <div class="form-group">
-                                <label for="lastname">Last Name</label> <input type="text"
-                                    class="form-control" id="lastname">
+                                <label for="hostname">Hostname</label> <input type="text"
+                                    class="form-control" id="hostname">
                             </div>
                            
                             <div class="form-group">
-                                <label for="username">Username</label> <input type="text"
-                                    class="form-control" id="username">
+                                <label for="menu_link">Menu Link</label> <input type="text"
+                                    class="form-control" id="menu_link">
                             </div>
                             <div class="form-group">
-                                <label id="passwordlabel" for="password">Password</label> <input type="password"
-                                    class="form-control" id="password">
+                                <label for="menu_type">Menu Type</label> <input type="text"
+                                    class="form-control" id="menu_type">
                             </div>
                         </div>
                         <div class="col">
                             <div class="form-group">
-                                <label for="email">Email</label> <input type="email"
-                                    class="form-control" id="email">
-                            </div>
-                            
-                            <div class="form-group" th:object="${roles}">
-                                <label for="roles">Roles</label>
-                                <input class="form-control" id="roles" rows="3"></input>
-								<!-- <select class="form-control" id="roles" name="roles">
-									<option value="">Select Role</option>
-									<option th:each="category : ${categories}"
-											th:value="${category.category_name}"
-											th:text="${category.category_name}"></option>
-								</select> -->
-                            </div>
-                            <div class="form-group">
-                                <label for="permissions">Permissions</label> <input type="text"
-                                    class="form-control" id="permissions">
+                                <label for="parentId">Parent Menu ID</label> <input type="text"
+                                    class="form-control" id="parentId">
                             </div>
                         </div>
                     </div>
                 </form>
             </div>
-            <div id= "saveItemButton" class="modal-footer">
+            <div id= "saveMenuButton" class="modal-footer">
                 <button type="button" class="btn btn-secondary"
-				onclick="canelViewItem()" data-dismiss="modal">Cancel</button>
+				onclick="canelViewMenu()" data-dismiss="modal">Cancel</button>
                 &nbsp;
                 <button style="width: 60px;" id="saveButton" type="button" class="btn btn-primary"
-                    onclick="saveItem()">Save</button>
+                    onclick="saveMenu()">Save</button>
             </div>
             
 			<div id= "editItemButton" class="modal-footer">
                 <button type="button" class="btn btn-secondary"
-				onclick="canelViewEditItem()" data-dismiss="modal">Cancel</button>
+				onclick="canelViewEditMenu()" data-dismiss="modal">Cancel</button>
                 &nbsp;
                 <button style="width: 60px;"  type="button" class="btn btn-primary"
-                    onclick="saveEditItem()">Save</button>
+                    onclick="saveEditMenu()">Save</button>
             </div>
         </div>
     </div>
@@ -350,45 +328,43 @@ margin-left: 0px;
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 		<script type='text/javascript'>
 		
-        function canelViewEditItem(){
+        function canelViewEditMenu(){
             document.getElementById("password").style.display = 'block';
             document.getElementById("passwordlabel").style.display = 'block';
         }    
 
 		function showButtons(){
 			document.getElementById("editItemButton").style.display = 'none';
-			document.getElementById("saveItemButton").style.display = 'block';
-			canelViewItem();
+			document.getElementById("saveMenuButton").style.display = 'block';
+			canelViewMenu();
 		}
 		
 
 		var isButtonShown = false;
 		var currentItemName = null;
 		
-		function canelViewItem(){
-			document.getElementById('userId').value = null;
-			const emptyFields = ['userId', 'firstname', 'middlename', 'lastname','username','password','email','roles','permissions']
+		function canelViewMenu(){
+			document.getElementById('menu_id').value = null;
+			const emptyFields = ['menu_id', 'menu_name', 'protocol', 'hostname','menu_link','menu_type','parentId']
 			.filter(fieldId => !deColourFieldAndNull(fieldId));	
 		}
-		function showUser(user_id,firstname,middlename,lastname,username,email,roles,permissions ){
-			const emptyFields = ['userId', 'firstname', 'middlename', 'lastname', 'email','roles','permissions']
+		function showMenu(menu_id,menuname,protocol,hostname,menu_link,menu_type,parentId){
+			const emptyFields = ['menu_id', 'menu_name', 'protocol', 'hostname','menu_link','menu_type','parentId']
 			.filter(fieldId => !deColourFieldAndNull(fieldId));	
-			document.getElementById('userId').value = user_id;
-			document.getElementById('firstname').value = firstname;
-			document.getElementById('middlename').value = middlename;
-			document.getElementById('lastname').value = lastname;
-            document.getElementById('username').value = username;
-            document.getElementById("password").style.display = 'none';
-            document.getElementById("passwordlabel").style.display = 'none';
-            document.getElementById('email').value = email;
-			document.getElementById('roles').value = roles;
-			document.getElementById('permissions').value = permissions;
+			console.log('Menu Type : '+menu_type);
+			document.getElementById('menu_id').value = menu_id;
+			document.getElementById('menu_name').value = menuname;
+			document.getElementById('protocol').value = protocol;
+			document.getElementById('hostname').value = hostname;
+			document.getElementById('menu_link').value = menu_link;
+            document.getElementById('menu_type').value = menu_type;
+			document.getElementById('parentId').value = parentId;
 			document.getElementById("editItemButton").style.display = 'block';
-			document.getElementById("saveItemButton").style.display = 'none';
+			document.getElementById("saveMenuButton").style.display = 'none';
 
 		}
 		function handleFormSubmission() {
-         const emptyFields = ['firstname', 'middlename', 'lastname', 'email','password','username']
+         const emptyFields = ['menu_id', 'menu_name', 'protocol', 'hostname','menu_link','menu_type']
         .filter(fieldId => !validateField(fieldId));
 
 		 if (emptyFields.length == 1) {
@@ -406,6 +382,7 @@ margin-left: 0px;
 		
 }
 function deColourFieldAndNull(fieldId){
+	console.log(fieldId);
 	document.getElementById(fieldId).style.borderColor = 'grey';
 	document.getElementById(fieldId).value = null;
  }
@@ -425,28 +402,27 @@ function validateField(fieldId) {
 //       event.preventDefault(); // Prevent default form submission
       
 // });	
-		function saveItem() {
-			var user_id = document.getElementById('userId').value;
-			var firstname = document.getElementById('firstname').value;
-			var middlename = document.getElementById('middlename').value;
-			var lastname = document.getElementById('lastname').value;
-			var username = document.getElementById('username').value;
-            var password = document.getElementById('password').value;
-            var email = document.getElementById('email').value;
-			const fields = [user_id,firstname,middlename,lastname,username,password,email];
+		function saveMenu() {
+			var menu_name = document.getElementById('menu_name').value;
+			var protocol = document.getElementById('protocol').value;
+			var hostname = document.getElementById('hostname').value;
+			var menu_link = document.getElementById('menu_link').value;
+            var menu_type = document.getElementById('menu_type').value;
+            var parentId = document.getElementById('parentId').value;
+			const fields = [menu_name,protocol,hostname,menu_link,menu_type,parentId];
 
-			console.log("username : " + username);
+			console.log("menu_name : " + menu_name);
 			if (!handleFormSubmission()) {
 				const ajaxRequest = {
-            	url: 'userAdd',
+            	url: 'addMenu',
             	type: 'post',
 				data: {
-				    firstname: firstname,
-				    middlename: middlename,
-				    lastname: lastname,
-				    username: username,
-                    password: password,
-				    email: email
+				    newProtocol: protocol,
+				    newMenuName: menu_name,
+				    newMenuLink: menu_link,
+				    newHostname: hostname,
+                    newMenuType: menu_type,
+				    newParentMenuName: email
 				},
             success: function (response, textStatus, xhr) {
                 console.log("Status Code:", xhr.status + ", Status Message " + textStatus);
@@ -461,22 +437,19 @@ function validateField(fieldId) {
                 location.reload();
             },
             error: function (response) {
-                alert('Error adding user');
+                alert('Error adding menu');
                 //location.reload();
             }
         };
 
         $.ajax(ajaxRequest);
 			}
-			//if (validateField('itemName') && validateField('category') && validateField('length') && validateField('width') && validateField('height')) {
-        	
-    //}
 }
 			
 		function cancelEdit() {
 		    // Hide the category input field, save button, and cancel button
 		    document.getElementById('itemDiv').style.display = 'none';
-		    document.getElementById('saveItemButton').style.display = 'none';
+		    document.getElementById('saveMenuButton').style.display = 'none';
 		    document.getElementById('toggleButton').style.display = 'none';
 
 		    // Show the Add Category button
@@ -485,34 +458,35 @@ function validateField(fieldId) {
 
 		}
 
-		function editItem(item_id, description) {
-			console.log("Editing : " + description);
-			// Show the category input field with the current category name
-			document.getElementById('itemDiv').style.display = 'block';
-			document.getElementById('item').value = description;
-			document.getElementById('saveButton').style.display = 'none';
-			document.getElementById('addItemButton').style.display = 'none';
-			document.getElementById('toggleButton').style.display = 'block';
-			document.getElementById('saveItemButton').style.display = 'block';
-			isItemShown = true;
-			currentItemName = description;
-		}
+		// function editItem(item_id, description) {
+		// 	console.log("Editing : " + description);
+		// 	// Show the category input field with the current category name
+		// 	document.getElementById('itemDiv').style.display = 'block';
+		// 	document.getElementById('item').value = description;
+		// 	document.getElementById('saveButton').style.display = 'none';
+		// 	document.getElementById('addItemButton').style.display = 'none';
+		// 	document.getElementById('toggleButton').style.display = 'block';
+		// 	document.getElementById('saveMenuButton').style.display = 'block';
+		// 	isItemShown = true;
+		// 	currentItemName = description;
+		// }
 
-		function saveEditItem() {
-			var user_id = document.getElementById('userId').value;
-			var firstname = document.getElementById('firstname').value;
-			var middlename = document.getElementById('middlename').value;
-			var lastname = document.getElementById('lastname').value;
-			var username = document.getElementById('username').value;
-            var email = document.getElementById('email').value;
+		function saveEditMenu() {
+			var menu_id = document.getElementById('menu_id').value;
+			var menu_name = document.getElementById('menu_name').value;
+			var protocol = document.getElementById('protocol').value;
+			var hostname = document.getElementById('hostname').value;
+			var menu_type = document.getElementById('menu_type').value;
+			var menu_link = document.getElementById('menu_link').value;
+            var parentId = document.getElementById('parentId').value;
 
 
-			console.log("Item Description : " + description);
+			console.log("Menu Name : " + menu_name);
 			if (!handleFormSubmission()) {
 			const ajaxRequest = {
-				url : 'itemEdit',
-				type : 'put',
-				data:{description: description,category: category,length: length,width: width,height: height },
+				url : 'updateMenu',
+				type : 'patch',
+				data:{newProtocol: protocol,newMenuName: menu_name,newMenuLink: menu_link,newHostname: hostname,newMenuType: menu_type },
 				success : function(response, textStatus, xhr) {
 					console.log("Status Code:", xhr.status
 							+ ", Status Message " + textStatus);
@@ -529,7 +503,7 @@ function validateField(fieldId) {
 
 				},
 				error : function(response) {
-					alert('Error editing item');
+					alert('Error editing menu');
 					location.reload();
 				}
 			};
@@ -538,7 +512,7 @@ function validateField(fieldId) {
 		}
 		
 		}
-		function confirmItemDeletion(item_id,description, deleteFlag) {
+		function confirmMenuDeletion(menu_id,menuname, deleteFlag) {
 			if (deleteFlag) {
 //				const confirmation = window
 //						.confirm(`Are you sure you want to delete category '${category_name}'?`);
@@ -547,7 +521,7 @@ function validateField(fieldId) {
 			//	}
 				 Swal.fire({
 			            title: 'Are you sure?',
-			            text: `Are you sure you want to delete item '${description}'?`,
+			            text: `Are you sure you want to delete item '${menuname}'?`,
 			            icon: 'warning',
 			            showCancelButton: true,
 			            confirmButtonColor: '#3085d6',
@@ -556,23 +530,23 @@ function validateField(fieldId) {
 			            cancelButtonText: 'No, cancel!'
 			        }).then((result) => {
 			            if (result.isConfirmed) {
-			                deleteCategory(description);
+			                deleteMenu(menu_id);
 			            }
 			        });
 			    }
 		}
 
-		function deleteCategory(description) {
-			console.log(description);
+		function deleteMenu(menu_id) {
+			console.log(menu_id);
 
 			// Proceed with deletion if user clicks "Yes" button
 			$
 					.ajax({
-						url : '/api/deleteItem/' + description,
+						url : '/api/deleteMenu/' + menu_id,
 						type : 'delete',
 						 success: function(response, textStatus, xhr) {
 					            console.log("Status code:", xhr.status + ", " + textStatus);
-					            Swal.fire('Deleted!', 'Item deleted successfully', 'success').then((result) => {
+					            Swal.fire('Deleted!', 'Menu deleted successfully', 'success').then((result) => {
 					                if (result.isConfirmed) {
 					                    location.reload(); // Reload the page
 					                }
@@ -580,7 +554,7 @@ function validateField(fieldId) {
 					        },
 	
 					        error: function(response) {
-					            Swal.fire('Error!', 'Error deleting Item', 'error');
+					            Swal.fire('Error!', 'Error deleting Menu', 'error');
 					        }
 					});
 		}

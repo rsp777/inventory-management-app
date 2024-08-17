@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.pawar.inventory.app.exception.MenuNotFoundException;
 import com.pawar.inventory.app.model.Menu;
+import com.pawar.inventory.app.model.MenuAccess;
 import com.pawar.inventory.app.model.Role;
 import com.pawar.todo.dto.UserDto;
 
@@ -29,5 +30,7 @@ public interface MenuAccessService {
 	void unassignMenusToRole(int menuId, Integer roleId)throws RoleNotFoundException,MenuNotFoundException,JsonProcessingException;
 
 	List<UserDto> getUsers() throws ClientProtocolException, IOException;
+
+	List<MenuAccess> getMenuAccesses() throws MenuNotFoundException;
 
 }

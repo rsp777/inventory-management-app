@@ -610,7 +610,6 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		HttpResponse response = httpClient.execute(request);
 		org.apache.http.HttpEntity entity = response.getEntity();
 		String json = EntityUtils.toString(entity);
-		logger.info("Fetched Lpns : " + json);
 		// List<Category> fetchedCategory = objectMapper.readValue(json,
 		// Category.class);
 		List<Lpn> fetchedLpn = objectMapper.readValue(json, new TypeReference<List<Lpn>>() {
@@ -694,7 +693,6 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		HttpResponse response = httpClient.execute(request);
 		org.apache.http.HttpEntity entity = response.getEntity();
 		String json = EntityUtils.toString(entity);
-		logger.info("Fetched Inventories : " + json);
 		// List<Category> fetchedCategory = objectMapper.readValue(json,
 		// Category.class);
 		List<Inventory> fetchedInventory = objectMapper.readValue(json, new TypeReference<List<Inventory>>() {
@@ -792,7 +790,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 			logger.info("" + inventory_json);
 
 			String json = inventory_json.toString();
-			logger.info("Reserve Inventory Payload : " + json);
+			logger.info("Active Inventory Payload : " + json);
 			String url = "http://localhost:8085/inventory/createActive";
 
 			HttpHeaders httpHeaders = new HttpHeaders();
@@ -849,7 +847,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		// Query<Menu> query = currentSession.createNativeQuery("SET FOREIGN_KEY_CHECKS
 		// = 1", Menu.class);
 		logger.info("Menu " + newMenu);
-		logger.info("Parent Menu : "+newMenu.getParent());
+		logger.info("Parent Menu : " + newMenu.getParent());
 		// query.executeUpdate();
 		newMenu.setCreatedDttm(LocalDateTime.now());
 		newMenu.setLastUpdatedDttm(LocalDateTime.now());
@@ -899,7 +897,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		} catch (NoResultException e) {
 			return null;
 		}
-	
+
 	}
 
 	public String getUrl(String menuName) {
@@ -930,34 +928,58 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 			String email) {
 //		boolean isValidItem = validateItem(description);
 //		logger.info("isValid : " + isValidItem);
-		
-			JSONObject user = new JSONObject();
-			
 
-			// category_Json.put("category", category_name_Json);
-			user.put("username", username);
-			user.put("email", email);
-			user.put("passwordHash", password);
-			user.put("firstName", firstname);
-			user.put("middleName", middlename);
-			user.put("lastName", lastname);
+		JSONObject user = new JSONObject();
+
+		// category_Json.put("category", category_name_Json);
+		user.put("username", username);
+		user.put("email", email);
+		user.put("passwordHash", password);
+		user.put("firstName", firstname);
+		user.put("middleName", middlename);
+		user.put("lastName", lastname);
 //			item.put("item", item_Json);
-			String json = user.toString();
-			logger.info("User Payload : " + json);
-			String url = getUrl("Register");
+		String json = user.toString();
+		logger.info("User Payload : " + json);
+		String url = getUrl("Register");
 
-			HttpHeaders httpHeaders = new HttpHeaders();
+		HttpHeaders httpHeaders = new HttpHeaders();
 
-			httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-			HttpEntity<String> httpEntity = new HttpEntity<String>(json, httpHeaders);
-			RestTemplate restTemplate = new RestTemplate();
-			String response = restTemplate.postForObject(url, httpEntity, String.class);
+		HttpEntity<String> httpEntity = new HttpEntity<String>(json, httpHeaders);
+		RestTemplate restTemplate = new RestTemplate();
+		String response = restTemplate.postForObject(url, httpEntity, String.class);
 
-			logger.info("Response : " + response);
+		logger.info("Response : " + response);
 
-			return response;
+		return response;
+
+	}
+
+	@Override
+	public String checkActiveInventory(String lpn_name) {
+		String response = "";
+		JSONObject inventory_json = new JSONObject();
+		JSONObject inventory = new JSONObject();
+		JSONObject lpn = new JSONObject();
+		lpn.put("lpn_name", lpn_name);
+		inventory.put("lpn", lpn);
+		inventory_json.put("inventory", inventory);
+		logger.info("" + inventory_json);
+
+		String json = inventory_json.toString();
+		logger.info("check ACtive Inventory Payload : " + json);
+		String url = getUrl("CheckActiveInventory");
+		logger.info("URL : "+url);
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+		HttpEntity<String> httpEntity = new HttpEntity<String>(json, httpHeaders);
+		RestTemplate restTemplate = new RestTemplate();
+		response = restTemplate.postForObject(url, httpEntity, String.class);
+		logger.info("Response : " + response);
 		
-
+		return response;
 	}
 }

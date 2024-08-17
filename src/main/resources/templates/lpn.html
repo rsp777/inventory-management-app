@@ -213,7 +213,7 @@ margin-bottom: -9px;
 		</button>
 		<div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
 		  <a class="dropdown-item"  href="#">Account</a>
-		  <a class="dropdown-item" href="#">Settings</a>
+		  <a class="dropdown-item"th:href="@{${settings_url.menu_link}}"th:text="${settings_url.menu_name}"></a>
 		  <a class="dropdown-item" th:href="@{${logout_url.menu_link}}"th:text="${logout_url.menu_name}"></a>
 		</div>
 		</div>
@@ -244,6 +244,7 @@ margin-bottom: -9px;
 						<td th:text="${lpn.item.description}"></td>
                         <td th:text="${lpn.quantity}"></td>
 						<td th:switch="${lpn.lpn_facility_status}">
+							<span th:case="0">IN-TRANSIT</span>
 							<span th:case="10">CREATED</span>
 							<span th:case="30">PUTAWAY</span>
 							<span th:case="96">CONSUME TO ACTIVE</span>

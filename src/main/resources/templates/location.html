@@ -213,7 +213,7 @@ margin-bottom: -9px;
 		</button>
 		<div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
 		  <a class="dropdown-item"  href="#">Account</a>
-		  <a class="dropdown-item" href="#">Settings</a>
+		  <a class="dropdown-item"th:href="@{${settings_url.menu_link}}"th:text="${settings_url.menu_name}"></a>
 		  <a class="dropdown-item" th:href="@{${logout_url.menu_link}}"th:text="${logout_url.menu_name}"  th:onclick="javascript:ajaxLogout('{{decodedToken}}')"></a>
 		</div>
 		</div>
