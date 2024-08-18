@@ -84,7 +84,12 @@
 <body>
     <div class="topnav">
 		
-        <a href="http://localhost:8086/api/showMenu">Back</a>
+     <a id="back-link">Back</a>
+		<script>
+			var backLink = document.getElementById('back-link');
+			backLink.href = 'http://' + window.location.hostname
+					+ ':8086/api/showMenu';
+		</script>
  
 
         <div class="title">Warehouse Management System</div>
