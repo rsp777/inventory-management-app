@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.management.relation.RoleNotFoundException;
@@ -21,6 +20,7 @@ import org.jboss.logging.Logger;
 //import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
@@ -29,22 +29,19 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.pawar.inventory.app.controller.MenuController;
 import com.pawar.inventory.app.exception.MenuNotFoundException;
 import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.app.model.MenuAccess;
-import com.pawar.inventory.app.model.Permission;
 import com.pawar.inventory.app.model.Role;
 
 import com.pawar.inventory.app.repository.MenuAccessRepository;
 import com.pawar.inventory.app.repository.MenuRepository;
 import com.pawar.inventory.app.repository.MenuRepositoryCustom;
 import com.pawar.inventory.app.repository.RoleRepository;
-import com.pawar.inventory.entity.Category;
-import com.pawar.todo.dto.RoleDto;
 import com.pawar.todo.dto.UserDto;
 
 @Service
+@Transactional
 public class MenuAccessServiceImpl implements MenuAccessService {
 
 	private final static Logger logger = Logger.getLogger(MenuAccessServiceImpl.class);
@@ -137,12 +134,18 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 		return userRoles;
 	}
 
-	public String getUserName(String[] decodedString) {
-		String user_name = "";
-		for (int i = 0; i < decodedString.length - 1; i++) {
-			user_name = user_name + " " + decodedString[i];
-		}
-		logger.infof("User name : {}" , user_name);
+	public String getUserName(String jwtToken) {
+//		String[] decodedString = decodeToken(jwtToken);
+////		String user_name = "";
+////		String[] decodedString = decodedJWT.getSubject().split("\\|");
+//		String user_name = decodedString[0];
+		DecodedJWT decodedJWT = JWT.decode(jwtToken);
+		String[] decodedString = decodedJWT.getSubject().split("\\|");
+		String user_name = decodedString[0];
+//		for (int i = 0; i < decodedString.length - 1; i++) {
+//			user_name = user_name + " " + decodedString[i];
+//		}
+//		logger.infof("User name : {}" , user_name);
 		return user_name;
 	}
 
@@ -163,7 +166,7 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 
 		logger.infof("Updated Role : {} ", savedRole);
 
-		logger.infof("Menus {} assigned successfully to Role ID: {}", assignedMenu.getMenu_name(), roleId);
+		logger.infof("Menus {} assigned successfully to Role ID: {}", assignedMenu.getMenuName(), roleId);
 
 	}
 
@@ -173,9 +176,6 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 
 		Role role = roleRepository.findById(roleId)
 				.orElseThrow(() -> new RoleNotFoundException("Role not found with id: " + roleId));
-
-		Menu menu = menuRepository.findById(menuId)
-				.orElseThrow(() -> new MenuNotFoundException("Menu not found with id: " + menuId));
 
 		role.getMenus().removeIf(m -> m.getMenu_id() == menuId);
 		Role savedRole = roleRepository.save(role);

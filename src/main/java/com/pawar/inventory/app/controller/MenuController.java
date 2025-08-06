@@ -2,6 +2,7 @@ package com.pawar.inventory.app.controller;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -11,11 +12,10 @@ import java.util.logging.Logger;
 import org.apache.http.client.ClientProtocolException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.thymeleaf.context.LazyContextVariable;
 
@@ -43,10 +42,13 @@ import com.pawar.inventory.app.model.ResponseMessage;
 import com.pawar.inventory.app.service.MenuAccessService;
 import com.pawar.inventory.app.service.MenuService;
 import com.pawar.inventory.entity.Category;
+import com.pawar.inventory.entity.Grp;
 import com.pawar.inventory.entity.Inventory;
 import com.pawar.inventory.entity.Item;
 import com.pawar.inventory.entity.Location;
 import com.pawar.inventory.entity.Lpn;
+import com.pawar.inventory.entity.SopActionTypeDto;
+import com.pawar.inventory.entity.SopLocationRangeDto;
 import com.pawar.todo.dto.UserDto;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -75,6 +77,9 @@ public class MenuController {
 	public ResponseEntity<?> addMenu(@RequestParam String newProtocol, @RequestParam String newMenuName,
 			@RequestParam String newMenuLink, @RequestParam String newHostname, @RequestParam String newMenuType,
 			@RequestParam String newParentMenuName) {
+
+		Menu newMenu;
+
 		logger.info("New Protocol : " + newProtocol);
 		logger.info("New Menu : " + newMenuName);
 		logger.info("New Menu Link : " + newMenuLink);
@@ -82,10 +87,24 @@ public class MenuController {
 		logger.info("New Menu Type : " + newMenuType);
 		logger.info("Parent Menu : " + newParentMenuName);
 
-		Menu newMenu;
+		// Convert "null" String into null value
+		newProtocol = "null".equals(newProtocol) ? null : newProtocol;
+		newMenuName = "null".equals(newMenuName) ? null : newMenuName;
+		newMenuLink = "null".equals(newMenuLink) ? null : newMenuLink;
+		newHostname = "null".equals(newHostname) ? null : newHostname;
+		newMenuType = "null".equals(newMenuType) ? null : newMenuType;
+		newParentMenuName = "null".equals(newParentMenuName) ? null : newParentMenuName;
 
-		newMenu = menuService.addMenu(newProtocol, newMenuName, newMenuLink, newHostname, newMenuType,
-				newParentMenuName);
+		try {
+			newMenu = menuService.addMenu(newProtocol, newMenuName, newMenuLink, newHostname, newMenuType,
+					newParentMenuName);
+		} catch (ParentMenuNotFoundException e) {
+			e.printStackTrace();
+			return ResponseEntity.ok("Parent Menu does not exist : " + newParentMenuName);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.ok("Exception while adding new menu : " + newMenuName);
+		}
 		logger.info("New Menu is now created : " + newMenu);
 		return ResponseEntity.ok("Menu Added Successfully : " + newMenu);
 
@@ -117,7 +136,8 @@ public class MenuController {
 			for (Menu menu : menus) {
 				if (menu.getMenu_type().equals("RF")) {
 					rf.add(menu);
-				} else if (menu.getMenu_type().equals("UI")) {
+				} else if (menu.getMenu_type().equals("UI") || menu.getMenu_type().equals("PARENT_UI")
+						|| menu.getMenu_type().equals("CHILD_UI")) {
 					nav.add(menu);
 				}
 			}
@@ -127,11 +147,17 @@ public class MenuController {
 			model.addAttribute("nav_menus", nav);
 			return "menu";
 		} catch (JsonProcessingException | MenuNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return "menu";
+		} catch (JWTDecodeException e) {
+			e.printStackTrace();
+			model.addAttribute("responseMessage", "Session Expired please Login Again");
+			return "redirect:/api/index";
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "redirect:/api/index";
 		}
-//		List<Menu> menus = menuService.getAllMenus();
+		// List<Menu> menus = menuService.getAllMenus();
 
 	}
 
@@ -209,7 +235,8 @@ public class MenuController {
 				for (Menu menu : menus) {
 					if (menu.getMenu_type().equals("RF")) {
 						rf.add(menu);
-					} else if (menu.getMenu_type().equals("UI")) {
+					} else if (menu.getMenu_type().equals("UI") || menu.getMenu_type().equals("PARENT_UI")
+							|| menu.getMenu_type().equals("CHILD_UI")) {
 						nav.add(menu);
 					}
 				}
@@ -226,7 +253,6 @@ public class MenuController {
 				// model.addAttribute("newCategory", new Category());
 				return "item";
 			} catch (MenuNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return "item";
 			}
@@ -259,25 +285,30 @@ public class MenuController {
 	public String categoryInfo(Model model, HttpServletRequest request, HttpSession httpSession) {
 		logger.info("Category");
 		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
+
 		try {
-			List<Menu> menus = menuAccessService.getAccessibleMenus(decodedToken);
+			List<Menu> menus;
+			menus = menuAccessService.getAccessibleMenus(decodedToken);
 			List<Menu> rf = new ArrayList<>();
 			List<Menu> nav = new ArrayList<>();
 			// logger.info("" + menus);
 			for (Menu menu : menus) {
 				if (menu.getMenu_type().equals("RF")) {
 					rf.add(menu);
-				} else if (menu.getMenu_type().equals("UI")) {
+				} else if (menu.getMenu_type().equals("UI") || menu.getMenu_type().equals("PARENT_UI")
+						|| menu.getMenu_type().equals("CHILD_UI")) {
 					nav.add(menu);
 				}
 			}
+			logger.info("Request URI :" + request.getRequestURI());
+
 			Iterable<Category> categories;
 
 			categories = menuService.getfindAllCategories();
 			logger.info("Fetched Categories : ");
 
+			model.addAttribute("menus", rf);
 			model.addAttribute("currentMenu", request.getRequestURI());
-			model.addAttribute("categories", categories);
 			model.addAttribute("nav_menus", nav);
 
 			// model.addAttribute("newCategory", new Category());
@@ -290,7 +321,6 @@ public class MenuController {
 
 	}
 
-	@SuppressWarnings("unlikely-arg-type")
 	@PostMapping("/categoryAdd/{category_name}")
 	public String categoryAdd(Model model, @PathVariable String category_name) {
 		logger.info("New Category to Add : " + category_name);
@@ -319,9 +349,18 @@ public class MenuController {
 
 	@PutMapping(value = "/categoryEdit/{category_name}", consumes = "application/json", produces = "application/json")
 	public String categoryEdit(Model model, @PathVariable String category_name, @RequestBody Category category) {
-		logger.info("Edit Existing Category to : " + category_name);
-		logger.info("Category : " + category);
-		menuService.categoryEdit(category_name, category);
+		
+		try {
+			logger.info("Edit Existing Category to : " + category_name);
+			logger.info("Category : " + category);
+			menuService.categoryEdit(category_name, category);
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		logger.info("Category updated : " + category_name);
 		return "category";
 	}
@@ -379,10 +418,10 @@ public class MenuController {
 	}
 
 	@PutMapping("/itemEdit")
-	public String itemEdit(Model model, @RequestParam String description, @RequestParam String category,
+	public String itemEdit(Model model, @RequestParam int itemId, @RequestParam String description, @RequestParam String category,
 			@RequestParam float length, @RequestParam float width, @RequestParam float height) {
 		try {
-			ResponseEntity<String> responseMessage = menuService.itemEdit(description, category, length, width, height);
+			ResponseEntity<String> responseMessage = menuService.itemEdit(itemId,description, category, length, width, height);
 			logger.info("responseMessage : " + responseMessage.getBody());
 			// ResponseMessage responseMessage = new ResponseMessage();
 			// responseMessage.setResponseMessage(response);
@@ -402,12 +441,12 @@ public class MenuController {
 
 	}
 
-	@DeleteMapping(value = "/deleteItem/{description}")
-	public String deleteItem(@PathVariable String description) {
-		logger.info("Delete Existing Item : " + description);
+	@DeleteMapping(value = "/deleteItem/{item_id}")
+	public String deleteItem(@PathVariable int item_id) {
+		logger.info("Delete Existing Item : " + item_id);
 		try {
-			menuService.deleteItem(description);
-			logger.info("Item deleted successfully : " + description);
+			menuService.deleteItem(item_id);
+			logger.info("Item deleted successfully : " + item_id);
 			return "item";
 		} catch (IOException e) {
 
@@ -422,21 +461,27 @@ public class MenuController {
 		logger.info("Location");
 		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
 		try {
-			List<Menu> menus = menuAccessService.getAccessibleMenus(decodedToken);
+
+			List<Menu> menus;
+			menus = menuAccessService.getAccessibleMenus(decodedToken);
 			List<Menu> rf = new ArrayList<>();
 			List<Menu> nav = new ArrayList<>();
 			// logger.info("" + menus);
 			for (Menu menu : menus) {
 				if (menu.getMenu_type().equals("RF")) {
 					rf.add(menu);
-				} else if (menu.getMenu_type().equals("UI")) {
+				} else if (menu.getMenu_type().equals("UI") || menu.getMenu_type().equals("PARENT_UI")
+						|| menu.getMenu_type().equals("CHILD_UI")) {
 					nav.add(menu);
 				}
 			}
-			Iterable<Location> locations;
 
+			Iterable<Location> locations;
+			Iterable<Grp> grps;
+			grps = menuService.getGrps();
 			locations = menuService.getLocations();
 			logger.info("Fetched Locations : " + locations);
+			model.addAttribute("grps", grps);
 			model.addAttribute("locations", locations);
 			model.addAttribute("nav_menus", nav);
 			model.addAttribute("currentMenu", request.getRequestURI());
@@ -452,12 +497,13 @@ public class MenuController {
 	}
 
 	@PostMapping("/locationAdd")
-	public String locationAdd(Model model, @RequestParam String locn_brcd, @RequestParam String locn_class,
-			@RequestParam float length, @RequestParam float width, @RequestParam float height,
-			@RequestParam float max_vol, @RequestParam float max_qty, @RequestParam float max_weight) {
+	public String locationAdd(Model model, @RequestParam String locn_brcd, @RequestParam String grp,
+			@RequestParam String locn_class, @RequestParam float length, @RequestParam float width,
+			@RequestParam float height, @RequestParam float max_vol, @RequestParam float max_qty,
+			@RequestParam float max_weight) {
 		logger.info("New Location to Add : " + locn_brcd);
 		try {
-			String responseMessage = menuService.locationAdd(locn_brcd, locn_class, length, width, height, max_vol,
+			String responseMessage = menuService.locationAdd(locn_brcd, grp, locn_class, length, width, height, max_vol,
 					max_qty, max_weight);
 			model.addAttribute("responseMessage", responseMessage);
 			if (responseMessage.equals("Location already exists")) {
@@ -476,12 +522,13 @@ public class MenuController {
 	}
 
 	@PutMapping("/locationEdit")
-	public String locationEdit(Model model, @RequestParam String locn_brcd, @RequestParam String locn_class,
-			@RequestParam float length, @RequestParam float width, @RequestParam float height,
-			@RequestParam float max_vol, @RequestParam float max_qty, @RequestParam float max_weight) {
+	public String locationEdit(Model model, @RequestParam String locn_brcd, @RequestParam String grp,
+			@RequestParam String locn_class, @RequestParam float length, @RequestParam float width,
+			@RequestParam float height, @RequestParam float max_vol, @RequestParam float max_qty,
+			@RequestParam float max_weight) {
 		logger.info("Location to Edit : " + locn_brcd);
 		try {
-			ResponseEntity<String> responseMessage = menuService.locationEdit(locn_brcd, locn_class, length, width,
+			ResponseEntity<String> responseMessage = menuService.locationEdit(locn_brcd, grp, locn_class, length, width,
 					height, max_vol, max_qty, max_weight);
 			model.addAttribute("responseMessage", responseMessage.getBody());
 			logger.info("Response Message : " + responseMessage.getBody());
@@ -521,7 +568,8 @@ public class MenuController {
 			for (Menu menu : menus) {
 				if (menu.getMenu_type().equals("RF")) {
 					rf.add(menu);
-				} else if (menu.getMenu_type().equals("UI")) {
+				} else if (menu.getMenu_type().equals("UI") || menu.getMenu_type().equals("PARENT_UI")
+						|| menu.getMenu_type().equals("CHILD_UI")) {
 					nav.add(menu);
 				}
 			}
@@ -577,7 +625,8 @@ public class MenuController {
 			for (Menu menu : menus) {
 				if (menu.getMenu_type().equals("RF")) {
 					rf.add(menu);
-				} else if (menu.getMenu_type().equals("UI")) {
+				} else if (menu.getMenu_type().equals("UI") || menu.getMenu_type().equals("PARENT_UI")
+						|| menu.getMenu_type().equals("CHILD_UI")) {
 					nav.add(menu);
 				}
 			}
@@ -633,30 +682,39 @@ public class MenuController {
 		logger.info("putawayLpnToActive");
 		return "putawayLpnToActive";
 	}
-	
+
 	@GetMapping("/putawayLpnToActiveSys")
 	public String putawayLpnToActiveSys(Model model) {
 		logger.info("putawayLpnToActiveSys");
 		return "putawayLpnToActiveSys";
 	}
-	
+
 	@PostMapping("/checkActiveInventory")
 	@ResponseBody
 	public String checkActiveInventory(Model model, @RequestParam String lpn_name) {
-		logger.info("LPN : " + lpn_name);
+		
 		String response = "";
-//		try {
+
+		try {
+			logger.info("LPN : " + lpn_name);
 			response = menuService.checkActiveInventory(lpn_name);
-			logger.info("Active Location : "+response);
-//			model.addAttribute("actLoc", response);
-//			logger.info(""+model.getAttribute("actLoc"));
-			return response;
-//		} 
-//		catch (IOException e) {
-//			logger.log(Level.SEVERE, "IOException occurred: ", e);
-//			// e.printStackTrace();
-//			return "putawayLpnToActiveSys";
-//		}
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		logger.info("Active Location : " + response);
+		// model.addAttribute("actLoc", response);
+		// logger.info(""+model.getAttribute("actLoc"));
+		return response;
+		// }
+		// catch (IOException e) {
+		// logger.log(Level.SEVERE, "IOException occurred: ", e);
+		// // e.printStackTrace();
+		// return "putawayLpnToActiveSys";
+		// }
 	}
 
 	@PostMapping("/locateLpnToActive")
@@ -762,12 +820,15 @@ public class MenuController {
 			for (Menu menu : menus) {
 				if (menu.getMenu_type().equals("RF")) {
 					rf.add(menu);
-				} else if (menu.getMenu_type().equals("UI")) {
+				} else if (menu.getMenu_type().equals("UI") || menu.getMenu_type().equals("PARENT_UI")
+						|| menu.getMenu_type().equals("CHILD_UI")) {
 					nav.add(menu);
-				} else if (!menu.getMenu_type().equals("AUTH")) {
+				} else if (!menu.getMenu_type().equals("AUTH") && !menu.getMenu_type().equals("CHILD_UI")
+						&& !menu.getMenu_type().equals("PARENT_UI")) {
 					side.add(menu);
 				}
 			}
+
 			logger.info("Side Menus : " + side);
 			model.addAttribute("menus", rf);
 			model.addAttribute("currentMenu", request.getRequestURI());
@@ -779,7 +840,6 @@ public class MenuController {
 
 			e.printStackTrace();
 		} catch (MenuNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JWTDecodeException e) {
 			model.addAttribute("responseMessage", "Session Expired please Login Again");
@@ -805,7 +865,8 @@ public class MenuController {
 			for (Menu menu : menus) {
 				if (menu.getMenu_type().equals("RF")) {
 					rf.add(menu);
-				} else if (menu.getMenu_type().equals("UI")) {
+				} else if (menu.getMenu_type().equals("UI") || menu.getMenu_type().equals("PARENT_UI")
+						|| menu.getMenu_type().equals("CHILD_UI")) {
 					nav.add(menu);
 				} else if (!menu.getMenu_type().equals("AUTH")) {
 					side.add(menu);
@@ -823,13 +884,10 @@ public class MenuController {
 
 			e.printStackTrace();
 		} catch (MenuNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -855,9 +913,9 @@ public class MenuController {
 		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
 		List<Menu> menus;
 		List<Menu> allMenus;
-		
+
 		try {
-			
+
 			menus = menuAccessService.getAccessibleMenus(decodedToken);
 			allMenus = menuService.getAllMenus();
 			List<Menu> rf = new ArrayList<>();
@@ -867,7 +925,8 @@ public class MenuController {
 			for (Menu menu : menus) {
 				if (menu.getMenu_type().equals("RF")) {
 					rf.add(menu);
-				} else if (menu.getMenu_type().equals("UI")) {
+				} else if (menu.getMenu_type().equals("UI") || menu.getMenu_type().equals("PARENT_UI")
+						|| menu.getMenu_type().equals("CHILD_UI")) {
 					nav.add(menu);
 				} else if (!menu.getMenu_type().equals("AUTH")) {
 					side.add(menu);
@@ -879,21 +938,302 @@ public class MenuController {
 			model.addAttribute("nav_menus", nav);
 			model.addAttribute("side_menus", side);
 			model.addAttribute("allMenus", allMenus);
-			logger.info("All menus : "+allMenus);
+			logger.info("All menus : " + allMenus);
 		} catch (JsonMappingException e) {
 			e.printStackTrace();
 		} catch (JsonProcessingException e) {
 
 			e.printStackTrace();
 		} catch (MenuNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}  catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (@SuppressWarnings("hiding") IOException e) {
 			e.printStackTrace();
 		}
 
 		logger.info("menulist");
 		return "menulist";
+	}
+
+	@GetMapping("/sopConfig")
+	public String sopConfig(Model model, HttpServletRequest request, HttpSession httpSession) {
+		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
+		List<Menu> menus;
+		List<Menu> nav = new ArrayList<>();
+		logger.info("sop-config");
+		try {
+			menus = menuAccessService.getAccessibleMenus(decodedToken);
+			List<SopLocationRangeDto> sopLocationRangeDtos = menuService.getLocationRanges();
+			List<Category> categories = menuService.getCategories();
+			List<SopActionTypeDto> sopActionTypeDtos = menuService.getSopActionTypes();
+			logger.info("Location Range : " + sopLocationRangeDtos);
+			logger.info("Action Type : " + sopActionTypeDtos);
+			logger.info("Categories : " + categories);
+
+			model.addAttribute("locationRanges", sopLocationRangeDtos);
+			model.addAttribute("actionTypes", sopActionTypeDtos);
+			model.addAttribute("categories", categories);
+
+			Map<Integer, Boolean> selectedRanges = new HashMap<>();
+			for (SopLocationRangeDto range : sopLocationRangeDtos) {
+				selectedRanges.put(range.getId(), false); // Initialize all as unchecked
+			}
+			logger.info("selectedRanges : " + selectedRanges);
+			model.addAttribute("selectedRanges", selectedRanges);
+
+			for (Menu menu : menus) {
+				if (menu.getMenu_type().equals("UI") || menu.getMenu_type().equals("PARENT_UI")
+						|| menu.getMenu_type().equals("CHILD_UI")) {
+					nav.add(menu);
+				}
+			}
+		} catch (IOException | MenuNotFoundException e) {
+			e.printStackTrace();
+			model.addAttribute("responseMessage", "Invalid Menu");
+			return "redirect:/api/index";
+		} catch (JWTDecodeException e) {
+			e.printStackTrace();
+			model.addAttribute("responseMessage", "Session Expired please Login Again");
+			return "redirect:/api/index";
+		} catch (Exception e) {
+			e.printStackTrace();
+			model.addAttribute("responseMessage", "An error occured, Please check with administrator");
+			return "sop-config";
+		}
+
+		model.addAttribute("nav_menus", nav);
+		model.addAttribute("currentMenu", request.getRequestURI());
+
+		return "sop-config";
+
+	}
+
+	@PostMapping("/sop/runBatch")
+	public String runBatch(HttpServletRequest request,@RequestParam("actionType") String sopActionType,
+			@RequestParam("category_name") String category_name, @RequestParam("activeTab") String activeTab,
+			Model model, HttpSession httpSession) {
+		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
+		List<Menu> menus;
+		List<Menu> nav = new ArrayList<>();
+		try {
+			logger.info("Run Batch for Action Type : " + sopActionType + " and Category : " + category_name);
+			menus = menuAccessService.getAccessibleMenus(decodedToken);
+			List<SopLocationRangeDto> sopLocationRangeDtos = menuService.getLocationRanges();
+			List<Category> categories = menuService.getCategories();
+			List<SopActionTypeDto> sopActionTypeDtos = menuService.getSopActionTypes();
+			logger.info("Location Range : " + sopLocationRangeDtos);
+			logger.info("Action Type : " + sopActionTypeDtos);
+			logger.info("Categories : " + categories);
+
+			model.addAttribute("locationRanges", sopLocationRangeDtos);
+			model.addAttribute("actionTypes", sopActionTypeDtos);
+			model.addAttribute("categories", categories);
+
+			for (Menu menu : menus) {
+				if (menu.getMenu_type().equals("UI") || menu.getMenu_type().equals("PARENT_UI")
+						|| menu.getMenu_type().equals("CHILD_UI")) {
+					nav.add(menu);
+				}
+			}
+			// Check actionType is assign or unassign
+			if (sopActionType.equals("ASSIGN")) {
+
+				menuService.assignBatch(sopActionType, category_name);
+				logger.info("Assign Batch triggered for category : " + category_name);
+				model.addAttribute("responseMessage", sopActionType + "Batch Submitted Successfully!!");
+				return "sop-config";
+			} else {
+				// response = menuService.unassignBatch(actionType,category);
+				try {
+					logger.info("Unassign Batch triggered for category : " + category_name);
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		model.addAttribute("nav_menus", nav);
+		model.addAttribute("currentMenu", request.getRequestURI());
+		model.addAttribute("activeTab", activeTab);
+		return "sop-config";
+	}
+
+	@PostMapping("/sop/location-range/add")
+	public String addLocationRange(HttpServletRequest request,@RequestParam("actionType") String sopActionType,
+			@RequestParam("category") String category_name, @RequestParam("fromLocation") String fromLocation,
+			@RequestParam("toLocation") String toLocation,
+			@RequestParam("isActive") String isActive, @RequestParam("activeTab") String activeTab, Model model,
+			HttpSession httpSession) {
+		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
+		List<Menu> menus;
+		List<Menu> nav = new ArrayList<>();
+		try {
+			menus = menuAccessService.getAccessibleMenus(decodedToken);
+			String username = menuAccessService.getUserName(decodedToken);
+			List<SopLocationRangeDto> sopLocationRangeDtos = menuService.getLocationRanges();
+			List<Category> categories = menuService.getCategories();
+			List<SopActionTypeDto> sopActionTypeDtos = menuService.getSopActionTypes();
+			logger.info("Location Range : " + sopLocationRangeDtos);
+			logger.info("Action Type : " + sopActionTypeDtos);
+			logger.info("Categories : " + categories);
+
+			for (Menu menu : menus) {
+				if (menu.getMenu_type().equals("UI") || menu.getMenu_type().equals("PARENT_UI")
+						|| menu.getMenu_type().equals("CHILD_UI")) {
+					nav.add(menu);
+				}
+			}
+			model.addAttribute("locationRanges", sopLocationRangeDtos);
+			model.addAttribute("actionTypes", sopActionTypeDtos);
+			model.addAttribute("categories", categories);
+			logger.info("Add Location Range for Action Type : " + sopActionType + " and Category : " + category_name);
+			menus = menuAccessService.getAccessibleMenus(decodedToken);
+
+			String locationRangeAddresponseMessage = menuService.addLocationRange(sopActionType, category_name, fromLocation, toLocation,
+					isActive,username);
+
+			model.addAttribute("locationRangeAddresponseMessage", locationRangeAddresponseMessage);
+			for (Menu menu : menus) {
+				if (menu.getMenu_type().equals("UI") || menu.getMenu_type().equals("PARENT_UI")
+						|| menu.getMenu_type().equals("CHILD_UI")) {
+					nav.add(menu);
+				}
+			}
+
+		} 
+		catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		model.addAttribute("nav_menus", nav);
+		model.addAttribute("currentMenu", request.getRequestURI());
+		model.addAttribute("activeTab", activeTab);
+		return "sop-config";
+	}
+	
+	@PostMapping("/sop/location-range/update")
+	public String updatecationRange(HttpServletRequest request,
+			@RequestParam("id") String id,
+			@RequestParam("actionType") String sopActionType,
+			@RequestParam("category") String category_name, @RequestParam("fromLocation") String fromLocation,
+			@RequestParam("toLocation") String toLocation,
+			@RequestParam("isActive") String isActive, @RequestParam("activeTab") String activeTab, Model model,
+			HttpSession httpSession) {
+		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
+		List<Menu> menus;
+		List<Menu> nav = new ArrayList<>();
+		try {
+			menus = menuAccessService.getAccessibleMenus(decodedToken);
+			String username = menuAccessService.getUserName(decodedToken);
+			List<SopLocationRangeDto> sopLocationRangeDtos = menuService.getLocationRanges();
+			List<Category> categories = menuService.getCategories();
+			List<SopActionTypeDto> sopActionTypeDtos = menuService.getSopActionTypes();
+			logger.info("Location Range : " + sopLocationRangeDtos);
+			logger.info("Action Type : " + sopActionTypeDtos);
+			logger.info("Categories : " + categories);
+
+			for (Menu menu : menus) {
+				if (menu.getMenu_type().equals("UI") || menu.getMenu_type().equals("PARENT_UI")
+						|| menu.getMenu_type().equals("CHILD_UI")) {
+					nav.add(menu);
+				}
+			}
+			model.addAttribute("locationRanges", sopLocationRangeDtos);
+			model.addAttribute("actionTypes", sopActionTypeDtos);
+			model.addAttribute("categories", categories);
+			logger.info("Add Location Range for Action Type : " + sopActionType + " and Category : " + category_name);
+			menus = menuAccessService.getAccessibleMenus(decodedToken);
+
+			String locationRangeUpdateresponseMessage = menuService.updateLocationRange(id,sopActionType, category_name, fromLocation, toLocation,
+					isActive,username);
+			logger.info("locationRangeUpdateresponseMessage : "+locationRangeUpdateresponseMessage);
+			model.addAttribute("locationRangeUpdateresponseMessage", locationRangeUpdateresponseMessage);
+
+		} 
+		catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		model.addAttribute("nav_menus", nav);
+		model.addAttribute("currentMenu", request.getRequestURI());
+		model.addAttribute("activeTab", activeTab);
+		return "sop-config";
+	}
+	
+	@PostMapping("/sop/getEligibleUpcsForSop/{category}")
+	public String getEligibleUpcsForSop(HttpServletRequest request,@RequestParam("category") String category, @RequestParam("activeTab") String activeTab,
+			Model model, HttpSession httpSession) {
+		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
+		List<Menu> menus;
+		List<Menu> nav = new ArrayList<>();
+		try {
+			logger.info("Eligible UPCs For Category : " + category);
+			menus = menuAccessService.getAccessibleMenus(decodedToken);
+			List<SopLocationRangeDto> sopLocationRangeDtos = menuService.getLocationRanges();
+			List<Category> categories = menuService.getCategories();
+			List<SopActionTypeDto> sopActionTypeDtos = menuService.getSopActionTypes();
+			logger.info("Location Range : " + sopLocationRangeDtos);
+			logger.info("Action Type : " + sopActionTypeDtos);
+			logger.info("Categories : " + categories);
+
+			model.addAttribute("locationRanges", sopLocationRangeDtos);
+			model.addAttribute("actionTypes", sopActionTypeDtos);
+			model.addAttribute("categories", categories);
+
+			for (Menu menu : menus) {
+				if (menu.getMenu_type().equals("UI") || menu.getMenu_type().equals("PARENT_UI")
+						|| menu.getMenu_type().equals("CHILD_UI")) {
+					nav.add(menu);
+				}
+			}
+			// Check actionType is assign or unassign
+			if (category != null) {
+				List<String> eligibleUpcsForSop =  menuService.getEligibleUpcsForSop(category);
+				return "sop-config";
+			} else {
+				// response = menuService.unassignBatch(actionType,category);
+				try {
+					logger.info("Unable to fetch  eligibleUpcsForSop of category : {}" + category);
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		model.addAttribute("nav_menus", nav);
+		model.addAttribute("currentMenu", request.getRequestURI());
+		model.addAttribute("activeTab", activeTab);
+		return "sop-config";
 	}
 }

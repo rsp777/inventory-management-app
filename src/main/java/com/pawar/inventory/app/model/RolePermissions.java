@@ -20,7 +20,6 @@ public class RolePermissions {
 	private Integer permissionId;
 
 	public RolePermissions() {
-		// TODO Auto-generated constructor stub
 	}
 
 	public RolePermissions(Integer roleId, Integer permissionId) {

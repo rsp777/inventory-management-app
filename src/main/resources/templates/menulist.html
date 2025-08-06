@@ -211,7 +211,7 @@ margin-left: 0px;
 				<tbody>
 					<tr th:each="menu : ${allMenus}">
 						<th scope="row" th:text="${menu.menu_id}"></th>
-						<td th:text="${menu.menu_name}"></td>
+						<td th:text="${menu.menuName}"></td>
 						<td th:text="${menu.protocol}"></td>
 						<td th:text="${menu.hostname}"></td>
 						<td th:text="${menu.menu_link}"></td>
@@ -223,7 +223,7 @@ margin-left: 0px;
 							<button style="width: 60px;"type="button" class="btn btn-primary" data-toggle="modal"
 								data-target="#exampleModal" 
 								th:data-menu-id="${menu.menu_id}"
-								th:data-menuname="${menu.menu_name}"
+								th:data-menuname="${menu.menuName}"
                                 th:data-protocol="${menu.protocol}"
 								th:data-hostname="${menu.hostname}"
 								th:data-menu_link="${menu.menu_link}"
@@ -234,7 +234,7 @@ margin-left: 0px;
 								this.getAttribute('data-menu_link'),this.getAttribute('data-menu_type'),this.getAttribute('data-parentId'), true)">
 								View</button>
 
-								<button style="width: 80px;"th:data-menu-id="${menu.menu_id}" th:data-menuname="${menu.menu_name}"
+								<button style="width: 80px;"th:data-menu-id="${menu.menu_id}" th:data-menuname="${menu.menuName}"
 								onclick="confirmMenuDeletion(this.getAttribute('data-menu-id'),this.getAttribute('data-menuname'), true)"
 								class="btn btn-danger">Delete</button>
 						</td>
@@ -263,8 +263,8 @@ margin-left: 0px;
                                     class="form-control" id="menu_id" readonly>
                             </div>
                             <div class="form-group">
-                                <label for="menu_name">Menu Name</label> <input type="text"
-                                    class="form-control" id="menu_name">
+                                <label for="menuName">Menu Name</label> <input type="text"
+                                    class="form-control" id="menuName">
                             </div>
                             <div class="form-group">
                                 <label for="protocol">Protocol</label> <input type="text"
@@ -291,8 +291,8 @@ margin-left: 0px;
                         </div>
                         <div class="col">
                             <div class="form-group">
-                                <label for="parentId">Parent Menu ID</label> <input type="text"
-                                    class="form-control" id="parentId">
+                                <label for="parentMenuName">Parent Menu Name</label> <input type="text"
+                                    class="form-control" id="parentMenuName">
                             </div>
                         </div>
                     </div>
@@ -345,15 +345,15 @@ margin-left: 0px;
 		
 		function canelViewMenu(){
 			document.getElementById('menu_id').value = null;
-			const emptyFields = ['menu_id', 'menu_name', 'protocol', 'hostname','menu_link','menu_type','parentId']
+			const emptyFields = ['menu_id', 'menuName', 'protocol', 'hostname','menu_link','menu_type','parentId']
 			.filter(fieldId => !deColourFieldAndNull(fieldId));	
 		}
 		function showMenu(menu_id,menuname,protocol,hostname,menu_link,menu_type,parentId){
-			const emptyFields = ['menu_id', 'menu_name', 'protocol', 'hostname','menu_link','menu_type','parentId']
+			const emptyFields = ['menu_id', 'menuName', 'protocol', 'hostname','menu_link','menu_type','parentId']
 			.filter(fieldId => !deColourFieldAndNull(fieldId));	
 			console.log('Menu Type : '+menu_type);
 			document.getElementById('menu_id').value = menu_id;
-			document.getElementById('menu_name').value = menuname;
+			document.getElementById('menuName').value = menuname;
 			document.getElementById('protocol').value = protocol;
 			document.getElementById('hostname').value = hostname;
 			document.getElementById('menu_link').value = menu_link;
@@ -364,7 +364,7 @@ margin-left: 0px;
 
 		}
 		function handleFormSubmission() {
-         const emptyFields = ['menu_id', 'menu_name', 'protocol', 'hostname','menu_link','menu_type']
+         const emptyFields = ['menuName', 'protocol', 'hostname','menu_link','menu_type']
         .filter(fieldId => !validateField(fieldId));
 
 		 if (emptyFields.length == 1) {
@@ -403,26 +403,27 @@ function validateField(fieldId) {
       
 // });	
 		function saveMenu() {
-			var menu_name = document.getElementById('menu_name').value;
+			var menuName = document.getElementById('menuName').value;
 			var protocol = document.getElementById('protocol').value;
 			var hostname = document.getElementById('hostname').value;
 			var menu_link = document.getElementById('menu_link').value;
             var menu_type = document.getElementById('menu_type').value;
-            var parentId = document.getElementById('parentId').value;
-			const fields = [menu_name,protocol,hostname,menu_link,menu_type,parentId];
+            console.log(document.getElementById('parentMenuName'));
+            var parentMenuName = document.getElementById('parentMenuName').value;
+			const fields = [menuName,protocol,hostname,menu_link,menu_type,parentMenuName];
 
-			console.log("menu_name : " + menu_name);
+			console.log("menuName : " + menuName);
 			if (!handleFormSubmission()) {
 				const ajaxRequest = {
             	url: 'addMenu',
             	type: 'post',
 				data: {
 				    newProtocol: protocol,
-				    newMenuName: menu_name,
+				    newMenuName: menuName,
 				    newMenuLink: menu_link,
 				    newHostname: hostname,
                     newMenuType: menu_type,
-				    newParentMenuName: email
+				    newParentMenuName: parentMenuName
 				},
             success: function (response, textStatus, xhr) {
                 console.log("Status Code:", xhr.status + ", Status Message " + textStatus);
@@ -473,7 +474,7 @@ function validateField(fieldId) {
 
 		function saveEditMenu() {
 			var menu_id = document.getElementById('menu_id').value;
-			var menu_name = document.getElementById('menu_name').value;
+			var menuName = document.getElementById('menuName').value;
 			var protocol = document.getElementById('protocol').value;
 			var hostname = document.getElementById('hostname').value;
 			var menu_type = document.getElementById('menu_type').value;
@@ -481,12 +482,12 @@ function validateField(fieldId) {
             var parentId = document.getElementById('parentId').value;
 
 
-			console.log("Menu Name : " + menu_name);
+			console.log("Menu Name : " + menuName);
 			if (!handleFormSubmission()) {
 			const ajaxRequest = {
 				url : 'updateMenu',
 				type : 'patch',
-				data:{newProtocol: protocol,newMenuName: menu_name,newMenuLink: menu_link,newHostname: hostname,newMenuType: menu_type },
+				data:{newProtocol: protocol,newMenuName: menuName,newMenuLink: menu_link,newHostname: hostname,newMenuType: menu_type },
 				success : function(response, textStatus, xhr) {
 					console.log("Status Code:", xhr.status
 							+ ", Status Message " + textStatus);

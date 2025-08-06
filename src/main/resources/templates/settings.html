@@ -100,58 +100,106 @@
 	margin-left: 75px;
 }
 .dropdown {
-            position: relative;
-            display: inline-block;
-			
-        }
+        position: relative;
+        display: inline-flex;
+      }
 
-        .dropdown-button {
-            background-color: #f9f9f9;
-            border: none;
-            padding: 10px;
-            font-size: 14px;
-            cursor: pointer;
-        }
+      .dropdown-button {
+        background-color: #f9f9f9;
+        border: none;
+        padding: 10px;
+        font-size: 14px;
+        cursor: pointer;
+      }
 
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #fff;
-            min-width: 120px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #fff;
+        min-width: 120px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .dropdown-content a {
+        color: #333;
+        padding: 8px 12px;
+        text-decoration: none;
+        display: block;
+      }
+
+      .dropdown-content a:hover {
+        background-color: #f5f5f5;
+      }
+
+      .dropdown-menu {
+        /* background-color: aqua;	 */
+        width: auto;
+        position: relative; /* Ensure the submenu is positioned relative to the dropdown */
+
+        /* padding: 0px 0px 0px 0px 0px !important; */
+      }
+      .dropdown-menu-left {
+        left: auto !important;
+        margin-left: -105px !important;
+      }
+      .dropdown-item {
+        white-space: initial !important;
+        margin-left: 0px;
+        margin-right: 0px;
+        margin-top: -9px;
+        margin-bottom: -9px;
+        height: 80px !important;
+
+        width: 160px;
+        color: black !important;
+      }
+
+      .dropdown-menu-main-content {
+        color: white;
+        margin-left: 0px;
+        margin-right: 0px;
+        margin-top: -9px;
+        margin-bottom: -9px;
+      }
+
+      .arrow {
+        float: right;
+        font-size: 12px;
+        margin-left: 10px;
+      }
+      
+      .submenu-item {
+        color: white;
+        padding: 10px;
+        display: block;
+        text-decoration: none;
+      }
+      .submenu-item:hover {
+        background-color: #575757;
+      }
+      .dropdown-menu {
+        position: relative; /* Ensure the submenu is positioned relative to the dropdown */
+      }
+
+      .dropdown-item-container {
+        position: relative; /* Position relative to allow absolute positioning of submenu */
+      }
+
+      .submenu {
+        display: none;
+        position: absolute;
+        margin-top: 227%;
+        left: 100%;
+        background-color: #333;
+        padding: 10px;
+        border: 1px solid #333;
+        width: 200px;
+      }
+
+      .dropdown-item-container:hover .submenu {
+        display: block; /* Show the submenu when hovering over the parent item */
+      }
 		
-        }
-
-        .dropdown-content a {
-            color: #333;
-            padding: 8px 12px;
-            text-decoration: none;
-            display: block;
-			
-        }
-
-        .dropdown-content a:hover {
-            background-color: #f5f5f5;
-        }
-
-.dropdown-menu {
-/* background-color: aqua;	 */
-	width: auto;
-   /* padding: 0px 0px 0px 0px 0px !important; */
-  z-index: 1000;
-  overflow: auto;
-}		
-.dropdown-menu-left {
-  left: auto !important;
-  margin-left: -105px !important;
-}
-.dropdown-item {
-	white-space: initial !important;
-	margin-right: 10px;
-	height: 60px !important;
-	width: 160px;
-	color: black !important;
-}
 .sidebar {
   background-color: #333;
   padding: 20px;
@@ -259,15 +307,43 @@ function loadContent(url) {
     <div class="topnav">
       <div class="links"> 
         <button style="background-color: #333;border: none;" class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Menu</button>
-        <div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
-            <a class="dropdown-item dropdown-menu-main-content" th:each="menu : ${nav_menus}" th:href="@{${menu.menu_link}}" th:text="${menu.menu_name}" th:classappend="${#strings.contains(menu.menu_link, currentMenu) ? 'active' : ''}"></a>
-         <!-- <a class="dropdown-item dropdown-menu-main-content" href="#orders">RF Menu</a>
-          <a class="dropdown-item dropdown-menu-main-content" href="#reports">Category</a>
-          <a class="dropdown-item dropdown-menu-main-content" href="#settings">Item</a>
-          <a class="dropdown-item dropdown-menu-main-content" href="#orders">Location</a>
-          <a class="dropdown-item dropdown-menu-main-content" href="#reports">LPN</a>
-          <a class="dropdown-item dropdown-menu-main-content" href="#settings">Inventory</a> -->
+        <div
+          class="dropdown-menu dropdown-menu-left"
+          aria-labelledby="dropdownMenuButton"
+        >
+          <div th:each="menu : ${nav_menus}">
+            <div class="dropdown-item-container">
+              <a
+                class="dropdown-item dropdown-menu-main-content"
+                th:if="${menu != null and menu.menu_type != 'CHILD_UI'}"
+                th:href="@{${menu.menu_link}}"
+                th:text="${menu.menuName}"
+                th:classappend="${#strings.contains(menu.menu_link ?: '', currentMenu ?: '') ? 'active' : ''}"
+              >
+                <span
+                  th:if="${menu != null and menu.menu_type == 'PARENT_UI'}"
+                  class="arrow"
+                >
+                  &#9654;
+                </span>
+              </a>
+
+              <!-- Submenu -->
+              <div
+                class="submenu"
+                th:if="${menu != null and menu.menu_type != null and menu.menu_type == 'PARENT_UI'}"
+              >
+                <a
+                  class="submenu-item"
+                  th:each="submenu : ${menu.children}"
+                  th:href="@{${submenu.menu_link}}"
+                  th:text="${submenu.menuName}"
+                ></a>
+              </div>
+
+            </div>
           </div>
+        </div>
       </div>
       <div class="title">Warehouse Management System</div>
      <span class="icon-name" th:text="${user_name}"></span>
@@ -282,8 +358,8 @@ function loadContent(url) {
       </button>
       <div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
         <a class="dropdown-item"  href="#">Account</a>
-        <a class="dropdown-item"th:href="@{${settings_url.menu_link}}"th:text="${settings_url.menu_name}"></a>
-        <a class="dropdown-item" th:href="@{${logout_url.menu_link}}"th:text="${logout_url.menu_name}"></a>
+        <a class="dropdown-item"th:href="@{${settings_url.menu_link}}"th:text="${settings_url.menuName}"></a>
+        <a class="dropdown-item" th:href="@{${logout_url.menu_link}}"th:text="${logout_url.menuName}"></a>
       </div>
       </div>
       &nbsp;&nbsp;&nbsp;&nbsp;
@@ -297,19 +373,19 @@ function loadContent(url) {
               <a
                 class="nav-link active"
                 th:href="@{${menu.menu_link}}"
-                th:text="${menu.menu_name}"
+                th:text="${menu.menuName}"
               ></a>
             </li>
           </ul> -->
           <ul class="nav nav-pills nav-fill flex-column justify-content-center">
             <li class="nav-item" th:each="menu : ${side_menus}">
               <a class="nav-link" data-toggle="collapse" th:href="'#submenu-' + ${menu.menu_id}" role="button" aria-expanded="false" aria-controls="submenu1">
-                <i class="fa fa-user" aria-hidden="true"></i> [[${menu.menu_name}]]<!--User Adminstration-->
+                <i class="fa fa-user" aria-hidden="true"></i> [[${menu.menuName}]]<!--User Adminstration-->
               </a>
               <div class="collapse" th:id="'submenu-' + ${menu.menu_id}">
                 <ul class="nav flex-column">
                   <li th:each="submenu : ${menu.children}" class="nav-item">
-                    <a class="nav-link" href="" th:data-url="${submenu.menu_link}" onclick="loadContent(this.getAttribute('data-url')); return false;" >[[${submenu.menu_name}]]</a>
+                    <a class="nav-link" href="" th:data-url="${submenu.menu_link}" onclick="loadContent(this.getAttribute('data-url')); return false;" >[[${submenu.menuName}]]</a>
                   </li>
                 </ul>
               </div>

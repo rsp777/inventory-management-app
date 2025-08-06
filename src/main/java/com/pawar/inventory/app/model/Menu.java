@@ -71,10 +71,12 @@ public class Menu {
 	@Column(name = "menu_type")
 	private String menu_type;
 
+	
+
 	public Menu() {
 	}
 
-	public Menu(int menu_id, Integer parentId, Menu parent, List<Menu> children, String menu_name, String protocol,
+	public Menu(int menu_id, Integer parentId, Menu parent, List<Menu> children, String menuName, String protocol,
 			String hostname, String menu_link, LocalDateTime createdDttm, LocalDateTime lastUpdatedDttm,
 			String createdSource, String lastUpdatedSource, String menu_type) {
 		super();
@@ -82,7 +84,7 @@ public class Menu {
 		this.parentId = parentId;
 		this.parent = parent;
 		this.children = children;
-		this.menuName = menu_name;
+		this.menuName = menuName;
 		this.protocol = protocol;
 		this.hostname = hostname;
 		this.menu_link = menu_link;
@@ -140,12 +142,12 @@ public class Menu {
 		this.children = children;
 	}
 
-	public String getMenu_name() {
+	public String getMenuName() {
 		return menuName;
 	}
 
-	public void setMenu_name(String menu_name) {
-		this.menuName = menu_name;
+	public void setMenuName(String menuName) {
+		this.menuName = menuName;
 	}
 
 	public String getMenu_link() {
@@ -215,10 +217,9 @@ public class Menu {
 	@Override
 	public String toString() {
 		return "Menu [menu_id=" + menu_id + ", parentId=" + parentId + ", children=" + children
-				+ ", menu_name=" + menuName + ", protocol=" + protocol + ", hostname=" + hostname + ", menu_link="
+				+ ", menuName=" + menuName + ", protocol=" + protocol + ", hostname=" + hostname + ", menu_link="
 				+ menu_link + ", createdDttm=" + createdDttm + ", lastUpdatedDttm=" + lastUpdatedDttm
 				+ ", createdSource=" + createdSource + ", lastUpdatedSource=" + lastUpdatedSource + ", menu_type="
 				+ menu_type + "]";
 	}
-
 }
