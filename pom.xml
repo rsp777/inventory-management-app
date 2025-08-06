@@ -7,16 +7,15 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.1.12</version>
-		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.pawar.inventory.app</groupId>
 	<artifactId>inventory-management-app</artifactId>
-	<version>Dev_v2.0</version>
+	<version>Dev_v2.1</version>
 	<packaging>jar</packaging>
 	<name>inventory-management-app</name>
 	<description>inventory-management-app</description>
 	<properties>
-		<java.version>20</java.version>
+		<java.version>17</java.version>
 		<deploy.wildfly.host>127.0.0.1</deploy.wildfly.host>
 		<deploy.wildfly.port>9990</deploy.wildfly.port>
 		<deploy.wildfly.username>ravi</deploy.wildfly.username>
