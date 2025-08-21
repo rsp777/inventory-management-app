@@ -264,4 +264,10 @@ public class MenuServiceImp implements MenuService {
 		return menuRepositoryCustom.updateLocationRange(id,actionType, category_name, fromLocation, toLocation,
 				isActive,username);
 	}
+
+    @Override
+    public void unassignBatch(String sopActionType, String batchAssign, String category_name) throws ClientProtocolException, IOException {
+         menuRepositoryCustom.unassignBatch(sopActionType,batchAssign, category_name);
+
+    }
 }

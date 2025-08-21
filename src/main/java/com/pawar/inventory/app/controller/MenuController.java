@@ -274,11 +274,9 @@ public class MenuController {
 			logger.info("Fetched Item : " + item);
 			return "itemInquiry";
 		} catch (IOException e) {
-
 			e.printStackTrace();
 			return "itemInquiry";
 		}
-
 	}
 
 	@GetMapping("/categoryInfo")
@@ -311,17 +309,16 @@ public class MenuController {
 			model.addAttribute("currentMenu", request.getRequestURI());
 			model.addAttribute("nav_menus", nav);
 
-			// model.addAttribute("newCategory", new Category());
+			model.addAttribute("categories", categories);
 			return "category";
 		} catch (IOException | MenuNotFoundException e) {
 
 			e.printStackTrace();
 			return "category";
-		}
-		catch(Exception e){
-			
+		} catch (Exception e) {
+
 			e.printStackTrace();
-			return "category";	
+			return "category";
 		}
 
 	}
@@ -354,7 +351,7 @@ public class MenuController {
 
 	@PutMapping(value = "/categoryEdit/{category_name}", consumes = "application/json", produces = "application/json")
 	public String categoryEdit(Model model, @PathVariable String category_name, @RequestBody Category category) {
-		
+
 		try {
 			logger.info("Edit Existing Category to : " + category_name);
 			logger.info("Category : " + category);
@@ -423,10 +420,12 @@ public class MenuController {
 	}
 
 	@PutMapping("/itemEdit")
-	public String itemEdit(Model model, @RequestParam int itemId, @RequestParam String description, @RequestParam String category,
+	public String itemEdit(Model model, @RequestParam int itemId, @RequestParam String description,
+			@RequestParam String category,
 			@RequestParam float length, @RequestParam float width, @RequestParam float height) {
 		try {
-			ResponseEntity<String> responseMessage = menuService.itemEdit(itemId,description, category, length, width, height);
+			ResponseEntity<String> responseMessage = menuService.itemEdit(itemId, description, category, length, width,
+					height);
 			logger.info("responseMessage : " + responseMessage.getBody());
 			// ResponseMessage responseMessage = new ResponseMessage();
 			// responseMessage.setResponseMessage(response);
@@ -697,7 +696,7 @@ public class MenuController {
 	@PostMapping("/checkActiveInventory")
 	@ResponseBody
 	public String checkActiveInventory(Model model, @RequestParam String lpn_name) {
-		
+
 		String response = "";
 
 		try {
@@ -1013,7 +1012,7 @@ public class MenuController {
 	}
 
 	@PostMapping("/sop/runBatch")
-	public String runBatch(HttpServletRequest request,@RequestParam("actionType") String sopActionType,
+	public String runBatch(HttpServletRequest request, @RequestParam("actionType") String sopActionType,
 			@RequestParam("category_name") String category_name, @RequestParam("activeTab") String activeTab,
 			Model model, HttpSession httpSession) {
 		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
@@ -1042,14 +1041,17 @@ public class MenuController {
 			// Check actionType is assign or unassign
 			if (sopActionType.equals("ASSIGN")) {
 				String batchAssign = "BATCHTIMEASSIGN";
-				menuService.assignBatch(sopActionType,batchAssign, category_name);
+				menuService.assignBatch(sopActionType, batchAssign, category_name);
 				logger.info("Assign Batch triggered for category : " + category_name);
 				model.addAttribute("responseMessage", sopActionType + "Batch Submitted Successfully!!");
 				return "sop-config";
-			} else {
-				// response = menuService.unassignBatch(actionType,category);
+			} else if (sopActionType.equals("UNASSIGN")) {
+				String batchAssign = "BATCHTIMEUNASSIGN";
 				try {
+					menuService.unassignBatch(sopActionType, batchAssign, category_name);
 					logger.info("Unassign Batch triggered for category : " + category_name);
+					model.addAttribute("responseMessage", sopActionType + "Batch Submitted Successfully!!");
+					return "sop-config";
 
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -1073,7 +1075,7 @@ public class MenuController {
 	}
 
 	@PostMapping("/sop/location-range/add")
-	public String addLocationRange(HttpServletRequest request,@RequestParam("actionType") String sopActionType,
+	public String addLocationRange(HttpServletRequest request, @RequestParam("actionType") String sopActionType,
 			@RequestParam("category") String category_name, @RequestParam("fromLocation") String fromLocation,
 			@RequestParam("toLocation") String toLocation,
 			@RequestParam("isActive") String isActive, @RequestParam("activeTab") String activeTab, Model model,
@@ -1103,8 +1105,9 @@ public class MenuController {
 			logger.info("Add Location Range for Action Type : " + sopActionType + " and Category : " + category_name);
 			menus = menuAccessService.getAccessibleMenus(decodedToken);
 
-			String locationRangeAddresponseMessage = menuService.addLocationRange(sopActionType, category_name, fromLocation, toLocation,
-					isActive,username);
+			String locationRangeAddresponseMessage = menuService.addLocationRange(sopActionType, category_name,
+					fromLocation, toLocation,
+					isActive, username);
 
 			model.addAttribute("locationRangeAddresponseMessage", locationRangeAddresponseMessage);
 			for (Menu menu : menus) {
@@ -1114,8 +1117,7 @@ public class MenuController {
 				}
 			}
 
-		} 
-		catch (ClientProtocolException e) {
+		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 
@@ -1130,7 +1132,7 @@ public class MenuController {
 		model.addAttribute("activeTab", activeTab);
 		return "sop-config";
 	}
-	
+
 	@PostMapping("/sop/location-range/update")
 	public String updatecationRange(HttpServletRequest request,
 			@RequestParam("id") String id,
@@ -1164,13 +1166,13 @@ public class MenuController {
 			logger.info("Add Location Range for Action Type : " + sopActionType + " and Category : " + category_name);
 			menus = menuAccessService.getAccessibleMenus(decodedToken);
 
-			String locationRangeUpdateresponseMessage = menuService.updateLocationRange(id,sopActionType, category_name, fromLocation, toLocation,
-					isActive,username);
-			logger.info("locationRangeUpdateresponseMessage : "+locationRangeUpdateresponseMessage);
+			String locationRangeUpdateresponseMessage = menuService.updateLocationRange(id, sopActionType,
+					category_name, fromLocation, toLocation,
+					isActive, username);
+			logger.info("locationRangeUpdateresponseMessage : " + locationRangeUpdateresponseMessage);
 			model.addAttribute("locationRangeUpdateresponseMessage", locationRangeUpdateresponseMessage);
 
-		} 
-		catch (ClientProtocolException e) {
+		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 
@@ -1185,9 +1187,10 @@ public class MenuController {
 		model.addAttribute("activeTab", activeTab);
 		return "sop-config";
 	}
-	
+
 	@PostMapping("/sop/getEligibleUpcsForSop/{category}")
-	public String getEligibleUpcsForSop(HttpServletRequest request,@RequestParam("category") String category, @RequestParam("activeTab") String activeTab,
+	public String getEligibleUpcsForSop(HttpServletRequest request, @RequestParam("category") String category,
+			@RequestParam("activeTab") String activeTab,
 			Model model, HttpSession httpSession) {
 		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
 		List<Menu> menus;
@@ -1214,7 +1217,7 @@ public class MenuController {
 			}
 			// Check actionType is assign or unassign
 			if (category != null) {
-				List<String> eligibleUpcsForSop =  menuService.getEligibleUpcsForSop(category);
+				List<String> eligibleUpcsForSop = menuService.getEligibleUpcsForSop(category);
 				return "sop-config";
 			} else {
 				// response = menuService.unassignBatch(actionType,category);

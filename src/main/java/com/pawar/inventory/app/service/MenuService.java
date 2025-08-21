@@ -103,4 +103,6 @@ List<String> getEligibleUpcsForSop(String category) throws ClientProtocolExcepti
 
 String updateLocationRange(String id,String actionType, String category_name, String fromLocation, String toLocation,
 		String isActive, String username) throws ClientProtocolException, IOException;
+
+void unassignBatch(String sopActionType, String batchAssign, String category_name) throws ClientProtocolException, IOException;
 }

@@ -871,15 +871,6 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 //		String responseData = response.getBody().toString();
 		return response;
 	}
-//
-//	public String postCall(String url, String json) throws ClientProtocolException, IOException{
-//		HttpHeaders httpHeaders = new HttpHeaders();
-//		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-//		HttpEntity<String> httpEntity = new HttpEntity<String>(json, httpHeaders);
-//		RestTemplate restTemplate = new RestTemplate();
-//		String response = restTemplate.postForObject(url, httpEntity, String.class);
-//		return response;
-//	}
 
 	@Override
 	public List<SopLocationRangeDto> getLocationRanges() throws ClientProtocolException, IOException {
@@ -1008,5 +999,18 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		}
 
 		return fetchedData;
+	}
+
+	@Override
+	public Object unassignBatch(String sopActionType, String batchType, String category_name) throws ClientProtocolException, IOException {
+		JSONObject assignJson = new JSONObject();
+		assignJson.put("sopActionType", sopActionType);
+		assignJson.put("batchType", batchType);
+		assignJson.put("category", category_name);
+		String assign_json = assignJson.toString();
+		String url = getUrl("UnassignBatch");
+		logger.info("URL : {}", url);
+		String response = httpCall(null,url, HttpMethod.POST, assign_json, null).getBody().toString();
+		return response;
 	}
 }
