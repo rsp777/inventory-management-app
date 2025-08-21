@@ -92,7 +92,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 
 		// Create another JSONObject for the nested object
 		JSONObject itemObject = new JSONObject();
-		itemObject.put("item_name", item_name);
+		itemObject.put("itemName", item_name);
 
 		// Add the nested object to the main JSONObject
 		jsonObject.put("item", itemObject);
@@ -930,16 +930,16 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 	}
 
 	@Override
-	public String assignBatch(String actionType, String category) throws ClientProtocolException, IOException {
+	public String assignBatch(String actionType,String batchType, String category) throws ClientProtocolException, IOException {
 		JSONObject assignJson = new JSONObject();
 		assignJson.put("sopActionType", actionType);
+		assignJson.put("batchType", batchType);
 		assignJson.put("category", category);
 		String assign_json = assignJson.toString();
 		String url = getUrl("AssignBatch");
 		logger.info("URL : {}", url);
 		String response = httpCall(null,url, HttpMethod.POST, assign_json, null).getBody().toString();
 		return response;
-
 	}
 
 	@Override

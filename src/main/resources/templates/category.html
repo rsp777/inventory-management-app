@@ -464,7 +464,7 @@ table.scrolldown {
 			console.log(updated_category_name);
 			if (updated_category_name!='') {
 			$.ajax({
-						url : '/api/categoryEdit/' + currentCategoryName,
+						url : 'categoryEdit/' + currentCategoryName,
 						type : 'put',
 						contentType : 'application/json',
 						data : data,
@@ -521,7 +521,7 @@ table.scrolldown {
 			// Proceed with deletion if user clicks "Yes" button
 			$
 					.ajax({
-						url : '/api/deleteCategory/' + category_id,
+						url : 'deleteCategory/' + category_id,
 						type : 'delete',
 						 success: function(response, textStatus, xhr) {
 					            console.log("Status code:", xhr.status + ", " + textStatus);

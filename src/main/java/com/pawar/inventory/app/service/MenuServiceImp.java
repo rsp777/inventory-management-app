@@ -241,8 +241,8 @@ public class MenuServiceImp implements MenuService {
     }
 
     @Override
-    public String assignBatch(String actionType, String category) throws ClientProtocolException, IOException {
-        return menuRepositoryCustom.assignBatch(actionType, category);
+    public String assignBatch(String actionType,String batchAssign, String category) throws ClientProtocolException, IOException {
+        return menuRepositoryCustom.assignBatch(actionType,batchAssign, category);
     }
 
 	@Override

@@ -94,7 +94,7 @@ public interface MenuService {
 
 List<Category> getCategories() throws ClientProtocolException, IOException;
 
-String assignBatch(String actionType, String category) throws ClientProtocolException, IOException;
+String assignBatch(String actionType,String batchAssign, String category) throws ClientProtocolException, IOException;
 
 String addLocationRange(String actionType, String category_name, String fromLocation, String toLocation,
 		 String isActive, String username) throws ClientProtocolException, IOException;

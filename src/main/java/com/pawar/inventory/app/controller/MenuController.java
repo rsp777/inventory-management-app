@@ -318,6 +318,11 @@ public class MenuController {
 			e.printStackTrace();
 			return "category";
 		}
+		catch(Exception e){
+			
+			e.printStackTrace();
+			return "category";	
+		}
 
 	}
 
@@ -1036,8 +1041,8 @@ public class MenuController {
 			}
 			// Check actionType is assign or unassign
 			if (sopActionType.equals("ASSIGN")) {
-
-				menuService.assignBatch(sopActionType, category_name);
+				String batchAssign = "BATCHTIMEASSIGN";
+				menuService.assignBatch(sopActionType,batchAssign, category_name);
 				logger.info("Assign Batch triggered for category : " + category_name);
 				model.addAttribute("responseMessage", sopActionType + "Batch Submitted Successfully!!");
 				return "sop-config";
