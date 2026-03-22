@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.pawar.inventory.app.model.CubiscanLog;
 import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.entity.Category;
 import com.pawar.inventory.entity.Grp;
@@ -72,7 +73,7 @@ public interface MenuRepositoryCustom {
 
 	String signIn(String username, String password) throws ClientProtocolException, IOException;
 
-	void updateMenu(Menu updatedMenu);
+	Menu updateMenu(Menu updatedMenu);
 
 	Menu getMenu(String menuName);
 
@@ -106,5 +107,7 @@ public interface MenuRepositoryCustom {
 			String toLocation, String isActive, String username) throws ClientProtocolException, IOException;
 
     Object unassignBatch(String sopActionType, String batchAssign, String category_name) throws ClientProtocolException, IOException;
+
+	List<CubiscanLog> getCubiscanLogs();
 
 }

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.pawar.inventory.app.exception.ParentMenuNotFoundException;
+import com.pawar.inventory.app.model.CubiscanLog;
 import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.entity.Category;
 import com.pawar.inventory.entity.Grp;
@@ -76,7 +77,7 @@ public interface MenuService {
 
     String signout(HttpSession httpSession) throws ClientProtocolException, IOException;
 
-    void updateMenu(String newProtocol, String newMenuName, String newMenuLink, String newHostname, String newMenuType);
+    Menu updateMenu(String newProtocol, String newMenuName, String newMenuLink, String newHostname, String newMenuType);
 
     Menu getMenu(String menuName);
 
@@ -105,4 +106,6 @@ String updateLocationRange(String id,String actionType, String category_name, St
 		String isActive, String username) throws ClientProtocolException, IOException;
 
 void unassignBatch(String sopActionType, String batchAssign, String category_name) throws ClientProtocolException, IOException;
+
+List<CubiscanLog> getCubiscanLogs();
 }

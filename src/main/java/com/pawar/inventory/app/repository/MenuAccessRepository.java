@@ -13,5 +13,7 @@ public interface MenuAccessRepository extends JpaRepository<MenuAccess, MenuAcce
 
 	List<MenuAccess> findMenuAccessesByMenuId(int menu_id);
 
+    List<MenuAccess> findMenuAccessesByMenuIdAndRoleId(int menuId, int roleId);
+
 
 }

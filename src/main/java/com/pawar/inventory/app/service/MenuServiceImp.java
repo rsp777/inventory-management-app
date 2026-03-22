@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.pawar.inventory.app.exception.ParentMenuNotFoundException;
+import com.pawar.inventory.app.model.CubiscanLog;
 import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.app.repository.MenuRepository;
 import com.pawar.inventory.app.repository.MenuRepositoryCustom;
@@ -182,10 +183,10 @@ public class MenuServiceImp implements MenuService {
     }
 
     @Override
-    public void updateMenu(String newProtocol, String newMenuName, String newMenuLink, String newHostname,
+    public Menu updateMenu(String newProtocol, String newMenuName, String newMenuLink, String newHostname,
             String newMenuType) {
         Menu updatedMenu = new Menu(newProtocol, newMenuName, newHostname, newMenuLink, newMenuType);
-        menuRepositoryCustom.updateMenu(updatedMenu);
+        return menuRepositoryCustom.updateMenu(updatedMenu);
     }
 
     @Override
@@ -252,9 +253,8 @@ public class MenuServiceImp implements MenuService {
 					isActive,username);
 	}
 
-	@Override
+@Override
 	public List<String> getEligibleUpcsForSop(String category) throws ClientProtocolException, IOException {
-		// TODO Auto-generated method stub
 		return menuRepositoryCustom.getEligibleUpcsForSop(category);
 	}
 
@@ -269,5 +269,10 @@ public class MenuServiceImp implements MenuService {
     public void unassignBatch(String sopActionType, String batchAssign, String category_name) throws ClientProtocolException, IOException {
          menuRepositoryCustom.unassignBatch(sopActionType,batchAssign, category_name);
 
+    }
+
+    @Override
+    public List<CubiscanLog> getCubiscanLogs() {
+        return menuRepositoryCustom.getCubiscanLogs();
     }
 }

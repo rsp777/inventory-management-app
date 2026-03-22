@@ -40,6 +40,7 @@ import org.springframework.web.util.UriComponents;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.pawar.inventory.app.model.CubiscanLog;
 import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.app.service.MenuService;
 import com.pawar.inventory.entity.Category;
@@ -63,15 +64,15 @@ import jakarta.servlet.http.HttpSession;
 public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 
 	private final static Logger logger = LoggerFactory.getLogger(MenuRepositoryCustomImp.class.getName());
-//	private final HttpClient httpClient;
+	// private final HttpClient httpClient;
 	private final ObjectMapper objectMapper;
 	private EntityManager entityManager;
 	private MenuService menuService;
-	
+
 	private HttpService httpService;
 
 	public MenuRepositoryCustomImp(EntityManager entityManager, MenuService menuService, HttpService httpService) {
-//		httpClient = HttpClients.createDefault();
+		// httpClient = HttpClients.createDefault();
 		objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
 		this.entityManager = entityManager;
@@ -107,7 +108,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 
 		logger.info(" Lpn Payload : " + json);
 		String url = getUrl("CreateLpn");
-		String response = httpCall(null,url, HttpMethod.POST, json, null).getBody().toString();
+		String response = httpCall(null, url, HttpMethod.POST, json, null).getBody().toString();
 		logger.info("Response : " + response);
 
 		return response;
@@ -120,7 +121,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 
 		logger.info("Validating LPN : " + lpn_name);
 		String url = getUrl("validateLpn").replace("{lpn_name}", lpn_name);
-		String json = httpCall(null,url, HttpMethod.GET, null, null).getBody().toString();
+		String json = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
 
 		logger.info("Fetched Lpn : " + json);
 		// objectMapper.setSerializationInclusion(Include.NON_NULL);
@@ -146,7 +147,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		String item_brcode = item_name.replace(" ", "%20");
 		logger.info("item_brcode : " + item_brcode);
 		String url = getUrl("GetItem").replace("{itemName}", item_name);
-		String json = httpCall(null,url, HttpMethod.GET, null, null).getBody().toString();
+		String json = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
 		logger.info("Fetched Item : " + json);
 		Item fetchedItem = objectMapper.readValue(json, Item.class);
 		return fetchedItem;
@@ -157,7 +158,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		String url = getUrl("GetAllCategories");
 		logger.info("URL : " + url);
 		logger.info("Fetching Categories");
-		String json = httpCall(null,url, HttpMethod.GET, null, null).getBody().toString();
+		String json = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
 		logger.info("Fetched Categories :");
 		logger.debug("Fetched Categories : {} ", json);
 		List<Category> fetchedCategory = objectMapper.readValue(json, new TypeReference<List<Category>>() {
@@ -176,7 +177,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 			String json = jsonObject.toString();
 			logger.info(json);
 			String url = getUrl("AddCategory");
-			String response = httpCall(null,url, HttpMethod.POST, json, null).getBody().toString();
+			String response = httpCall(null, url, HttpMethod.POST, json, null).getBody().toString();
 			return response;
 		} else {
 
@@ -188,7 +189,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		boolean flag = false;
 		logger.info("Validating Category : " + category_name);
 		String url = getUrl("ValidateCategory").replace("{category_name}", category_name);
-		String json = httpCall(null,url, HttpMethod.GET, null, null).getBody().toString();
+		String json = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
 		logger.info("Fetched Category : " + json);
 
 		if (!json.equals("")) {
@@ -217,16 +218,16 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 
 		logger.info(json);
 
-//		HttpHeaders httpHeaders = new HttpHeaders();
-//
-//		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-//
-//		HttpEntity<String> httpEntity = new HttpEntity<String>(json, httpHeaders);
-//		logger.info("httpEntity : " + httpEntity);
-//		RestTemplate restTemplate = new RestTemplate();
-//		restTemplate.put(url, httpEntity, String.class);
-		
-		httpCall(null,url, HttpMethod.PUT, json, null);
+		// HttpHeaders httpHeaders = new HttpHeaders();
+		//
+		// httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+		//
+		// HttpEntity<String> httpEntity = new HttpEntity<String>(json, httpHeaders);
+		// logger.info("httpEntity : " + httpEntity);
+		// RestTemplate restTemplate = new RestTemplate();
+		// restTemplate.put(url, httpEntity, String.class);
+
+		httpCall(null, url, HttpMethod.PUT, json, null);
 		// logger.info("Category updated : " + response);
 		//
 		// return response;
@@ -236,14 +237,14 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 	@Override
 	public void categoryDelete(String category_name) throws ClientProtocolException, IOException {
 		String url = getUrl("DeleteCategory").replace("{category_name}", category_name);
-		String json = httpCall(null,url, HttpMethod.DELETE, null, null).getBody().toString();
+		String json = httpCall(null, url, HttpMethod.DELETE, null, null).getBody().toString();
 		logger.info("json : " + json);
 	}
 
 	@Override
 	public void deleteCategory(int category_id) throws ClientProtocolException, IOException {
 		String url = getUrl("DeleteCategoryById").replace("{category_id}", String.valueOf(category_id));
-		String json = httpCall(null,url, HttpMethod.DELETE, null, null).getBody().toString();
+		String json = httpCall(null, url, HttpMethod.DELETE, null, null).getBody().toString();
 		logger.info("json : " + json);
 
 	}
@@ -253,7 +254,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		String url = getUrl("GetItems");
 		logger.info("URL : " + url);
 		logger.info("Fetching Items");
-		String json = httpCall(null,url, HttpMethod.GET, null, null).getBody().toString();
+		String json = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
 		logger.info("Fetched Items : " + json);
 		List<Item> fetchedItem = objectMapper.readValue(json, new TypeReference<List<Item>>() {
 		});
@@ -279,22 +280,22 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 			String json = item.toString();
 			logger.info("Item Payload : " + json);
 			String url = getUrl("AddItem");
-			String response = httpCall(null,url, HttpMethod.GET, null, null).getBody().toString();
+			String response = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
 			logger.info("Response : " + response);
 			return response;
 		} else {
 			return "Item already exists";
 		}
 	}
-	
+
 	public boolean validateItemByName(String description) throws ClientProtocolException, IOException {
 		boolean flag = false;
 		logger.info("Validating Item : " + description);
-		
-		String url = getUrl("GetItemByDesc").replace("{itemDesc}",String.valueOf(description));
+
+		String url = getUrl("GetItemByDesc").replace("{itemDesc}", String.valueOf(description));
 		logger.info("URL : " + url);
-		
-		String json = httpCall(null,url, HttpMethod.GET, null, null).getBody().toString();
+
+		String json = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
 		logger.info("Item Json : " + json);
 		Item item = objectMapper.readValue(json, new TypeReference<Item>() {
 		});
@@ -308,15 +309,15 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 			return flag;
 		}
 	}
-	
+
 	public boolean validateItem(int item_id) throws ClientProtocolException, IOException {
 		boolean flag = false;
 		logger.info("Validating Item : " + item_id);
-		
-		String url = getUrl("GetItemById").replace("{item_id}",String.valueOf(item_id));
+
+		String url = getUrl("GetItemById").replace("{item_id}", String.valueOf(item_id));
 		logger.info("URL : " + url);
-		
-		String json = httpCall(null,url, HttpMethod.GET, null, null).getBody().toString();
+
+		String json = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
 		logger.info("Item Json : " + json);
 		Item item = objectMapper.readValue(json, new TypeReference<Item>() {
 		});
@@ -334,12 +335,12 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 	@Override
 	public void deleteItem(int item_id) throws ClientProtocolException, IOException {
 		boolean isValidItem = validateItem(item_id);
-		
+
 		if (isValidItem) {
-			String url =getUrl("DeleteItemById").replace("{itemId}", String.valueOf(item_id));
+			String url = getUrl("DeleteItemById").replace("{itemId}", String.valueOf(item_id));
 			logger.info("url : " + url);
-			
-			String json = httpCall(null,url, HttpMethod.DELETE, null, null).getBody().toString();
+
+			String json = httpCall(null, url, HttpMethod.DELETE, null, null).getBody().toString();
 			logger.info("json : " + json);
 		} else {
 			logger.info("Item does not exists : " + item_id);
@@ -348,7 +349,8 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 	}
 
 	@Override
-	public ResponseEntity<String> itemEdit(int itemId,String description, String category_name, float length, float width,
+	public ResponseEntity<String> itemEdit(int itemId, String description, String category_name, float length,
+			float width,
 			float height) throws ClientProtocolException, IOException {
 		boolean isValidItem = validateItem(itemId);
 		String newdescription = "";
@@ -376,8 +378,8 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 			logger.info("Item Payload : " + json);
 			String url = getUrl("UpdateItem");
 			logger.info("URL : " + url);
-			
-			ResponseEntity<String> response = httpCall(null,url, HttpMethod.PUT, json, null);
+
+			ResponseEntity<String> response = httpCall(null, url, HttpMethod.PUT, json, null);
 
 			logger.info("Response : " + response);
 
@@ -396,8 +398,8 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		logger.info("Fetching Locations");
 
 		HttpGet request = new HttpGet(url);
-		
-		ResponseEntity<String> response = httpCall(null,url, HttpMethod.GET, null, null);
+
+		ResponseEntity<String> response = httpCall(null, url, HttpMethod.GET, null, null);
 		String json = response.getBody().toString();
 		logger.info("Fetched Locations : " + json);
 		// List<Category> fetchedCategory = objectMapper.readValue(json,
@@ -431,7 +433,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 			logger.info("Location Payload : " + json);
 			String url = getUrl("AddLocation");
 
-			ResponseEntity<String> response = httpCall(null,url, HttpMethod.GET, null, null);
+			ResponseEntity<String> response = httpCall(null, url, HttpMethod.GET, null, null);
 
 			String responseData = response.getBody().toString();
 
@@ -451,8 +453,8 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		logger.info("Validating Location : " + locn_barcode);
 		String url = getUrl("GetLocationByBarcode").replace("{locn_brcd}", locn_barcode);
 		logger.info("URL : " + url);
-		
-		String json = httpCall(null,url, HttpMethod.GET, null, null).getBody().toString();
+
+		String json = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
 		logger.info("Location : " + json);
 		logger.info("!json.contains(\"500\") : " + !json.contains(":500"));
 		if (!json.equals("") && !json.contains("\"status\":500")) {
@@ -490,8 +492,8 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 			String json = location_Json.toString();
 			logger.info("Location Payload : " + json);
 			String url = getUrl("UpdateLocationByBarcode").replace("{locn_brcd}", locn_brcd);
-			
-			ResponseEntity<String> response = httpCall(null,url, HttpMethod.PUT, json, null);
+
+			ResponseEntity<String> response = httpCall(null, url, HttpMethod.PUT, json, null);
 			logger.info("Response : " + response);
 			return response;
 		} else {
@@ -510,7 +512,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 
 		if (isValidLocation) {
 			String url = getUrl("DeleteLocationByBarcode").replace("{locn_brcd}", locn_brcd);
-			String json = httpCall(null,url, HttpMethod.DELETE, null, null).getBody().toString();
+			String json = httpCall(null, url, HttpMethod.DELETE, null, null).getBody().toString();
 			logger.info("json : " + json);
 		} else {
 			logger.info("Location does not exists : " + locn_brcd);
@@ -524,7 +526,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		logger.info("URL : " + url);
 		logger.info("Fetching Lpns");
 
-		String json = httpCall(null,url, HttpMethod.GET, null, null).getBody().toString();
+		String json = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
 		// List<Category> fetchedCategory = objectMapper.readValue(json,
 		// Category.class);
 		List<Lpn> fetchedLpn = objectMapper.readValue(json, new TypeReference<List<Lpn>>() {
@@ -570,8 +572,9 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		// location.put("location", location_Json);
 		String json = lpn_Json.toString();
 		logger.info("Lpn Payload : " + json);
-		String url = getUrl("UpdateLpn").replace("{lpn_name}", lpn_name).replace("{adjustQty}", String.valueOf(adjustQty));
-		String json2 = httpCall(null,url, HttpMethod.PUT, json, null).getBody().toString();
+		String url = getUrl("UpdateLpn").replace("{lpn_name}", lpn_name).replace("{adjustQty}",
+				String.valueOf(adjustQty));
+		String json2 = httpCall(null, url, HttpMethod.PUT, json, null).getBody().toString();
 		Lpn updatedLpn = objectMapper.readValue(json2, new TypeReference<Lpn>() {
 		});
 		logger.info("Response : " + updatedLpn);
@@ -590,7 +593,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		logger.info("URL : " + url);
 		logger.info("Fetching Inventories");
 
-		String json = httpCall(null,url, HttpMethod.GET, null, null).getBody().toString();
+		String json = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
 		// List<Category> fetchedCategory = objectMapper.readValue(json,
 		// Category.class);
 		List<Inventory> fetchedInventory = objectMapper.readValue(json, new TypeReference<List<Inventory>>() {
@@ -604,7 +607,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		String url = getUrl("GetInventoryByLpn").replace("{lpn_name}", lpn_name);
 		logger.info("URL : " + url);
 		logger.info("Fetching Inventory By Lpn");
-		String json = httpCall(null,url, HttpMethod.GET, null, null).getBody().toString();
+		String json = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
 		logger.info("Fetched Inventory By Lpn : " + json);
 		// List<Category> fetchedCategory = objectMapper.readValue(json,
 		// Category.class);
@@ -648,7 +651,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 
 			HttpEntity<String> httpEntity = new HttpEntity<String>(json, httpHeaders);
 			RestTemplate restTemplate = new RestTemplate();
-			response = httpCall(null,url, HttpMethod.POST, json, null).getBody().toString();
+			response = httpCall(null, url, HttpMethod.POST, json, null).getBody().toString();
 
 			logger.info("Response : " + response);
 			return response;
@@ -687,7 +690,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 			logger.info("Active Inventory Payload : " + json);
 			String url = getUrl("CreateActive");
 
-			response = httpCall(null,url, HttpMethod.POST, json, null).getBody().toString();
+			response = httpCall(null, url, HttpMethod.POST, json, null).getBody().toString();
 
 			logger.info("Response : " + response);
 			return response;
@@ -704,8 +707,8 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		JSONObject user_json = new JSONObject();
 		user_json.put("username", user_name);
 		user_json.put("passwordHash", password);
-		
-		String response = httpCall(null,url, HttpMethod.POST, user_json.toString(), null).getBody().toString();
+
+		String response = httpCall(null, url, HttpMethod.POST, user_json.toString(), null).getBody().toString();
 
 		logger.info("Response : " + response);
 		return response;
@@ -718,7 +721,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		logger.info("URL : " + url);
 		HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.set("Authorization", decodedToken);
-		String response = httpCall(decodedToken,url, HttpMethod.POST, null, null).getBody().toString();
+		String response = httpCall(decodedToken, url, HttpMethod.POST, null, null).getBody().toString();
 		logger.info("httpResponse : " + response);
 		return "Logged out";
 	}
@@ -740,7 +743,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 	}
 
 	@Override
-	public void updateMenu(Menu updatedMenu) {
+	public Menu updateMenu(Menu updatedMenu) {
 		if (updatedMenu != null) {
 			Session currentSession = entityManager.unwrap(Session.class);
 
@@ -762,10 +765,12 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 				currentSession.merge(fetchedMenu);
 
 				logger.info("Updated Menu" + fetchedMenu);
+				return fetchedMenu;
 			}
 		} else {
 			logger.info("Menu is null : " + updatedMenu);
 		}
+		return updatedMenu;
 	}
 
 	public Menu getMenu(String menuName) {
@@ -807,8 +812,8 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 	@Override
 	public String userAdd(String firstname, String middlename, String lastname, String username, String password,
 			String email) {
-//		boolean isValidItem = validateItem(description);
-//		logger.info("isValid : " + isValidItem);
+		// boolean isValidItem = validateItem(description);
+		// logger.info("isValid : " + isValidItem);
 
 		JSONObject user = new JSONObject();
 
@@ -848,7 +853,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		HttpEntity<String> httpEntity = new HttpEntity<String>(json, httpHeaders);
 		RestTemplate restTemplate = new RestTemplate();
 		response = httpCall(null, url, HttpMethod.POST, inventory_json.toString(), null).getBody().toString();
-				restTemplate.postForObject(url, httpEntity, String.class);
+		restTemplate.postForObject(url, httpEntity, String.class);
 		logger.info("Response : " + response);
 
 		return response;
@@ -858,17 +863,18 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 	public Iterable<Grp> getGrps() throws ClientProtocolException, IOException {
 		String url = getUrl("GetGrps");
 		logger.info("URL : {}", url);
-		String json = httpCall(null,url, HttpMethod.GET, null, null).getBody().toString();
+		String json = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
 		List<Grp> fetchedGrp = (List<Grp>) objectMapper.readValue(json, new TypeReference<List<Grp>>() {
 		});
 		return fetchedGrp;
 	}
 
-	public ResponseEntity<String> httpCall(String decodedToken,String url, HttpMethod httpMethod, String json, Map<String, Object> queryParams)
+	public ResponseEntity<String> httpCall(String decodedToken, String url, HttpMethod httpMethod, String json,
+			Map<String, Object> queryParams)
 			throws ClientProtocolException, IOException {
-		ResponseEntity<String> response = httpService.restCall(decodedToken,url, httpMethod, json, queryParams);
+		ResponseEntity<String> response = httpService.restCall(decodedToken, url, httpMethod, json, queryParams);
 		logger.info("Rest Call success : {}", response.getStatusCode());
-//		String responseData = response.getBody().toString();
+		// String responseData = response.getBody().toString();
 		return response;
 	}
 
@@ -876,7 +882,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 	public List<SopLocationRangeDto> getLocationRanges() throws ClientProtocolException, IOException {
 		String url = getUrl("Location Range");
 		logger.info("URL : {}", url);
-		String json = httpCall(null,url, HttpMethod.GET, null, null).getBody().toString();
+		String json = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
 		List<SopLocationRangeDto> fetchedSopLocationRangeDto = (List<SopLocationRangeDto>) objectMapper.readValue(json,
 				new TypeReference<List<SopLocationRangeDto>>() {
 				});
@@ -887,7 +893,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 	public List<SopActionTypeDto> getSopActionTypes() throws ClientProtocolException, IOException {
 		String url = getUrl("GetActionTypes");
 		logger.info("URL : {}", url);
-		String json = httpCall(null,url, HttpMethod.GET, null, null).getBody().toString();
+		String json = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
 		List<SopActionTypeDto> fetchedSopActionTypeDto = (List<SopActionTypeDto>) objectMapper.readValue(json,
 				new TypeReference<List<SopActionTypeDto>>() {
 				});
@@ -900,7 +906,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		String url = getUrl("GetActionType").replace("{actionType}", actionType);
 		logger.info("actionType : {}", actionType);
 		logger.info("URL : {}", url);
-		String json = httpCall(null,url, HttpMethod.GET, null, null).getBody().toString();
+		String json = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
 		logger.info("json : {}", json);
 		SopActionTypeDto fetchedSopActionTypeDto = (SopActionTypeDto) objectMapper.readValue(json,
 				new TypeReference<SopActionTypeDto>() {
@@ -913,7 +919,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 	public List<Category> getCategories() throws ClientProtocolException, IOException {
 		String url = getUrl("GetCategories");
 		logger.info("URL : {}", url);
-		String json = httpCall(null,url, HttpMethod.GET, null, null).getBody().toString();
+		String json = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
 		List<Category> fetchedCategories = (List<Category>) objectMapper.readValue(json,
 				new TypeReference<List<Category>>() {
 				});
@@ -921,7 +927,8 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 	}
 
 	@Override
-	public String assignBatch(String actionType,String batchType, String category) throws ClientProtocolException, IOException {
+	public String assignBatch(String actionType, String batchType, String category)
+			throws ClientProtocolException, IOException {
 		JSONObject assignJson = new JSONObject();
 		assignJson.put("sopActionType", actionType);
 		assignJson.put("batchType", batchType);
@@ -929,7 +936,7 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		String assign_json = assignJson.toString();
 		String url = getUrl("AssignBatch");
 		logger.info("URL : {}", url);
-		String response = httpCall(null,url, HttpMethod.POST, assign_json, null).getBody().toString();
+		String response = httpCall(null, url, HttpMethod.POST, assign_json, null).getBody().toString();
 		return response;
 	}
 
@@ -953,14 +960,14 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		logger.info("locationRangeJson : {} ", locationRangeJson);
 		String url = getUrl("Location Range Add");
 		logger.info("URL : {}", url);
-		String response = httpCall(null,url, HttpMethod.POST, location_Range_Json, null).getBody().toString();
+		String response = httpCall(null, url, HttpMethod.POST, location_Range_Json, null).getBody().toString();
 		logger.info("response : {}", response);
 		return response;
 	}
-	
 
 	@Override
-	public String updateLocationRange(String id,String actionType, String category_name, String fromLocation, String toLocation,
+	public String updateLocationRange(String id, String actionType, String category_name, String fromLocation,
+			String toLocation,
 			String isActive, String username) throws ClientProtocolException, IOException {
 		SopActionTypeDto sopActionTypeDto = getSopActionType(actionType);
 		JSONObject sopActionTypeJson = new JSONObject();
@@ -977,18 +984,17 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		locationRangeJson.put("lastUpdatedSource", username);
 		String location_Range_Json = locationRangeJson.toString();
 		logger.info("locationRangeJson : {} ", locationRangeJson);
-		String url = getUrl("LocationRangeUpdate").replace("{id}",id);
+		String url = getUrl("LocationRangeUpdate").replace("{id}", id);
 		logger.info("URL : {}", url);
-		ResponseEntity<String> response = httpCall(null,url, HttpMethod.PUT, location_Range_Json, null);
+		ResponseEntity<String> response = httpCall(null, url, HttpMethod.PUT, location_Range_Json, null);
 		logger.info("response : {}", response);
 		return response.getBody().toString();
 	}
 
-
 	@Override
 	public List<String> getEligibleUpcsForSop(String category) throws ClientProtocolException, IOException {
 		List<String> fetchedData = new ArrayList<>();
-		String url = getUrl("GetEligibleUpcsForSopByCategory").replace("{category}",category);
+		String url = getUrl("GetEligibleUpcsForSopByCategory").replace("{category}", category);
 		logger.info("url : {} ", url);
 		String response = "";
 		if (url != null) {
@@ -1002,7 +1008,8 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 	}
 
 	@Override
-	public Object unassignBatch(String sopActionType, String batchType, String category_name) throws ClientProtocolException, IOException {
+	public Object unassignBatch(String sopActionType, String batchType, String category_name)
+			throws ClientProtocolException, IOException {
 		JSONObject assignJson = new JSONObject();
 		assignJson.put("sopActionType", sopActionType);
 		assignJson.put("batchType", batchType);
@@ -1010,7 +1017,26 @@ public class MenuRepositoryCustomImp implements MenuRepositoryCustom {
 		String assign_json = assignJson.toString();
 		String url = getUrl("UnassignBatch");
 		logger.info("URL : {}", url);
-		String response = httpCall(null,url, HttpMethod.POST, assign_json, null).getBody().toString();
+		String response = httpCall(null, url, HttpMethod.POST, assign_json, null).getBody().toString();
 		return response;
+	}
+
+	@Override
+	public List<CubiscanLog> getCubiscanLogs() {
+		try {
+			List<CubiscanLog> fetchedData = new ArrayList<>();
+			String response = "";
+			String url = getUrl("GetCubiscanLogs");
+			if (url != null) {
+				response = httpCall(null, url, HttpMethod.GET, null, null).getBody().toString();
+				fetchedData = objectMapper.readValue(response, new TypeReference<List<CubiscanLog>>() {
+				});
+				// logger.info("{}",fetchedData);
+				return fetchedData;
+			}
+		} catch (Exception e) {
+			logger.error("Exception occured", e);
+		}
+		return null;
 	}
 }
