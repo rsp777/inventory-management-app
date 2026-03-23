@@ -2,8 +2,10 @@ package com.pawar.inventory.app.repository;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.http.client.ClientProtocolException;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -31,7 +33,7 @@ public interface MenuRepositoryCustom {
 
 	String categoryAdd(String category_name) throws ClientProtocolException, IOException;
 
-	void categoryEdit(String category_name, Category category) throws ClientProtocolException, IOException;
+	void categoryEdit(String category_name, String updatedCategoryName) throws ClientProtocolException, IOException;
 
 	void categoryDelete(String category_name) throws ClientProtocolException, IOException;
 
@@ -49,6 +51,8 @@ public interface MenuRepositoryCustom {
 
 	Iterable<Location> getLocations() throws ClientProtocolException, IOException;
 
+	Location getLocationByBarcode(String locn_brcd) throws ClientProtocolException, IOException;
+
 	String locationAdd(String locn_brcd, String grp, String locn_class, float length, float width, float height,
 			float max_volume, float max_qty, float max_weight) throws ClientProtocolException, IOException;
 
@@ -61,6 +65,8 @@ public interface MenuRepositoryCustom {
 	Iterable<Lpn> getLpns() throws ClientProtocolException, IOException;
 
 	Iterable<Inventory> getInventories() throws ClientProtocolException, IOException;
+
+	Inventory getInventoryByLpnName(String lpn_name) throws ClientProtocolException, IOException;
 
 	String locateLpnToResv(String lpn_name, String resv_locn) throws ClientProtocolException, IOException;
 
@@ -109,5 +115,8 @@ public interface MenuRepositoryCustom {
     Object unassignBatch(String sopActionType, String batchAssign, String category_name) throws ClientProtocolException, IOException;
 
 	List<CubiscanLog> getCubiscanLogs();
+
+	ResponseEntity<String> httpCall(String decodedToken, String url, HttpMethod httpMethod, String json,
+			Map<String, Object> queryParams);
 
 }
