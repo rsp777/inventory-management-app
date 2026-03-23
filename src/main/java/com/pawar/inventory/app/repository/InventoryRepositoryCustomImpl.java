@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.http.client.ClientProtocolException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -19,14 +18,16 @@ import com.pawar.inventory.entity.Inventory;
 @Component
 public class InventoryRepositoryCustomImpl implements InventoryRepositoryCustom {
 
-	@Autowired
-	private ExternalApiService externalApiService;
+	private final ExternalApiService externalApiService;
+	private final ObjectMapper objectMapper;
+	private final LpnRepositoryCustom lpnRepositoryCustom;
 
-	@Autowired
-	private ObjectMapper objectMapper;
-
-	@Autowired
-	private LpnRepositoryCustom lpnRepositoryCustom;
+	public InventoryRepositoryCustomImpl(ExternalApiService externalApiService, ObjectMapper objectMapper,
+			LpnRepositoryCustom lpnRepositoryCustom) {
+		this.externalApiService = externalApiService;
+		this.objectMapper = objectMapper;
+		this.lpnRepositoryCustom = lpnRepositoryCustom;
+	}
 
 	@Override
 	public Iterable<Inventory> getInventories() throws ClientProtocolException, IOException {
@@ -117,7 +118,7 @@ public class InventoryRepositoryCustomImpl implements InventoryRepositoryCustom 
 				.replace("{lpn_name}", lpnName);
 		ResponseEntity<String> response = externalApiService.callExternalApiWithUrl(null, url, HttpMethod.GET, null);
 		String json = response.getBody();
-		if (json == null || json.isBlank() || json.contains("\"status\":404") || json.contains("\"status\":500")) {
+		if (json == null || json.isBlank() || json.contains(AppConstants.ExternalApiResponse.STATUS_NOT_FOUND) || json.contains(AppConstants.ExternalApiResponse.STATUS_SERVER_ERROR)) {
 			return List.of();
 		}
 

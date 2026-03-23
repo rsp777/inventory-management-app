@@ -1,12 +1,16 @@
 package com.pawar.inventory.app.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import com.pawar.inventory.app.exception.base.BaseException;
 
-@ResponseStatus(HttpStatus.BAD_REQUEST)
-public class MenuAssignmentException extends RuntimeException {
+public class MenuAssignmentException extends BaseException {
+
+    public MenuAssignmentException(String message) {
+        super(message, HttpStatus.BAD_REQUEST, "MENU_ASSIGNMENT_ERROR");
+    }
+
     public MenuAssignmentException(String message, Throwable cause) {
-        super(message, cause);
+        super(message, HttpStatus.BAD_REQUEST, cause);
     }
 }
 

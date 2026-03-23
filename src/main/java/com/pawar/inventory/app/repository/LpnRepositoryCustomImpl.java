@@ -5,12 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.pawar.inventory.app.service.base.ExternalApiService;
+import com.pawar.inventory.app.config.AppConstants;
 import com.pawar.inventory.app.util.ControllerReflectionUtil;
 import com.pawar.inventory.entity.Lpn;
 
@@ -25,11 +25,13 @@ public class LpnRepositoryCustomImpl implements LpnRepositoryCustom {
 	
 	private static final Logger logger = LoggerFactory.getLogger(LpnRepositoryCustomImpl.class);
 	
-	@Autowired
-	private ExternalApiService externalApiService;
-	
-	@Autowired
-	private ObjectMapper objectMapper;
+	private final ExternalApiService externalApiService;
+	private final ObjectMapper objectMapper;
+
+	public LpnRepositoryCustomImpl(ExternalApiService externalApiService, ObjectMapper objectMapper) {
+		this.externalApiService = externalApiService;
+		this.objectMapper = objectMapper;
+	}
 	
 	/**
 	 * Creates a new LPN via external API
@@ -181,8 +183,9 @@ public class LpnRepositoryCustomImpl implements LpnRepositoryCustom {
 	private Lpn tryFetchByExactLpnName(String normalizedLpnName) {
 		try {
 			String response = externalApiService.validateLpn(normalizedLpnName);
-			if (response == null || response.isBlank() || response.contains("\"status\":404")
-					|| response.contains("\"status\":500")) {
+				if (response == null || response.isBlank()
+						|| response.contains(AppConstants.ExternalApiResponse.STATUS_NOT_FOUND)
+						|| response.contains(AppConstants.ExternalApiResponse.STATUS_SERVER_ERROR)) {
 				return null;
 			}
 

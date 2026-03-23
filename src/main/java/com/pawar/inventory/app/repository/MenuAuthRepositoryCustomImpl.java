@@ -7,12 +7,13 @@ import org.apache.http.client.ClientProtocolException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.pawar.inventory.app.config.AppConstants;
 import com.pawar.inventory.app.model.Menu;
+import com.pawar.inventory.app.util.SessionUtil;
 import com.pawar.sop.http.service.HttpService;
 
 import jakarta.servlet.http.HttpSession;
@@ -22,23 +23,27 @@ public class MenuAuthRepositoryCustomImpl implements MenuAuthRepositoryCustom {
 
 	private static final Logger logger = LoggerFactory.getLogger(MenuAuthRepositoryCustomImpl.class);
 
-	@Autowired
-	private MenuRepository menuRepository;
+	private final MenuRepository menuRepository;
+	private final HttpService httpService;
 
-	@Autowired
-	private HttpService httpService;
+	public MenuAuthRepositoryCustomImpl(MenuRepository menuRepository, HttpService httpService) {
+		this.menuRepository = menuRepository;
+		this.httpService = httpService;
+	}
 
 	@Override
+	@Transactional
 	public Menu addMenu(Menu newMenu) {
 		newMenu.setCreatedDttm(LocalDateTime.now());
 		newMenu.setLastUpdatedDttm(LocalDateTime.now());
-		newMenu.setCreatedSource("System");
-		newMenu.setLastUpdatedSource("System");
+		newMenu.setCreatedSource(AppConstants.Application.AUDIT_SOURCE);
+		newMenu.setLastUpdatedSource(AppConstants.Application.AUDIT_SOURCE);
 		logger.info("Saving new menu: {}", newMenu.getMenuName());
 		return menuRepository.save(newMenu);
 	}
 
 	@Override
+	@Transactional
 	public Menu updateMenu(Menu updatedMenu) {
 		if (updatedMenu == null || updatedMenu.getMenuName() == null) {
 			return updatedMenu;
@@ -56,7 +61,7 @@ public class MenuAuthRepositoryCustomImpl implements MenuAuthRepositoryCustom {
 		existingMenu.setMenu_link(updatedMenu.getMenu_link());
 		existingMenu.setMenu_type(updatedMenu.getMenu_type());
 		existingMenu.setLastUpdatedDttm(LocalDateTime.now());
-		existingMenu.setLastUpdatedSource("System");
+		existingMenu.setLastUpdatedSource(AppConstants.Application.AUDIT_SOURCE);
 		logger.info("Updating menu: {}", existingMenu.getMenuName());
 		return menuRepository.save(existingMenu);
 	}
@@ -75,7 +80,7 @@ public class MenuAuthRepositoryCustomImpl implements MenuAuthRepositoryCustom {
 
 	@Override
 	public String signout(HttpSession httpSession) throws ClientProtocolException, IOException {
-		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
+		String decodedToken = SessionUtil.getSessionToken(httpSession);
 		String url = getUrl(AppConstants.MenuEndpoint.SIGNOUT);
 		logger.info("Sign-out URL : {}", url);
 

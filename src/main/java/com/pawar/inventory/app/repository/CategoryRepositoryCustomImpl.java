@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -19,11 +18,13 @@ import com.pawar.inventory.entity.Category;
 @Component
 public class CategoryRepositoryCustomImpl implements CategoryRepositoryCustom {
 
-	@Autowired
-	private ExternalApiService externalApiService;
+	private final ExternalApiService externalApiService;
+	private final ObjectMapper objectMapper;
 
-	@Autowired
-	private ObjectMapper objectMapper;
+	public CategoryRepositoryCustomImpl(ExternalApiService externalApiService, ObjectMapper objectMapper) {
+		this.externalApiService = externalApiService;
+		this.objectMapper = objectMapper;
+	}
 
 	@Override
 	public Iterable<Category> getfindAllCategories() throws ClientProtocolException, IOException {

@@ -1,12 +1,20 @@
 package com.pawar.inventory.app.model;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.pawar.inventory.app.config.AppConstants;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 
 @Entity
 public class TransactionLog {
@@ -39,6 +47,7 @@ public class TransactionLog {
     @Column(name = "data")
     private String data;
 
+    @JsonProperty("transaction_name")
     @Column(name = "transaction_name")
     private String transaction_name;
 
@@ -112,6 +121,39 @@ public class TransactionLog {
 
     public void setTransaction_name(String transaction_name) {
         this.transaction_name = transaction_name;
+    }
+
+    public String getTransactionName() {
+        return transaction_name;
+    }
+
+    public void setTransactionName(String transactionName) {
+        this.transaction_name = transactionName;
+    }
+
+    @PrePersist
+    public void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        if (createdDttm == null) {
+            createdDttm = now;
+        }
+        if (lastUpdatedDttm == null) {
+            lastUpdatedDttm = now;
+        }
+        if (createdSource == null || createdSource.isBlank()) {
+            createdSource = AppConstants.Application.AUDIT_SOURCE_SYSTEM;
+        }
+        if (lastUpdatedSource == null || lastUpdatedSource.isBlank()) {
+            lastUpdatedSource = createdSource;
+        }
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        lastUpdatedDttm = LocalDateTime.now();
+        if (lastUpdatedSource == null || lastUpdatedSource.isBlank()) {
+            lastUpdatedSource = AppConstants.Application.AUDIT_SOURCE_SYSTEM;
+        }
     }
 
     @Override

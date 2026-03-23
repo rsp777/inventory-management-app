@@ -8,7 +8,6 @@ import org.apache.kafka.common.errors.DuplicateResourceException;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +24,6 @@ public class ListenerServiceImpl implements ListenerService {
 
     private final ListenerRepository listenerRepository;
 
-    @Autowired
     public ListenerServiceImpl(ListenerRepository listenerRepository) {
         this.listenerRepository = listenerRepository;
     }
@@ -107,7 +105,7 @@ public class ListenerServiceImpl implements ListenerService {
     @Transactional(readOnly = true)
     public List<Listener> getAllListeners() {
         logger.debug("Fetching all listeners");
-        return listenerRepository.findAll();
+        return listenerRepository.findAllByOrderByUpdatedAtDesc();
     }
 
     @Override

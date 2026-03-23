@@ -10,21 +10,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.pawar.inventory.app.exception.DuplicateResourceException;
+import com.pawar.inventory.app.config.AppConstants;
 import com.pawar.inventory.app.exception.ErrorResponse;
-import com.pawar.inventory.app.exception.ResourceNotFoundException;
-import com.pawar.inventory.app.exception.UnauthorizedException;
-import com.pawar.inventory.app.exception.ValidationException;
+import com.pawar.inventory.app.exception.base.BaseException;
 import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.app.service.MenuService;
+import com.pawar.inventory.app.util.SessionUtil;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -39,25 +37,37 @@ public class CustomExceptionHandler {
 		this.menuService = menuService;
 	}
 
-	@ExceptionHandler(UnauthorizedException.class)
-	@ResponseStatus(HttpStatus.UNAUTHORIZED)
-	public ResponseEntity<String> handleUnauthorizedException(UnauthorizedException ex) {
-		// Customize the response (e.g., return an error message)
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
-	}
+    @ExceptionHandler(BaseException.class)
+    public ResponseEntity<ErrorResponse> handleBaseException(BaseException ex) {
+        logger.error("Base exception: {}", ex.getMessage());
+
+        ErrorResponse error = new ErrorResponse(
+            ex.getHttpStatus().value(),
+            ex.getHttpStatus().getReasonPhrase(),
+            ex.getMessage(),
+            ex.getTimestamp()
+        );
+
+        return new ResponseEntity<>(error, ex.getHttpStatus());
+    }
 
 	@ModelAttribute("user_name")
 	public String getUserName(HttpSession httpSession) {
-		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
+        String decodedToken = SessionUtil.getSessionToken(httpSession);
 		if (decodedToken != null) {
-			DecodedJWT decodedJWT = JWT.decode(decodedToken);
-			String[] decodedString = decodedJWT.getSubject().split("\\|");
-			String user_name = decodedString[0];
-			logger.info("Username : " + user_name);
-			return user_name;
-		} else {
-			return "unknown user";
+			try {
+				DecodedJWT decodedJWT = JWT.decode(decodedToken);
+				String subject = decodedJWT.getSubject();
+				if (subject != null && !subject.isEmpty()) {
+					String user_name = subject.split("\\|")[0];
+					logger.info("Username : " + user_name);
+					return user_name;
+				}
+			} catch (Exception e) {
+				logger.warn("Could not extract username from token: " + e.getMessage());
+			}
 		}
+		return "unknown user";
 	}
 
 	@ModelAttribute("logout_url")
@@ -72,48 +82,6 @@ public class CustomExceptionHandler {
 		return menuLogout;
 	}
 
-	@ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
-        logger.error("Resource not found: {}", ex.getMessage());
-        
-        ErrorResponse error = new ErrorResponse(
-            HttpStatus.NOT_FOUND.value(),
-            "Not Found",
-            ex.getMessage(),
-            LocalDateTime.now()
-        );
-        
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-    }
-    
-    @ExceptionHandler(DuplicateResourceException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateResourceException(DuplicateResourceException ex) {
-        logger.error("Duplicate resource: {}", ex.getMessage());
-        
-        ErrorResponse error = new ErrorResponse(
-            HttpStatus.CONFLICT.value(),
-            "Conflict",
-            ex.getMessage(),
-            LocalDateTime.now()
-        );
-        
-        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
-    }
-    
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex) {
-        logger.error("Validation error: {}", ex.getMessage());
-        
-        ErrorResponse error = new ErrorResponse(
-            HttpStatus.BAD_REQUEST.value(),
-            "Validation Error",
-            ex.getMessage(),
-            LocalDateTime.now()
-        );
-        
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-    }
-    
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         logger.error("Method argument validation failed");

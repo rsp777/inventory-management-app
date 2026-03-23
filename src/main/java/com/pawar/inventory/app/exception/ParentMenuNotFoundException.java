@@ -1,11 +1,10 @@
 package com.pawar.inventory.app.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import com.pawar.inventory.app.exception.base.BaseException;
 
-@ResponseStatus(HttpStatus.BAD_REQUEST)
-public class ParentMenuNotFoundException extends Exception {
+public class ParentMenuNotFoundException extends BaseException {
 	public ParentMenuNotFoundException(String message) {
-		super(message);
+		super(message, HttpStatus.NOT_FOUND, "PARENT_MENU_NOT_FOUND");
 	}
 }

@@ -1,16 +1,15 @@
 package com.pawar.inventory.app.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import com.pawar.inventory.app.exception.base.BaseException;
 
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class ResourceNotFoundException extends RuntimeException {
+public class ResourceNotFoundException extends BaseException {
     
     public ResourceNotFoundException(String message) {
-        super(message);
+        super(message, HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND");
     }
     
     public ResourceNotFoundException(String message, Throwable cause) {
-        super(message, cause);
+        super(message, HttpStatus.NOT_FOUND, cause);
     }
 }

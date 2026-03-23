@@ -1,24 +1,23 @@
 package com.pawar.inventory.app.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import com.pawar.inventory.app.exception.base.BaseException;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@ResponseStatus(HttpStatus.BAD_REQUEST)
-public class ValidationException extends RuntimeException {
+public class ValidationException extends BaseException {
     
     private List<String> errors;
     
     public ValidationException(String message) {
-        super(message);
+        super(message, HttpStatus.BAD_REQUEST, "VALIDATION_ERROR");
         this.errors = new ArrayList<>();
         this.errors.add(message);
     }
     
     public ValidationException(List<String> errors) {
-        super("Validation failed");
+        super("Validation failed", HttpStatus.BAD_REQUEST, "VALIDATION_ERROR");
         this.errors = errors;
     }
     

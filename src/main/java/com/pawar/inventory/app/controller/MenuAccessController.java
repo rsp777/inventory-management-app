@@ -4,10 +4,8 @@ import java.util.List;
 
 import javax.management.relation.RoleNotFoundException;
 
-import org.jboss.logging.Logger;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -31,10 +29,13 @@ import com.pawar.inventory.app.service.MenuAccessService;
 @RequestMapping("/inventory-ui-rest")
 public class MenuAccessController {
 
-	private static final Logger logger = Logger.getLogger(MenuAccessController.class);
+	private static final Logger logger = LoggerFactory.getLogger(MenuAccessController.class);
 
-	@Autowired
-	private MenuAccessService menuAccessService;
+	private final MenuAccessService menuAccessService;
+
+	public MenuAccessController(MenuAccessService menuAccessService) {
+		this.menuAccessService = menuAccessService;
+	}
 
 	@CrossOrigin(origins = "*", allowedHeaders = "*")
 	@GetMapping("/getAccessibleMenus")
@@ -55,28 +56,25 @@ public class MenuAccessController {
 	@PostMapping("/assign/menus/{menuId}/roles/{roleId}")
 	public ResponseEntity<?> assignMenusToRole(@PathVariable int menuId, @PathVariable Integer roleId) {
 		try {
-			try {
-
-				menuAccessService.assignMenusToRole(menuId, roleId);
-			} catch (RoleNotFoundException e) {
-				ResponseEntity.status(HttpStatus.NOT_FOUND).body("Role not found : {}" + e.getMessage());
-			} catch (MenuNotFoundException e) {
-				ResponseEntity.status(HttpStatus.NOT_FOUND).body("Menu not found : {}" + e.getMessage());
-			} catch (JsonProcessingException e) {
-				e.printStackTrace();
-				ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-						.body("Exception in Json Processing : {}" + e.getMessage());
-			}
-			logger.infof("Menus assigned successfully to Role ID: %d", roleId);
+			menuAccessService.assignMenusToRole(menuId, roleId);
+			logger.info("Menus assigned successfully to Role ID: {}", roleId);
 			return ResponseEntity.ok("Menus assigned successfully to Role ");
+		} catch (RoleNotFoundException e) {
+			logger.error("Role not found while assigning menu: {}", e.getMessage());
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Role not found: " + e.getMessage());
+		} catch (MenuNotFoundException e) {
+			logger.error("Menu not found while assigning menu: {}", e.getMessage());
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Menu not found: " + e.getMessage());
+		} catch (JsonProcessingException e) {
+			logger.error("Exception in JSON processing while assigning menu", e);
+			return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+					.body("Exception in JSON processing: " + e.getMessage());
 
 		} catch (IllegalArgumentException e) {
-
-			logger.errorf("Error assigning Menu: {}", e.getMessage());
+			logger.error("Error assigning menu: {}", e.getMessage());
 			return ResponseEntity.badRequest().body(e.getMessage());
 		} catch (MenuAssignmentException e) {
-
-			logger.errorf("Menu assignment failed: {}", e.getMessage());
+			logger.error("Menu assignment failed: {}", e.getMessage());
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Menu assignment failed.");
 		}
 	}
@@ -84,28 +82,25 @@ public class MenuAccessController {
 	@DeleteMapping("/unassign/menus/{menuId}/roles/{roleId}")
 	public ResponseEntity<?> unassignMenusToRole(@PathVariable int menuId, @PathVariable Integer roleId) {
 		try {
-			try {
-
-				menuAccessService.unassignMenusToRole(menuId, roleId);
-			} catch (RoleNotFoundException e) {
-				ResponseEntity.status(HttpStatus.NOT_FOUND).body("Role not found : {}" + e.getMessage());
-			} catch (MenuNotFoundException e) {
-				ResponseEntity.status(HttpStatus.NOT_FOUND).body("Menu not found : {}" + e.getMessage());
-			} catch (JsonProcessingException e) {
-				e.printStackTrace();
-				ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-						.body("Exception in Json Processing : {}" + e.getMessage());
-			}
-			logger.infof("Menus unassigned successfully to Role ID: {}", roleId);
+			menuAccessService.unassignMenusToRole(menuId, roleId);
+			logger.info("Menus unassigned successfully to Role ID: {}", roleId);
 			return ResponseEntity.ok("Menus unassigned successfully to Role ");
+		} catch (RoleNotFoundException e) {
+			logger.error("Role not found while unassigning menu: {}", e.getMessage());
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Role not found: " + e.getMessage());
+		} catch (MenuNotFoundException e) {
+			logger.error("Menu not found while unassigning menu: {}", e.getMessage());
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Menu not found: " + e.getMessage());
+		} catch (JsonProcessingException e) {
+			logger.error("Exception in JSON processing while unassigning menu", e);
+			return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+					.body("Exception in JSON processing: " + e.getMessage());
 
 		} catch (IllegalArgumentException e) {
-
-			logger.errorf("Error unassigning Menu: {}", e.getMessage());
+			logger.error("Error unassigning menu: {}", e.getMessage());
 			return ResponseEntity.badRequest().body(e.getMessage());
 		} catch (MenuAssignmentException e) {
-
-			logger.errorf("Menu unassignment failed: {}", e.getMessage());
+			logger.error("Menu unassignment failed: {}", e.getMessage());
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Menu unassignment failed.");
 		}
 	}

@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -20,11 +19,13 @@ import com.pawar.inventory.entity.Location;
 @Component
 public class LocationRepositoryCustomImpl implements LocationRepositoryCustom {
 
-	@Autowired
-	private ExternalApiService externalApiService;
+	private final ExternalApiService externalApiService;
+	private final ObjectMapper objectMapper;
 
-	@Autowired
-	private ObjectMapper objectMapper;
+	public LocationRepositoryCustomImpl(ExternalApiService externalApiService, ObjectMapper objectMapper) {
+		this.externalApiService = externalApiService;
+		this.objectMapper = objectMapper;
+	}
 
 	@Override
 	public Iterable<Location> getLocations() throws ClientProtocolException, IOException {
@@ -59,7 +60,7 @@ public class LocationRepositoryCustomImpl implements LocationRepositoryCustom {
 				.replace("{locn_brcd}", code.trim());
 		ResponseEntity<String> response = externalApiService.callExternalApiWithUrl(null, url, HttpMethod.GET, null);
 		String json = response.getBody();
-		if (json == null || json.isBlank() || json.contains("\"status\":404") || json.contains("\"status\":500")) {
+		if (json == null || json.isBlank() || json.contains(AppConstants.ExternalApiResponse.STATUS_NOT_FOUND) || json.contains(AppConstants.ExternalApiResponse.STATUS_SERVER_ERROR)) {
 			return List.of();
 		}
 		Location location = objectMapper.readValue(json, Location.class);

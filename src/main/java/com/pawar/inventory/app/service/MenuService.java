@@ -2,6 +2,7 @@ package com.pawar.inventory.app.service;
 
 import java.io.IOException;
 import java.util.List;
+
 import org.apache.http.client.ClientProtocolException;
 import org.springframework.http.ResponseEntity;
 
@@ -33,7 +34,7 @@ public interface MenuService {
 
     String categoryAdd(String category_name) throws ClientProtocolException, IOException;
 
-    void categoryEdit(String category_name, Category category) throws ClientProtocolException, IOException;
+        void categoryEdit(String category_name, String updatedCategoryName) throws ClientProtocolException, IOException;
 
     void categoryDelete(String category_name) throws ClientProtocolException, IOException;
 
@@ -51,6 +52,10 @@ public interface MenuService {
 
     Iterable<Location> getLocations() throws ClientProtocolException, IOException;
 
+        Location getLocationById(int id) throws ClientProtocolException, IOException;
+
+        List<Location> searchLocationsByCode(String code) throws ClientProtocolException, IOException;
+
     String locationAdd(String locn_brcd, String grp, String locn_class, float length, float width, float height,
             float max_volume, float max_qty, float max_weight) throws ClientProtocolException, IOException;
 
@@ -61,7 +66,22 @@ public interface MenuService {
 
     Iterable<Lpn> getLpns() throws ClientProtocolException, IOException;
 
+        Lpn getLpnById(int id) throws ClientProtocolException, IOException;
+
+        List<Lpn> searchLpns(String lpnNumber) throws ClientProtocolException, IOException;
+
     Iterable<Inventory> getInventories() throws ClientProtocolException, IOException;
+
+        Inventory getInventoryById(int id) throws ClientProtocolException, IOException;
+
+        List<Inventory> getInventoriesByItemId(int itemId) throws ClientProtocolException, IOException;
+
+        List<Inventory> getInventoriesByLocationId(int locationId) throws ClientProtocolException, IOException;
+
+        List<Inventory> getInventoriesByLpnId(int lpnId) throws ClientProtocolException, IOException;
+
+        List<Inventory> searchInventories(Integer itemId, Integer locationId, Integer lpnId)
+			throws ClientProtocolException, IOException;
 
     String locateLpnToResv(String lpn_name, String resv_locn) throws ClientProtocolException, IOException;
 

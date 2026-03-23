@@ -1,13 +1,16 @@
 package com.pawar.inventory.app.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import com.pawar.inventory.app.exception.base.BaseException;
 
-@ResponseStatus(HttpStatus.BAD_REQUEST)
-public class RoleDeletionException extends Exception{
+public class RoleDeletionException extends BaseException {
+
+    public RoleDeletionException(String message) {
+        super(message, HttpStatus.BAD_REQUEST, "ROLE_DELETION_ERROR");
+    }
 	
 	public RoleDeletionException(String message, Exception e) {
-        super(message);
+        super(message, HttpStatus.BAD_REQUEST, e);
     }
 	
 	

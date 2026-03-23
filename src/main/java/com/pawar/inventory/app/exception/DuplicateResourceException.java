@@ -1,16 +1,15 @@
 package com.pawar.inventory.app.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import com.pawar.inventory.app.exception.base.BaseException;
 
-@ResponseStatus(HttpStatus.CONFLICT)
-public class DuplicateResourceException extends RuntimeException {
+public class DuplicateResourceException extends BaseException {
     
     public DuplicateResourceException(String message) {
-        super(message);
+        super(message, HttpStatus.CONFLICT, "DUPLICATE_RESOURCE");
     }
     
     public DuplicateResourceException(String message, Throwable cause) {
-        super(message, cause);
+        super(message, HttpStatus.CONFLICT, cause);
     }
 }

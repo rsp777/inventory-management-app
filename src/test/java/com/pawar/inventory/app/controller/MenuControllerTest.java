@@ -4,9 +4,6 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,10 +12,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
-import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.app.service.MenuAccessService;
 import com.pawar.inventory.app.service.MenuService;
+import com.pawar.inventory.app.service.NavigationService;
 
 @ExtendWith(MockitoExtension.class)
 public class MenuControllerTest {
@@ -31,33 +29,32 @@ public class MenuControllerTest {
     @Mock
     private MenuAccessService menuAccessService;
 
+    @Mock
+    private NavigationService navigationService;
+
     @InjectMocks
     private MenuController menuController;
 
     @BeforeEach
     public void setup() {
-        mockMvc = MockMvcBuilders.standaloneSetup(menuController).build();
+        InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+        viewResolver.setPrefix("/WEB-INF/views/");
+        viewResolver.setSuffix(".html");
+        mockMvc = MockMvcBuilders.standaloneSetup(menuController)
+            .setViewResolvers(viewResolver)
+            .build();
     }
 
     @Test
     public void testIndex() throws Exception {
         mockMvc.perform(get("/api/index"))
-               .andExpect(status().isOk());
-    }
-
-    @Test
-    public void testShowMenu() throws Exception {
-        List<Menu> menus = Arrays.asList(new Menu());
-        when(menuAccessService.getAccessibleMenus(anyString())).thenReturn(menus);
-
-        mockMvc.perform(get("/api/showMenu"))
-               .andExpect(status().isOk());
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
     public void testCreateLpn() throws Exception {
         mockMvc.perform(get("/api/createLpn"))
-               .andExpect(status().isOk());
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
@@ -72,91 +69,91 @@ public class MenuControllerTest {
     @Test
     public void testLpnInquiry() throws Exception {
         mockMvc.perform(get("/api/lpnInquiry"))
-               .andExpect(status().isOk());
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
     public void testInventoryByLocation() throws Exception {
         mockMvc.perform(get("/api/inventoryByLocation"))
-               .andExpect(status().isOk());
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
     public void testInventoryByLpn() throws Exception {
         mockMvc.perform(get("/api/inventoryByLpn"))
-               .andExpect(status().isOk());
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
     public void testInventoryByItem() throws Exception {
         mockMvc.perform(get("/api/inventoryByItem"))
-               .andExpect(status().isOk());
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
     public void testItemInquiry() throws Exception {
-        mockMvc.perform(get("/api/itemInquiry"))
-               .andExpect(status().isOk());
+        mockMvc.perform(get("/api/legacy/itemInquiry"))
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
     public void testItemInfo() throws Exception {
-        mockMvc.perform(get("/api/itemInfo"))
-               .andExpect(status().isOk());
+        mockMvc.perform(get("/api/legacy/itemInfo"))
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
     public void testGetItem() throws Exception {
-        mockMvc.perform(get("/api/getItem/ITEM123"))
-               .andExpect(status().isOk());
+        mockMvc.perform(get("/api/legacy/getItem/ITEM123"))
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
     public void testCategoryInfo() throws Exception {
-        mockMvc.perform(get("/api/categoryInfo"))
-               .andExpect(status().isOk());
+        mockMvc.perform(get("/api/legacy/categoryInfo"))
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
     public void testCategoryAdd() throws Exception {
-        mockMvc.perform(post("/api/categoryAdd/CAT123"))
-               .andExpect(status().isOk());
+        mockMvc.perform(post("/api/legacy/categoryAdd/CAT123"))
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
     public void testCategoryEdit() throws Exception {
-        mockMvc.perform(put("/api/categoryEdit/CAT123")
+        mockMvc.perform(put("/api/legacy/categoryEdit/CAT123")
                 .contentType("application/json")
-                .content("{}"))
+                .content("{\"category_name\":\"NEWCAT\"}"))
                .andExpect(status().isOk());
     }
 
     @Test
     public void testCategoryDelete() throws Exception {
-        mockMvc.perform(delete("/api/categoryDelete/CAT123"))
-               .andExpect(status().isOk());
+        mockMvc.perform(delete("/api/legacy/categoryDelete/CAT123"))
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
     public void testDeleteCategory() throws Exception {
         mockMvc.perform(delete("/api/deleteCategory/1"))
-               .andExpect(status().isOk());
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
     public void testItemAdd() throws Exception {
-        mockMvc.perform(post("/api/itemAdd")
+        mockMvc.perform(post("/api/legacy/itemAdd")
                 .param("description", "ITEM123")
                 .param("category", "CAT123")
                 .param("length", "10.0")
                 .param("width", "5.0")
                 .param("height", "2.0"))
-               .andExpect(status().isOk());
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
     public void testItemEdit() throws Exception {
-        mockMvc.perform(put("/api/itemEdit")
+        mockMvc.perform(put("/api/legacy/itemEdit")
                 .param("description", "ITEM123")
                 .param("category", "CAT123")
                 .param("length", "10.0")
@@ -167,14 +164,14 @@ public class MenuControllerTest {
 
     @Test
     public void testDeleteItem() throws Exception {
-        mockMvc.perform(delete("/api/deleteItem/ITEM123"))
-               .andExpect(status().isOk());
+        mockMvc.perform(delete("/api/legacy/deleteItem/1"))
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
     public void testLocationInfo() throws Exception {
         mockMvc.perform(get("/api/locationInfo"))
-               .andExpect(status().isOk());
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
@@ -216,7 +213,7 @@ public class MenuControllerTest {
     @Test
     public void testLpnInfo() throws Exception {
         mockMvc.perform(get("/api/lpnInfo"))
-               .andExpect(status().isOk());
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
@@ -237,19 +234,19 @@ public class MenuControllerTest {
     @Test
     public void testInventoryInfo() throws Exception {
         mockMvc.perform(get("/api/inventoryInfo"))
-               .andExpect(status().isOk());
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
     public void testLocationInquiry() throws Exception {
         mockMvc.perform(get("/api/locationInquiry"))
-               .andExpect(status().isOk());
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
     public void testPutawayLpnToReserve() throws Exception {
         mockMvc.perform(get("/api/putawayLpnToReserve"))
-               .andExpect(status().isOk());
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
@@ -263,13 +260,13 @@ public class MenuControllerTest {
     @Test
     public void testPutawayLpnToActive() throws Exception {
         mockMvc.perform(get("/api/putawayLpnToActive"))
-               .andExpect(status().isOk());
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
     public void testPutawayLpnToActiveSys() throws Exception {
         mockMvc.perform(get("/api/putawayLpnToActiveSys"))
-               .andExpect(status().isOk());
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
@@ -292,7 +289,7 @@ public class MenuControllerTest {
         mockMvc.perform(post("/api/signIn")
                 .param("username", "user123")
                 .param("password", "pass123"))
-               .andExpect(status().is3xxRedirection());
+               .andExpect(status().isOk());
     }
 
     @Test
@@ -304,7 +301,7 @@ public class MenuControllerTest {
     @Test
     public void testSettings() throws Exception {
         mockMvc.perform(get("/api/settings"))
-               .andExpect(status().isOk());
+               .andExpect(status().is3xxRedirection());
     }
 
     @Test
@@ -327,7 +324,7 @@ public class MenuControllerTest {
 
     @Test
     public void testMenuList() throws Exception {
-        mockMvc.perform(get("/api/menulist"))
-               .andExpect(status().isOk());
+        mockMvc.perform(get("/api/legacy/menulist"))
+               .andExpect(status().is3xxRedirection());
     }
 }

@@ -13,6 +13,8 @@ import java.util.Optional;
 
 @Repository
 public interface ListenerRepository extends JpaRepository<Listener, Long> {
+
+    List<Listener> findAllByOrderByUpdatedAtDesc();
     
     // Find all listeners by status
     List<Listener> findByStatus(String status);

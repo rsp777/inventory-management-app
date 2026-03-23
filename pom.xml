@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.pawar.inventory.app</groupId>
 	<artifactId>inventory-management-app</artifactId>
-	<version>Dev_v2.1</version>
+	<version>refactor/inventory-management-app</version>
 	<packaging>jar</packaging>
 	<name>inventory-management-app</name>
 	<description>inventory-management-app</description>
@@ -127,6 +127,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
 			<scope>test</scope>
 		</dependency>
 		

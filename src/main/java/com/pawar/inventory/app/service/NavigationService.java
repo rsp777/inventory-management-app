@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
+
+import com.pawar.inventory.app.config.AppConstants;
 import com.pawar.inventory.app.model.Menu;
+import com.pawar.inventory.app.util.SessionUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -17,11 +19,14 @@ public class NavigationService {
 
     private static final Logger logger = LoggerFactory.getLogger(NavigationService.class);
 
-    @Autowired
-    private MenuAccessService menuAccessService;
+    private final MenuAccessService menuAccessService;
+
+    public NavigationService(MenuAccessService menuAccessService) {
+        this.menuAccessService = menuAccessService;
+    }
 
     public void populateNavigation(Model model, HttpServletRequest request, HttpSession session) {
-        String decodedToken = (String) session.getAttribute("decodedtoken");
+        String decodedToken = SessionUtil.getSessionToken(session);
         if (decodedToken == null)
             return;
 
@@ -42,9 +47,11 @@ public class NavigationService {
                     menu.setMenu_link("");
                 }
 
-                if (type.equals("RF")) {
+                if (AppConstants.MenuType.RF.equals(type)) {
                     rf.add(menu);
-                } else if (type.equals("UI") || type.equals("PARENT_UI") || type.equals("CHILD_UI")) {
+                } else if (AppConstants.MenuType.UI.equals(type)
+                        || AppConstants.MenuType.PARENT_UI.equals(type)
+                        || AppConstants.MenuType.CHILD_UI.equals(type)) {
                     nav.add(menu);
                 }
             }
@@ -54,7 +61,7 @@ public class NavigationService {
             model.addAttribute("currentMenu", request.getRequestURI());
 
         } catch (Exception e) {
-            logger.error("Error building navigation: {}", e.getMessage());
+            logger.error("Error building navigation", e);
         }
     }
 }

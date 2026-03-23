@@ -14,7 +14,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -44,24 +43,22 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 
 	private static final Logger logger = LoggerFactory.getLogger(MenuAccessServiceImpl.class);
 
-	@Autowired
-	private RoleRepository roleRepository;
-
-	@Autowired
-	private MenuRepository menuRepository;
-
-	@Autowired
-	private ExternalApiService externalApiService;
-
-	@Autowired
-	private MenuAccessRepository menuAccessRepository;
-
-	@Autowired
-	private TokenService tokenService;
+	private final RoleRepository roleRepository;
+	private final MenuRepository menuRepository;
+	private final ExternalApiService externalApiService;
+	private final MenuAccessRepository menuAccessRepository;
+	private final TokenService tokenService;
 
 	private final ObjectMapper mapper;
 
-	public MenuAccessServiceImpl() {
+	public MenuAccessServiceImpl(RoleRepository roleRepository, MenuRepository menuRepository,
+			ExternalApiService externalApiService, MenuAccessRepository menuAccessRepository,
+			TokenService tokenService) {
+		this.roleRepository = roleRepository;
+		this.menuRepository = menuRepository;
+		this.externalApiService = externalApiService;
+		this.menuAccessRepository = menuAccessRepository;
+		this.tokenService = tokenService;
 		mapper = new ObjectMapper();
 		mapper.registerModule(new JavaTimeModule());
 	}

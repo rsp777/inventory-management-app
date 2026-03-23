@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -18,6 +17,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pawar.inventory.app.config.AppConstants;
 import com.pawar.inventory.app.model.CubiscanLog;
 import com.pawar.inventory.app.service.base.ExternalApiService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.pawar.inventory.entity.Category;
 import com.pawar.inventory.entity.Grp;
 import com.pawar.inventory.entity.SopActionTypeDto;
@@ -26,11 +27,15 @@ import com.pawar.inventory.entity.SopLocationRangeDto;
 @Component
 public class SopRepositoryCustomImpl implements SopRepositoryCustom {
 
-	@Autowired
-	private ExternalApiService externalApiService;
+	private static final Logger logger = LoggerFactory.getLogger(SopRepositoryCustomImpl.class);
 
-	@Autowired
-	private ObjectMapper objectMapper;
+	private final ExternalApiService externalApiService;
+	private final ObjectMapper objectMapper;
+
+	public SopRepositoryCustomImpl(ExternalApiService externalApiService, ObjectMapper objectMapper) {
+		this.externalApiService = externalApiService;
+		this.objectMapper = objectMapper;
+	}
 
 	@Override
 	public Iterable<Grp> getGrps()
@@ -178,7 +183,8 @@ public class SopRepositoryCustomImpl implements SopRepositoryCustom {
 			return objectMapper.readValue(json, new TypeReference<List<CubiscanLog>>() {
 			});
 		} catch (Exception e) {
-			return null;
+			logger.error("Failed to fetch cubiscan logs", e);
+			return List.of();
 		}
 	}
 
