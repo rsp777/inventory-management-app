@@ -1189,24 +1189,20 @@ async function saveListener() {
 function deleteListener(id) {
     var listener = listenersData.find(function(l) { return l.id === id; });
     if (!listener) return;
-    
-    Swal.fire({
+
+    confirmAction({
         title: 'Are you sure?',
         text: 'You are about to delete "' + listener.listenerName + '". This action cannot be undone!',
         icon: 'warning',
-        showCancelButton: true,
         confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
         confirmButtonText: 'Yes, delete it!'
-    }).then(function(result) {
-        if (result.value) {
-            ListenerService.delete(id).then(function() {
-                loadAllData();
-                showNotification('Listener deleted successfully');
-            }).catch(function(error) {
-                showError('Failed to delete listener');
-            });
-        }
+    }, function() {
+        ListenerService.delete(id).then(function() {
+            loadAllData();
+            showNotification('Listener deleted successfully');
+        }).catch(function() {
+            showError('Failed to delete listener');
+        });
     });
 }
 
@@ -1214,24 +1210,20 @@ function toggleListenerStatus(id) {
     var listener = listenersData.find(function(l) { return l.id === id; });
     if (!listener) return;
     var action = listener.status === 'active' ? 'deactivate' : 'activate';
-    
-    Swal.fire({
+
+    confirmAction({
         title: 'Confirm Action',
         text: 'Do you want to ' + action + ' "' + listener.listenerName + '"?',
         icon: 'question',
-        showCancelButton: true,
         confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#6c757d',
         confirmButtonText: 'Yes, ' + action + ' it!'
-    }).then(function(result) {
-        if (result.value) {
-            ListenerService.toggleStatus(id).then(function() {
-                loadAllData();
-                showNotification('Listener ' + action + 'd successfully');
-            }).catch(function(error) {
-                showError('Failed to ' + action + ' listener');
-            });
-        }
+    }, function() {
+        ListenerService.toggleStatus(id).then(function() {
+            loadAllData();
+            showNotification('Listener ' + action + 'd successfully');
+        }).catch(function() {
+            showError('Failed to ' + action + ' listener');
+        });
     });
 }
 
@@ -1293,24 +1285,20 @@ function saveEndpoint() {
 function deleteEndpoint(id) {
     var endpoint = endpointsData.find(function(e) { return e.id === id; });
     if (!endpoint) return;
-    
-    Swal.fire({
+
+    confirmAction({
         title: 'Are you sure?',
         text: 'You are about to delete endpoint "' + endpoint.method + ' ' + endpoint.path + '". This action cannot be undone!',
         icon: 'warning',
-        showCancelButton: true,
         confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
         confirmButtonText: 'Yes, delete it!'
-    }).then(function(result) {
-        if (result.value) {
-            EndpointService.delete(id).then(function() {
-                loadAllData();
-                showNotification('Endpoint deleted successfully');
-            }).catch(function(error) {
-                showError('Failed to delete endpoint');
-            });
-        }
+    }, function() {
+        EndpointService.delete(id).then(function() {
+            loadAllData();
+            showNotification('Endpoint deleted successfully');
+        }).catch(function() {
+            showError('Failed to delete endpoint');
+        });
     });
 }
 
@@ -1318,24 +1306,20 @@ function toggleEndpointStatus(id) {
     var endpoint = endpointsData.find(function(e) { return e.id === id; });
     if (!endpoint) return;
     var action = endpoint.status === 'active' ? 'deactivate' : 'activate';
-    
-    Swal.fire({
+
+    confirmAction({
         title: 'Confirm Action',
         text: 'Do you want to ' + action + ' endpoint "' + endpoint.method + ' ' + endpoint.path + '"?',
         icon: 'question',
-        showCancelButton: true,
         confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#6c757d',
         confirmButtonText: 'Yes, ' + action + ' it!'
-    }).then(function(result) {
-        if (result.value) {
-            EndpointService.toggleStatus(id).then(function() {
-                loadAllData();
-                showNotification('Endpoint ' + action + 'd successfully');
-            }).catch(function(error) {
-                showError('Failed to ' + action + ' endpoint');
-            });
-        }
+    }, function() {
+        EndpointService.toggleStatus(id).then(function() {
+            loadAllData();
+            showNotification('Endpoint ' + action + 'd successfully');
+        }).catch(function() {
+            showError('Failed to ' + action + ' endpoint');
+        });
     });
 }
 
@@ -1361,6 +1345,22 @@ function formatDateTime(dateTimeStr) {
     var date = new Date(dateTimeStr);
     if (isNaN(date.getTime())) return dateTimeStr;
     return date.toLocaleString();
+}
+
+function confirmAction(options, onConfirm) {
+    Swal.fire({
+        title: options.title || 'Confirm Action',
+        text: options.text || 'Are you sure?',
+        icon: options.icon || 'question',
+        showCancelButton: true,
+        confirmButtonColor: options.confirmButtonColor || '#3085d6',
+        cancelButtonColor: options.cancelButtonColor || '#6c757d',
+        confirmButtonText: options.confirmButtonText || 'Yes, proceed!'
+    }).then(function(result) {
+        if (result.value && typeof onConfirm === 'function') {
+            onConfirm();
+        }
+    });
 }
 
 function showNotification(message) {
@@ -1508,16 +1508,16 @@ function disableAll() {
 }
 
 function confirmBulkAction(action, count, callback) {
-    Swal.fire({
+    confirmAction({
         title: 'Confirm Bulk Action',
         text: 'Are you sure you want to ' + action + ' ' + count + ' listener(s)?',
         icon: 'question',
-        showCancelButton: true,
         confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#6c757d',
         confirmButtonText: 'Yes, proceed!'
-    }).then(function(result) {
-        if (result.value) { callback(); }
+    }, function() {
+        if (typeof callback === 'function') {
+            callback();
+        }
     });
 }
 
