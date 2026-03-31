@@ -88,6 +88,36 @@ table.scrolldown {
     overflow-y: auto; 
 }
 
+.refresh-toolbar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	flex-wrap: wrap;
+	margin: 1rem 0;
+	padding: 0.85rem 1rem;
+	border: 1px solid #d7e3f3;
+	border-radius: 0.5rem;
+	background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
+}
+
+.refresh-toolbar-meta {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.refresh-toolbar-controls {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.refresh-toolbar-seconds {
+	width: 88px;
+}
+
   .scrollable-container table {
     width: 100%;
   }
@@ -293,6 +323,18 @@ table.scrolldown {
 		
 		<h1 class="text-center">Category Management</h1>
 		<input type="hidden" id="responseMessage" th:value="${responseMessage}"/></input>
+		<div class="refresh-toolbar">
+			<div class="refresh-toolbar-meta">
+				<span class="badge badge-info" id="realtimeRefreshStatus">Realtime On</span>
+				<small class="text-muted" id="realtimeRefreshLastUpdated">Last updated: Not yet</small>
+			</div>
+			<div class="refresh-toolbar-controls">
+				<input type="number" min="5" step="5" id="realtimeRefreshSeconds" class="form-control form-control-sm refresh-toolbar-seconds" value="10">
+				<button type="button" class="btn btn-outline-primary btn-sm" onclick="applyRealtimeRefreshInterval()">Apply</button>
+				<button type="button" class="btn btn-outline-secondary btn-sm" id="toggleRealtimeRefreshButton" onclick="toggleRealtimeRefresh()">Pause Realtime</button>
+				<button type="button" class="btn btn-primary btn-sm" onclick="refreshCurrentPage(true)"><i class="fa fa-refresh"></i> Refresh Now</button>
+			</div>
+		</div>
 		<!-- Category table -->
 		<div class="scrollable-container">	
 			<table class="table table-striped">
@@ -358,6 +400,163 @@ table.scrolldown {
 
 		var isButtonShown = false;
 		var currentCategoryName = null;
+		const REFRESH_STORAGE_KEY = 'inventory.page.refresh.category';
+		const DEFAULT_REFRESH_INTERVAL_MS = 10000;
+		const MIN_REFRESH_INTERVAL_SECONDS = 5;
+		var realtimeRefreshTimer = null;
+		var realtimeRefreshEnabled = true;
+		var currentRealtimeIntervalMs = DEFAULT_REFRESH_INTERVAL_MS;
+		var lastRefreshTimestamp = null;
+
+		function loadRefreshSettings() {
+			try {
+				var savedSettings = JSON.parse(localStorage.getItem(REFRESH_STORAGE_KEY) || '{}');
+				if (typeof savedSettings.enabled === 'boolean') {
+					realtimeRefreshEnabled = savedSettings.enabled;
+				}
+				if (typeof savedSettings.intervalMs === 'number' && savedSettings.intervalMs >= (MIN_REFRESH_INTERVAL_SECONDS * 1000)) {
+					currentRealtimeIntervalMs = savedSettings.intervalMs;
+				}
+				if (savedSettings.lastUpdated) {
+					lastRefreshTimestamp = savedSettings.lastUpdated;
+				}
+			} catch (error) {
+				console.warn('Unable to load refresh settings', error);
+			}
+
+			if (!lastRefreshTimestamp) {
+				lastRefreshTimestamp = new Date().toISOString();
+				persistRefreshSettings();
+			}
+		}
+
+		function persistRefreshSettings() {
+			localStorage.setItem(REFRESH_STORAGE_KEY, JSON.stringify({
+				enabled: realtimeRefreshEnabled,
+				intervalMs: currentRealtimeIntervalMs,
+				lastUpdated: lastRefreshTimestamp
+			}));
+		}
+
+		function formatRefreshTimestamp(timestamp) {
+			if (!timestamp) {
+				return 'Not yet';
+			}
+
+			var parsedDate = new Date(timestamp);
+			if (Number.isNaN(parsedDate.getTime())) {
+				return 'Not yet';
+			}
+
+			return parsedDate.toLocaleString();
+		}
+
+		function updateRefreshControls() {
+			var statusBadge = document.getElementById('realtimeRefreshStatus');
+			var lastUpdatedLabel = document.getElementById('realtimeRefreshLastUpdated');
+			var toggleButton = document.getElementById('toggleRealtimeRefreshButton');
+			var intervalInput = document.getElementById('realtimeRefreshSeconds');
+
+			if (statusBadge) {
+				statusBadge.textContent = realtimeRefreshEnabled ? 'Realtime On' : 'Realtime Paused';
+				statusBadge.className = realtimeRefreshEnabled ? 'badge badge-info' : 'badge badge-secondary';
+			}
+
+			if (lastUpdatedLabel) {
+				lastUpdatedLabel.textContent = 'Last updated: ' + formatRefreshTimestamp(lastRefreshTimestamp);
+			}
+
+			if (toggleButton) {
+				toggleButton.textContent = realtimeRefreshEnabled ? 'Pause Realtime' : 'Resume Realtime';
+				toggleButton.className = realtimeRefreshEnabled ? 'btn btn-outline-secondary btn-sm' : 'btn btn-outline-success btn-sm';
+			}
+
+			if (intervalInput) {
+				intervalInput.value = currentRealtimeIntervalMs / 1000;
+			}
+		}
+
+		function stopRealtimeRefresh() {
+			if (realtimeRefreshTimer) {
+				clearInterval(realtimeRefreshTimer);
+				realtimeRefreshTimer = null;
+			}
+		}
+
+		function startRealtimeRefresh() {
+			stopRealtimeRefresh();
+			if (!realtimeRefreshEnabled) {
+				return;
+			}
+
+			realtimeRefreshTimer = setInterval(function() {
+				refreshCurrentPage(false);
+			}, currentRealtimeIntervalMs);
+		}
+
+		function isRefreshBlocked() {
+			var categoryEditor = document.getElementById('categoryDiv');
+			return categoryEditor && categoryEditor.style.display !== 'none';
+		}
+
+		function refreshCurrentPage(forceRefresh) {
+			if (!forceRefresh && isRefreshBlocked()) {
+				return;
+			}
+
+			lastRefreshTimestamp = new Date().toISOString();
+			persistRefreshSettings();
+			window.location.reload();
+		}
+
+		function toggleRealtimeRefresh() {
+			realtimeRefreshEnabled = !realtimeRefreshEnabled;
+			persistRefreshSettings();
+			updateRefreshControls();
+
+			if (realtimeRefreshEnabled) {
+				startRealtimeRefresh();
+			} else {
+				stopRealtimeRefresh();
+			}
+		}
+
+		function applyRealtimeRefreshInterval() {
+			var intervalInput = document.getElementById('realtimeRefreshSeconds');
+			var seconds = parseInt(intervalInput.value, 10);
+
+			if (Number.isNaN(seconds) || seconds < MIN_REFRESH_INTERVAL_SECONDS) {
+				Swal.fire('Invalid interval', 'Enter a refresh interval of at least 5 seconds.', 'warning');
+				intervalInput.value = currentRealtimeIntervalMs / 1000;
+				return;
+			}
+
+			currentRealtimeIntervalMs = seconds * 1000;
+			persistRefreshSettings();
+			updateRefreshControls();
+
+			if (realtimeRefreshEnabled) {
+				startRealtimeRefresh();
+			}
+		}
+
+		document.addEventListener('DOMContentLoaded', function() {
+			loadRefreshSettings();
+			updateRefreshControls();
+			if (realtimeRefreshEnabled) {
+				startRealtimeRefresh();
+			}
+
+			var intervalInput = document.getElementById('realtimeRefreshSeconds');
+			if (intervalInput) {
+				intervalInput.addEventListener('keydown', function(event) {
+					if (event.key === 'Enter') {
+						event.preventDefault();
+						applyRealtimeRefreshInterval();
+					}
+				});
+			}
+		});
 
 		function getUserName(jwtToken) {
  		 var base64Payload = jwtToken.split(".")[1];

@@ -73,8 +73,8 @@ public class LocationController {
 			MenuCategories categories = MenuFilterUtil.categorizeMenus(accessibleMenus);
 			ResponseUtil.addViewAttributes(model, categories, "/location");
 			
-			List<java.util.Map<String, Object>> locations = toMapList(menuService.getLocations());
-			model.addAttribute("locations", locations);
+			model.addAttribute("locations", menuService.getLocations());
+			model.addAttribute("grps", menuService.getGrps());
 			model.addAttribute("currentUser", SessionUtil.getSessionUserName(session));
 			
 			return AppConstants.View.LOCATION;

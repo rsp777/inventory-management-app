@@ -434,8 +434,18 @@ public class MenuController {
 		return handleLegacySopConfig(model);
 	}
 
+	@GetMapping("/sop-config")
+	public String sopConfigHyphenAlias(Model model) {
+		return handleLegacySopConfig(model);
+	}
+
 	@GetMapping("/legacy/sopConfig")
 	public String sopConfig(Model model) {
+		return handleLegacySopConfig(model);
+	}
+
+	@GetMapping("/legacy/sop-config")
+	public String sopConfigHyphenLegacy(Model model) {
 		return handleLegacySopConfig(model);
 	}
 
