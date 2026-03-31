@@ -44,10 +44,11 @@ public class MenuFilterUtil {
             if (AppConstants.MenuType.RF.equals(menuType)) {
                 categories.rightFrameMenus.add(menu);
                 logger.debug("Added menu to RF: {}", menu.getMenuName());
-            } else if (AppConstants.MenuType.UI.equals(menuType)) {
+            } else if (AppConstants.MenuType.UI.equals(menuType)
+                    || AppConstants.MenuType.PARENT_UI.equals(menuType)) {
                 categories.navigationMenus.add(menu);
                 logger.debug("Added menu to UI: {}", menu.getMenuName());
-            } else if (!AppConstants.MenuType.AUTH.equals(menuType)) {
+            } else if (AppConstants.MenuType.PARENT.equals(menuType)) {
                 categories.sideMenus.add(menu);
                 logger.debug("Added menu to SIDE: {}", menu.getMenuName());
             }

@@ -2,6 +2,27 @@
 
 > Program Status Sync (March 23, 2026): See PROGRAM_STATUS.md for the latest cross-phase status and TOMORROW_TODO.md for the next-session resume checklist.
 
+## STATUS ADDENDUM (March 29, 2026)
+
+- Endpoint page access issue is now tracked under GitHub issue [#6](https://github.com/rsp777/inventory-management-app/issues/6) for branch `Dev_v2.5`:
+   - Summary: new page flow cannot access the Endpoint page.
+   - Investigation scope: menu visibility/mapping, role/menu authorization, and route/controller binding for endpoint page handlers.
+- Menu hierarchy issue update (Dev_v2.5 context) documented under GitHub issue [#5](https://github.com/rsp777/inventory-management-app/issues/5):
+   - Summary: UI menu hierarchy was mixing menu groups (`PARENT_UI/CHILD_UI` slotting entries with `PARENT/CHILD` admin entries).
+   - Observed behavior: top navigation submenu rendered `menu.children` without child-type filtering, allowing admin child nodes to leak under `PARENT_UI`.
+   - Root cause: submenu loop pattern `th:each="submenu : ${menu.children}"` without `CHILD_UI` restriction, combined with top-level categorization leakage of child types.
+   - Fix notes: documented both UI-layer child filtering guidance and source-level grouping correction to keep only parent types at top level.
+   - Validation target: slotting UI menus no longer show Menu Administration children.
+- Header username display regression resolved: top-right user label incorrectly showed role payload after login. Fixed by replacing brittle split-based parsing in `CustomExceptionHandler` with `SessionUtil` + `TokenService` username resolution fallback. Tracking: GitHub issue [#4](https://github.com/rsp777/inventory-management-app/issues/4) created and closed as fixed.
+- Token decoding regression found and resolved on branch `refactor/inventory-management-app`.
+- Root cause: mixed auth response shapes (`{"token":"..."}`, `{"access_token":"..."}`, raw token) were not normalized consistently before decode.
+- Fixes applied:
+   - token normalization in `TokenService.decodeToken()` for JSON-wrapped values
+   - null-safe token extraction with `token`/`access_token` handling in `AuthController.extractTokenFromResponse()`
+   - username extraction index correction in `TokenService.getUserName()`
+- Validation: `mvn compile -DskipTests` -> BUILD SUCCESS; runtime login verified by user.
+- Tracking: GitHub issue #3 created and closed as fixed.
+
 ## STATUS ADDENDUM (March 23, 2026)
 
 Important: earlier completion percentages in this file represented the original limited scope (early foundation slice), not full program completion across all six phases.

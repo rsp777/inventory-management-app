@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.pawar.inventory.app.config.AppConstants;
 import com.pawar.inventory.app.dto.MenuDefinitionRequestDTO;
 import com.pawar.inventory.app.exception.MenuNotFoundException;
 import com.pawar.inventory.app.exception.ParentMenuNotFoundException;

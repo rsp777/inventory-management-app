@@ -34,6 +34,7 @@ public class NavigationService {
             List<Menu> menus = menuAccessService.getAccessibleMenus(decodedToken);
             List<Menu> rf = new ArrayList<>();
             List<Menu> nav = new ArrayList<>();
+            List<Menu> side = new ArrayList<>();
 
             for (Menu menu : menus) {
 
@@ -50,14 +51,22 @@ public class NavigationService {
                 if (AppConstants.MenuType.RF.equals(type)) {
                     rf.add(menu);
                 } else if (AppConstants.MenuType.UI.equals(type)
-                        || AppConstants.MenuType.PARENT_UI.equals(type)
-                        || AppConstants.MenuType.CHILD_UI.equals(type)) {
+                        || AppConstants.MenuType.PARENT_UI.equals(type)) {
                     nav.add(menu);
+                } else if (AppConstants.MenuType.PARENT.equals(type)) {
+                    side.add(menu);
                 }
             }
-            logger.info("navigation menus :  {}", nav);
+            for (Menu menu : nav) {
+                logger.info("Navigation Menu: {} - Link: {}", menu.getMenuName(), menu.getMenu_link());
+            }
+            for (Menu menu : side) {
+                logger.info("Side Menu: {} - Link: {}", menu.getMenuName(), menu.getMenu_link());
+            }
+            
             model.addAttribute("menus", rf);
             model.addAttribute("nav_menus", nav);
+            model.addAttribute("side_menus", side);
             model.addAttribute("currentMenu", request.getRequestURI());
 
         } catch (Exception e) {

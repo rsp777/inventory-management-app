@@ -134,6 +134,32 @@ public class ListenerController {
         return ResponseEntity.ok(listenerDTO);
     }
 
+    // Bulk activate listeners
+    @PostMapping("/bulk/activate")
+    public ResponseEntity<?> bulkActivateListeners(@RequestBody List<Long> ids) {
+        List<Long> validIds = sanitizeIds(ids);
+        if (validIds.isEmpty()) {
+            return ResponseEntity.badRequest().body(errorResponse("At least one valid listener ID is required"));
+        }
+
+        logger.info("Bulk activating {} listeners", validIds.size());
+        Map<String, Object> results = listenerService.bulkActivate(validIds);
+        return ResponseEntity.ok(results);
+    }
+
+    // Bulk deactivate listeners
+    @PostMapping("/bulk/deactivate")
+    public ResponseEntity<?> bulkDeactivateListeners(@RequestBody List<Long> ids) {
+        List<Long> validIds = sanitizeIds(ids);
+        if (validIds.isEmpty()) {
+            return ResponseEntity.badRequest().body(errorResponse("At least one valid listener ID is required"));
+        }
+
+        logger.info("Bulk deactivating {} listeners", validIds.size());
+        Map<String, Object> results = listenerService.bulkDeactivate(validIds);
+        return ResponseEntity.ok(results);
+    }
+
     // Get active listeners
     @GetMapping("/status/active")
     public ResponseEntity<List<ListenerDTO>> getActiveListeners() {
@@ -197,5 +223,31 @@ public class ListenerController {
         stats.put("inactiveListeners", listenerService.countTotalListeners() - listenerService.countActiveListeners());
 
         return ResponseEntity.ok(stats);
+    }
+
+    @PostMapping("/runtime/refresh")
+    public ResponseEntity<Map<String, String>> refreshRuntimeStatus() {
+        logger.info("Manually refreshing listener runtime statuses");
+        listenerService.refreshRuntimeStatuses();
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Runtime status refresh triggered");
+        return ResponseEntity.ok(response);
+    }
+
+    private List<Long> sanitizeIds(List<Long> ids) {
+        if (ids == null) {
+            return List.of();
+        }
+
+        return ids.stream()
+                .filter(id -> id != null && id > 0)
+                .collect(Collectors.toList());
+    }
+
+    private Map<String, String> errorResponse(String message) {
+        Map<String, String> error = new HashMap<>();
+        error.put("message", message);
+        return error;
     }
 }

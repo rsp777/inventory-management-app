@@ -1,5 +1,7 @@
 package com.pawar.inventory.app.service.base;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -8,48 +10,114 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Service for JWT token operations.
- * Centralizes all token parsing, validation, and user information extraction logic.
+ * Centralizes all token parsing, validation, and user information extraction
+ * logic.
  * 
  * Supports both auth0/java-jwt library operations.
  */
 @Service
 public class TokenService extends AbstractBaseService {
-	
+
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
 	@Value("${jwt.secret}")
 	private String jwtSecret;
-	
+
 	/**
-	 * Decodes JWT token and extracts subject components
-	 * 
-	 * @param token JWT token string
-	 * @return Array of decoded token components (username|info|roles|etc)
+	 * Decodes a token and extracts pipe-separated subject components.
+	 * Handles two formats:
+	 * <ul>
+	 * <li>JWT format (header.payload.signature): extracts the subject claim and
+	 * splits it by {@code |}</li>
+	 * <li>Plain pipe-separated string (username|userId|roles): splits directly,
+	 * which is what the auth service returns after sign-in</li>
+	 * </ul>
+	 *
+	 * @param token raw token value from the session
+	 * @return array of decoded components, or an empty array on failure
 	 */
 	public String[] decodeToken(String token) {
 		if (token == null || token.trim().isEmpty()) {
 			logWarning("Token is null or empty, skipping decode");
 			return new String[0];
 		}
-		try {
-			DecodedJWT decodedJWT = JWT.decode(token);
-			String subject = decodedJWT.getSubject();
-			
-			if (subject == null || subject.isEmpty()) {
-				logWarning("Token subject is empty");
-				return new String[0];
+
+		String trimmed = normalizeTokenValue(token.trim());
+
+		if (isJwtFormat(trimmed)) {
+			try {
+				DecodedJWT decodedJWT = JWT.decode(trimmed);
+				String subject = decodedJWT.getSubject();
+				if (subject == null || subject.isEmpty()) {
+					logWarning("JWT subject is empty");
+					return new String[0];
+				}
+				String[] components = subject.split("\\|");
+				logInfo("JWT decoded successfully with " + components.length + " components");
+				return components;
+			} catch (Exception e) {
+				logWarning("JWT decode failed, falling back to plain split: " + e.getMessage());
 			}
-			
-			String[] decodedToken = subject.split("\\|");
-			logInfo("Token decoded successfully with " + decodedToken.length + " components");
-			return decodedToken;
-		} catch (Exception e) {
-			logWarning("Failed to decode token: " + e.getMessage());
-			return new String[0];
 		}
+
+		// Plain pipe-separated string returned by the auth service (user|userId|roles)
+		String[] components = trimmed.split("\\|");
+		if (components.length > 0 && !components[0].isEmpty()) {
+			logInfo("Token decoded as plain string with " + components.length + " components");
+			return components;
+		}
+
+		logWarning("Token could not be decoded in any format");
+		return new String[0];
 	}
-	
+
+	/**
+	 * Returns {@code true} when the token string looks like a JWT
+	 * (three Base64URL parts separated by two dots).
+	 */
+	private boolean isJwtFormat(String token) {
+		int firstDot = token.indexOf('.');
+		if (firstDot < 0)
+			return false;
+		int secondDot = token.indexOf('.', firstDot + 1);
+		return secondDot > firstDot + 1;
+	}
+
+	/**
+	 * Normalizes token value for decoding.
+	 * Supports both raw token strings and JSON wrapper payloads like
+	 * {"token":"..."} or {"access_token":"..."}.
+	 */
+	private String normalizeTokenValue(String token) {
+		if (token == null || token.isBlank()) {
+			return token;
+		}
+
+		if (!token.startsWith("{")) {
+			return token;
+		}
+
+		try {
+			Map<?, ?> parsed = OBJECT_MAPPER.readValue(token, Map.class);
+			Object wrappedToken = parsed.get("token");
+			if (wrappedToken == null) {
+				wrappedToken = parsed.get("access_token");
+			}
+			if (wrappedToken != null) {
+				return wrappedToken.toString().trim();
+			}
+		} catch (JsonProcessingException e) {
+			logWarning("Token JSON normalization failed, using raw value: " + e.getMessage());
+		}
+
+		return token;
+	}
+
 	/**
 	 * Validates JWT token signature using secret
 	 * 
@@ -62,8 +130,8 @@ public class TokenService extends AbstractBaseService {
 				logWarning("JWT secret not configured");
 				return false;
 			}
-			
-			Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
+
+			Algorithm algorithm = Algorithm.HMAC512(jwtSecret);
 			JWTVerifier verifier = JWT.require(algorithm).build();
 			verifier.verify(token);
 			logInfo("Token validated successfully");
@@ -73,7 +141,7 @@ public class TokenService extends AbstractBaseService {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Extracts username from decoded token
 	 * 
@@ -95,7 +163,7 @@ public class TokenService extends AbstractBaseService {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Extracts user ID from decoded token
 	 * 
@@ -117,7 +185,7 @@ public class TokenService extends AbstractBaseService {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Extracts roles string from decoded token
 	 * 
@@ -139,7 +207,7 @@ public class TokenService extends AbstractBaseService {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Gets token expiration time
 	 * 
@@ -161,7 +229,7 @@ public class TokenService extends AbstractBaseService {
 			return -1;
 		}
 	}
-	
+
 	/**
 	 * Checks if token is expired
 	 * 

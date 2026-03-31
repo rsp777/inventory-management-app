@@ -23,6 +23,15 @@ public class Listener {
     @Column(name = "status", nullable = false, length = 20)
     private String status = "active";
 
+    @Column(name = "runtime_status", length = 20)
+    private String runtimeStatus = "unknown";
+
+    @Column(name = "runtime_message", length = 255)
+    private String runtimeMessage;
+
+    @Column(name = "last_connectivity_check")
+    private LocalDateTime lastConnectivityCheck;
+
     @Column(name = "last_activity")
     private LocalDateTime lastActivity;
 
@@ -43,6 +52,9 @@ public class Listener {
 
     @Column(name = "configuration", columnDefinition = "TEXT")
     private String configuration;
+
+    @Column(name = "service_key", length = 100)
+    private String serviceKey;
 
     // Constructors
     public Listener() {
@@ -103,6 +115,30 @@ public class Listener {
         this.lastActivity = lastActivity;
     }
 
+    public String getRuntimeStatus() {
+        return runtimeStatus;
+    }
+
+    public void setRuntimeStatus(String runtimeStatus) {
+        this.runtimeStatus = runtimeStatus;
+    }
+
+    public String getRuntimeMessage() {
+        return runtimeMessage;
+    }
+
+    public void setRuntimeMessage(String runtimeMessage) {
+        this.runtimeMessage = runtimeMessage;
+    }
+
+    public LocalDateTime getLastConnectivityCheck() {
+        return lastConnectivityCheck;
+    }
+
+    public void setLastConnectivityCheck(LocalDateTime lastConnectivityCheck) {
+        this.lastConnectivityCheck = lastConnectivityCheck;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -151,12 +187,23 @@ public class Listener {
         this.configuration = configuration;
     }
 
+    public String getServiceKey() {
+        return serviceKey;
+    }
+
+    public void setServiceKey(String serviceKey) {
+        this.serviceKey = serviceKey;
+    }
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         if (status == null) {
             status = "active";
+        }
+        if (runtimeStatus == null) {
+            runtimeStatus = "unknown";
         }
     }
 

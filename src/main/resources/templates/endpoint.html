@@ -50,6 +50,10 @@ body { background-color: #f8f9fa; }
 .endpoint-status { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; }
 .status-active { background-color: #d4edda; color: #155724; }
 .status-inactive { background-color: #f8d7da; color: #721c24; }
+.status-connected { background-color: #d1ecf1; color: #0c5460; }
+.status-disconnected { background-color: #f8d7da; color: #721c24; }
+.status-disabled { background-color: #fff3cd; color: #856404; }
+.status-unknown { background-color: #e2e3e5; color: #383d41; }
 
 .listener-item { display: flex; align-items: center; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 10px; background-color: #fff; transition: all 0.3s ease; }
 .listener-item:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
@@ -161,12 +165,13 @@ body { background-color: #f8f9fa; }
         <button class="btn btn-primary" onclick="refreshData()">
             <i class="fa fa-refresh"></i> Refresh
         </button>
-        <button class="btn btn-success" onclick="addNewEndpoint()">
-            <i class="fa fa-plus"></i> Add Endpoint
-        </button>
         <button class="btn btn-info" onclick="addNewListener()">
             <i class="fa fa-plus"></i> Add Listener
         </button>
+        <span class="badge badge-light" id="realtimeStatusBadge" style="font-size: 12px; padding: 8px 12px;">
+            Realtime: ON (10s)
+        </span>
+        <small class="text-muted" id="lastRealtimeSync" style="margin-left: 10px;">Last sync: never</small>
     </div>
     
     <div class="tabs-container">
@@ -195,26 +200,40 @@ body { background-color: #f8f9fa; }
                     <button class="btn btn-outline-secondary" onclick="filterListeners('active', this)">Active</button>
                     <button class="btn btn-outline-secondary" onclick="filterListeners('inactive', this)">Inactive</button>
                 </div>
+                <div id="bulkActionBar" style="display:flex; align-items:center; gap:8px; padding:8px 4px; flex-wrap:wrap; border-bottom:1px solid #dee2e6; margin-bottom:4px;">
+                    <span id="selectedCount" class="badge badge-secondary" style="font-size:13px; padding:6px 10px;">0 selected</span>
+                    <button class="btn btn-sm btn-success" id="btnEnableSelected" onclick="bulkEnableSelected()" disabled><i class="fa fa-check"></i> Enable Selected</button>
+                    <button class="btn btn-sm btn-warning" id="btnDisableSelected" onclick="bulkDisableSelected()" disabled><i class="fa fa-ban"></i> Disable Selected</button>
+                    <div style="margin-left:auto; display:flex; gap:8px;">
+                        <button class="btn btn-sm btn-outline-success" onclick="enableAll()"><i class="fa fa-check-circle"></i> Enable All</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="disableAll()"><i class="fa fa-times-circle"></i> Disable All</button>
+                    </div>
+                </div>
                 <div class="scrollable-container">
                     <table class="table table-striped" id="listenersTable">
                         <thead class="thead-dark">
                             <tr>
+                                <th style="width:40px;"><input type="checkbox" id="selectAllListeners" onchange="toggleSelectAll(this)" title="Select All"></th>
                                 <th>Listener Name</th>
                                 <th>Type</th>
-                                <th>Port/Channel</th>
-                                <th>Status</th>
+                                <th>Port / Topic / Channel</th>
+                                <th>Configured Status</th>
+                                <th>Runtime Status</th>
                                 <th>Last Activity</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="listenersTableBody">
-                            <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                            <tr><td colspan="7" class="text-center">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
             
             <div class="tab-pane fade" id="endpoints" role="tabpanel">
+                <div class="alert alert-info" role="alert">
+                    Endpoint records are read from menu definitions. Update endpoint metadata in Menu Administration.
+                </div>
                 <div class="filter-tabs">
                     <button class="btn btn-outline-secondary active" onclick="filterEndpoints('all', this)">All</button>
                     <button class="btn btn-outline-secondary" onclick="filterEndpoints('get', this)">GET</button>
@@ -230,11 +249,10 @@ body { background-color: #f8f9fa; }
                                 <th>Endpoint Path</th>
                                 <th>Description</th>
                                 <th>Status</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="endpointsTableBody">
-                            <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                            <tr><td colspan="4" class="text-center">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -274,7 +292,7 @@ body { background-color: #f8f9fa; }
                     </div>
                     <div class="form-group">
                         <label for="listenerType">Listener Type *</label>
-                        <select class="form-control" id="listenerType" required>
+                        <select class="form-control" id="listenerType" required onchange="updatePortChannelField()">
                             <option value="">Select Type</option>
                             <option value="HTTP">HTTP</option>
                             <option value="HTTPS">HTTPS</option>
@@ -287,7 +305,7 @@ body { background-color: #f8f9fa; }
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="listenerPort">Port/Channel *</label>
+                        <label for="listenerPort" id="listenerPortLabel">Port/Channel *</label>
                         <input type="text" class="form-control" id="listenerPort" placeholder="e.g., 8080 or queue-name" required>
                     </div>
                     <div class="form-group">
@@ -296,6 +314,11 @@ body { background-color: #f8f9fa; }
                             <option value="active">Active</option>
                             <option value="inactive">Inactive</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="listenerServiceKey">Service Key</label>
+                        <input type="text" class="form-control" id="listenerServiceKey" placeholder="e.g., users-service">
+                        <small class="form-text text-muted">Maps this listener to a base URL key from listener.runtime.control-base-urls.</small>
                     </div>
                     <div class="form-group">
                         <label for="listenerDescription">Description</label>
@@ -373,6 +396,8 @@ body { background-color: #f8f9fa; }
 const API_BASE_URL = '/inventory-ui/api';
 const listenersEndpoint = API_BASE_URL + '/listeners';
 const endpointsEndpoint = API_BASE_URL + '/endpoints';
+const listenerRuntimeRefreshEndpoint = listenersEndpoint + '/runtime/refresh';
+const REALTIME_REFRESH_INTERVAL_MS = 10000;
 
 // Global Variables
 var listenersData = [];
@@ -381,6 +406,9 @@ var currentListenerFilter = 'all';
 var currentEndpointFilter = 'all';
 var editingListenerId = null;
 var editingEndpointId = null;
+var realtimeRefreshTimer = null;
+var realtimeRefreshInProgress = false;
+var selectedListenerIds = new Set();
 
 // ==================== INITIALIZATION ====================
 $(document).ready(function() {
@@ -394,6 +422,7 @@ $(document).ready(function() {
     // Load Real API data
     loadAllData().then(() => {
         Swal.close();
+        startRealtimeStatusUpdates();
     });
     
     // Setup search functionality
@@ -406,6 +435,10 @@ $(document).ready(function() {
     if (responseMessage && responseMessage.trim() !== '') {
         showNotification(responseMessage);
     }
+
+    $(window).on('beforeunload', function() {
+        stopRealtimeStatusUpdates();
+    });
 });
 
 // Master Data Loader Function
@@ -418,6 +451,7 @@ async function loadAllData() {
         
         listenersData = results[0] || [];
         endpointsData = results[1] || [];
+        syncSelectedIdsWithCurrentData();
         
         updateStats();
         renderListenersTable(currentListenerFilter);
@@ -428,16 +462,65 @@ async function loadAllData() {
     }
 }
 
+async function refreshListenerRuntimeStatuses() {
+    try {
+        await axios.post(listenerRuntimeRefreshEndpoint);
+    } catch (error) {
+        console.warn('Failed to refresh runtime listener statuses:', error);
+    }
+}
+
+async function realtimeRefreshTick() {
+    if (realtimeRefreshInProgress) {
+        return;
+    }
+
+    realtimeRefreshInProgress = true;
+    try {
+        await refreshListenerRuntimeStatuses();
+        const listeners = await ListenerService.getAll();
+        listenersData = listeners || [];
+        updateStats();
+        renderListenersTable(currentListenerFilter);
+        renderAllView();
+        updateRealtimeSyncLabel();
+    } finally {
+        realtimeRefreshInProgress = false;
+    }
+}
+
+function startRealtimeStatusUpdates() {
+    if (realtimeRefreshTimer) {
+        clearInterval(realtimeRefreshTimer);
+    }
+    realtimeRefreshTick();
+    realtimeRefreshTimer = setInterval(realtimeRefreshTick, REALTIME_REFRESH_INTERVAL_MS);
+}
+
+function stopRealtimeStatusUpdates() {
+    if (realtimeRefreshTimer) {
+        clearInterval(realtimeRefreshTimer);
+        realtimeRefreshTimer = null;
+    }
+}
+
+function updateRealtimeSyncLabel() {
+    var label = document.getElementById('lastRealtimeSync');
+    if (!label) {
+        return;
+    }
+    label.textContent = 'Last sync: ' + new Date().toLocaleTimeString();
+}
+
 // ==================== API SERVICE ====================
 var ListenerService = {
     storedListeners: [],
 
     getAll: function() {
         return axios.get(listenersEndpoint).then((response) => {
-           this.storedListeners = response.data.content; // or response.data.data
-        //    console.log(response.data);
-
-           return response.data;
+              var records = normalizeCollection(response.data);
+              this.storedListeners = records;
+              return records;
         }).catch((error) => {
             console.error('Error fetching listeners:', error);
             return [];
@@ -470,6 +553,20 @@ var ListenerService = {
             this.storedListeners = this.storedListeners.map(l => l.id === id ? response.data : l);
             return response.data;
         });
+    },
+
+    bulkActivate: function(ids) {
+        return axios.post(listenersEndpoint + '/bulk/activate', ids,
+            { headers: { 'Content-Type': 'application/json' } }).then(function(response) {
+            return response.data;
+        });
+    },
+
+    bulkDeactivate: function(ids) {
+        return axios.post(listenersEndpoint + '/bulk/deactivate', ids,
+            { headers: { 'Content-Type': 'application/json' } }).then(function(response) {
+            return response.data;
+        });
     }
 };
 
@@ -477,7 +574,7 @@ var ListenerService = {
 var EndpointService = {
     getAll: function() {
         return axios.get(endpointsEndpoint).then(function(response) {
-            return response.data;
+            return normalizeCollection(response.data);
         }).catch(function(error) {
             console.error('Error fetching endpoints:', error);
             return [];
@@ -533,7 +630,7 @@ function renderListenersTable(filter) {
     tbody.innerHTML = '';
     
     if (filteredListeners.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center">No listeners found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">No listeners found</td></tr>';
         return;
     }
     
@@ -541,24 +638,47 @@ function renderListenersTable(filter) {
         var statusBadge = listener.status === 'active' 
             ? '<span class="endpoint-status status-active">Active</span>'
             : '<span class="endpoint-status status-inactive">Inactive</span>';
+        var runtimeBadge = getRuntimeBadge(listener.runtimeStatus);
         
         var typeBadge = getTypeBadge(listener.listenerType);
         
         var row = '<tr>' +
+            '<td><input type="checkbox" class="listener-checkbox" data-id="' + listener.id + '" onchange="onListenerSelectionChange(this)"></td>' +
             '<td><strong>' + escapeHtml(listener.listenerName) + '</strong>' + 
             (listener.description ? '<br><small class="text-muted">' + escapeHtml(listener.description) + '</small>' : '') + '</td>' +
             '<td>' + typeBadge + '</td>' +
-            '<td><code>' + escapeHtml(listener.portChannel) + '</code></td>' +
+            '<td><small class="text-muted">' + getPortChannelLabel(listener.listenerType) + ':</small> <code>' + escapeHtml(listener.portChannel) + '</code></td>' +
             '<td>' + statusBadge + '</td>' +
+            '<td>' + runtimeBadge + (listener.runtimeMessage ? '<br><small class="text-muted">' + escapeHtml(listener.runtimeMessage) + '</small>' : '') + '</td>' +
             '<td>' + formatDateTime(listener.lastActivity) + '</td>' +
             '<td>' +
                 '<button class="btn btn-sm btn-primary" onclick="editListener(' + listener.id + ')" title="Edit"><i class="fa fa-edit"></i></button> ' +
+                '<button class="btn btn-sm btn-info" onclick="copyListener(' + listener.id + ')" title="Copy"><i class="fa fa-copy"></i></button> ' +
                 '<button class="btn btn-sm btn-success" onclick="toggleListenerStatus(' + listener.id + ')" title="Toggle Status"><i class="fa fa-power-off"></i></button> ' +
                 '<button class="btn btn-sm btn-danger" onclick="deleteListener(' + listener.id + ')" title="Delete"><i class="fa fa-trash"></i></button>' +
             '</td>' +
         '</tr>';
         tbody.innerHTML += row;
     });
+
+    restoreSelectionOnRenderedRows();
+    updateBulkActionBar();
+}
+
+function getRuntimeBadge(runtimeStatus) {
+    var normalized = (runtimeStatus || 'unknown').toLowerCase();
+    var label = normalized.charAt(0).toUpperCase() + normalized.slice(1);
+    var css = 'status-unknown';
+
+    if (normalized === 'connected') {
+        css = 'status-connected';
+    } else if (normalized === 'disconnected') {
+        css = 'status-disconnected';
+    } else if (normalized === 'disabled') {
+        css = 'status-disabled';
+    }
+
+    return '<span class="endpoint-status ' + css + '">' + label + '</span>';
 }
 
 function renderEndpointsTable(filter) {
@@ -574,7 +694,7 @@ function renderEndpointsTable(filter) {
     tbody.innerHTML = '';
     
     if (filteredEndpoints.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center">No endpoints found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center">No endpoints found</td></tr>';
         return;
     }
     
@@ -587,13 +707,8 @@ function renderEndpointsTable(filter) {
         var row = '<tr>' +
             '<td><span class="endpoint-method ' + methodClass + '">' + endpoint.method + '</span></td>' +
             '<td><code class="endpoint-path">' + escapeHtml(endpoint.path) + '</code></td>' +
-            '<td>' + escapeHtml(endpoint.description) + '</td>' +
+            '<td>' + escapeHtml(endpoint.description || '') + '</td>' +
             '<td>' + statusBadge + '</td>' +
-            '<td>' +
-                '<button class="btn btn-sm btn-primary" onclick="editEndpoint(' + endpoint.id + ')" title="Edit"><i class="fa fa-edit"></i></button> ' +
-                '<button class="btn btn-sm btn-success" onclick="toggleEndpointStatus(' + endpoint.id + ')" title="Toggle Status"><i class="fa fa-power-off"></i></button> ' +
-                '<button class="btn btn-sm btn-danger" onclick="deleteEndpoint(' + endpoint.id + ')" title="Delete"><i class="fa fa-trash"></i></button>' +
-            '</td>' +
         '</tr>';
         tbody.innerHTML += row;
     });
@@ -613,7 +728,7 @@ function renderAllView() {
                 '<div class="listener-icon"><i class="fa fa-ear-listen"></i></div>' +
                 '<div class="listener-info">' +
                     '<div class="listener-name">' + escapeHtml(listener.listenerName) + '</div>' +
-                    '<div class="listener-details">' + escapeHtml(listener.listenerType) + ' | Port: ' + escapeHtml(listener.portChannel) + ' | <span class="endpoint-status ' + statusClass + '">' + listener.status + '</span></div>' +
+                    '<div class="listener-details">' + escapeHtml(listener.listenerType) + ' | ' + getPortChannelLabel(listener.listenerType) + ': ' + escapeHtml(listener.portChannel) + ' | <span class="endpoint-status ' + statusClass + '">' + listener.status + '</span></div>' +
                 '</div>' +
             '</div>';
             listenersList.innerHTML += item;
@@ -632,7 +747,7 @@ function renderAllView() {
             var statusClass = endpoint.status === 'active' ? 'status-active' : 'status-inactive';
             var item = '<div class="endpoint-card">' +
                 '<div><span class="endpoint-method ' + methodClass + '">' + endpoint.method + '</span> <code class="endpoint-path">' + escapeHtml(endpoint.path) + '</code></div>' +
-                '<div class="endpoint-description">' + escapeHtml(endpoint.description) + '</div>' +
+                '<div class="endpoint-description">' + escapeHtml(endpoint.description || '') + '</div>' +
                 '<div style="margin-top: 10px;"><span class="endpoint-status ' + statusClass + '">' + endpoint.status + '</span></div>' +
             '</div>';
             endpointsList.innerHTML += item;
@@ -681,7 +796,7 @@ function searchData(searchTerm) {
     var filteredEndpoints = endpointsData.filter(function(endpoint) {
         return endpoint.method.toLowerCase().includes(searchTerm) ||
                endpoint.path.toLowerCase().includes(searchTerm) ||
-               endpoint.description.toLowerCase().includes(searchTerm);
+               ((endpoint.description || '').toLowerCase().includes(searchTerm));
     });
     
     // Update listeners table
@@ -689,34 +804,41 @@ function searchData(searchTerm) {
     listenersBody.innerHTML = '';
     
     if (filteredListeners.length === 0) {
-        listenersBody.innerHTML = '<tr><td colspan="6" class="text-center">No listeners found</td></tr>';
+        listenersBody.innerHTML = '<tr><td colspan="8" class="text-center">No listeners found</td></tr>';
     } else {
         filteredListeners.forEach(function(listener) {
             var statusBadge = listener.status === 'active' 
                 ? '<span class="endpoint-status status-active">Active</span>'
                 : '<span class="endpoint-status status-inactive">Inactive</span>';
+            var runtimeBadge = getRuntimeBadge(listener.runtimeStatus);
             
             var row = '<tr>' +
+                '<td><input type="checkbox" class="listener-checkbox" data-id="' + listener.id + '" onchange="onListenerSelectionChange(this)"></td>' +
                 '<td><strong>' + escapeHtml(listener.listenerName) + '</strong></td>' +
                 '<td>' + escapeHtml(listener.listenerType) + '</td>' +
-                '<td><code>' + escapeHtml(listener.portChannel) + '</code></td>' +
+                '<td><small class="text-muted">' + getPortChannelLabel(listener.listenerType) + ':</small> <code>' + escapeHtml(listener.portChannel) + '</code></td>' +
                 '<td>' + statusBadge + '</td>' +
+                '<td>' + runtimeBadge + '</td>' +
                 '<td>' + formatDateTime(listener.lastActivity) + '</td>' +
                 '<td>' +
                     '<button class="btn btn-sm btn-primary" onclick="editListener(' + listener.id + ')"><i class="fa fa-edit"></i></button> ' +
+                    '<button class="btn btn-sm btn-info" onclick="copyListener(' + listener.id + ')" title="Copy"><i class="fa fa-copy"></i></button> ' +
                     '<button class="btn btn-sm btn-danger" onclick="deleteListener(' + listener.id + ')"><i class="fa fa-trash"></i></button>' +
                 '</td>' +
             '</tr>';
             listenersBody.innerHTML += row;
         });
     }
+
+    restoreSelectionOnRenderedRows();
+    updateBulkActionBar();
     
     // Update endpoints table
     var endpointsBody = document.getElementById('endpointsTableBody');
     endpointsBody.innerHTML = '';
     
     if (filteredEndpoints.length === 0) {
-        endpointsBody.innerHTML = '<tr><td colspan="5" class="text-center">No endpoints found</td></tr>';
+        endpointsBody.innerHTML = '<tr><td colspan="4" class="text-center">No endpoints found</td></tr>';
     } else {
         filteredEndpoints.forEach(function(endpoint) {
             var methodClass = 'method-' + endpoint.method.toLowerCase();
@@ -727,16 +849,25 @@ function searchData(searchTerm) {
             var row = '<tr>' +
                 '<td><span class="endpoint-method ' + methodClass + '">' + endpoint.method + '</span></td>' +
                 '<td><code class="endpoint-path">' + escapeHtml(endpoint.path) + '</code></td>' +
-                '<td>' + escapeHtml(endpoint.description) + '</td>' +
+                '<td>' + escapeHtml(endpoint.description || '') + '</td>' +
                 '<td>' + statusBadge + '</td>' +
-                '<td>' +
-                    '<button class="btn btn-sm btn-primary" onclick="editEndpoint(' + endpoint.id + ')"><i class="fa fa-edit"></i></button> ' +
-                    '<button class="btn btn-sm btn-danger" onclick="deleteEndpoint(' + endpoint.id + ')"><i class="fa fa-trash"></i></button>' +
-                '</td>' +
             '</tr>';
             endpointsBody.innerHTML += row;
         });
     }
+}
+
+function normalizeCollection(payload) {
+    if (Array.isArray(payload)) {
+        return payload;
+    }
+    if (payload && Array.isArray(payload.content)) {
+        return payload.content;
+    }
+    if (payload && Array.isArray(payload.data)) {
+        return payload.data;
+    }
+    return [];
 }
 
 // ==================== REFRESH FUNCTION ====================
@@ -757,12 +888,80 @@ function refreshData() {
 }
 
 // ==================== LISTENER CRUD OPERATIONS ====================
+function getPortChannelLabel(type) {
+    switch ((type || '').toUpperCase()) {
+        case 'KAFKA':     return 'Topic';
+        case 'RABBITMQ':
+        case 'JMS':       return 'Queue';
+        case 'HTTP':
+        case 'HTTPS':     return 'Port';
+        case 'WEBSOCKET': return 'Port/Path';
+        default:          return 'Port/Channel';
+    }
+}
+
+function updatePortChannelField() {
+    var type = document.getElementById('listenerType').value;
+    var label = document.getElementById('listenerPortLabel');
+    var input = document.getElementById('listenerPort');
+    if (type === 'KAFKA') {
+        label.textContent = 'Topic Name *';
+        input.placeholder = 'e.g., TO.DO.NEW.ROLE';
+    } else if (type === 'RABBITMQ' || type === 'JMS') {
+        label.textContent = 'Queue/Channel *';
+        input.placeholder = 'e.g., my-queue';
+    } else if (type === 'HTTP' || type === 'HTTPS') {
+        label.textContent = 'Port *';
+        input.placeholder = 'e.g., 8080';
+    } else if (type === 'WEBSOCKET') {
+        label.textContent = 'Port/Path *';
+        input.placeholder = 'e.g., 8080 or /ws';
+    } else {
+        label.textContent = 'Port/Channel *';
+        input.placeholder = 'e.g., 8080 or queue-name';
+    }
+}
+
 function addNewListener() {
     editingListenerId = null;
     document.getElementById('listenerModalLabel').textContent = 'Add New Listener';
     document.getElementById('listenerForm').reset();
+    document.getElementById('listenerId').value = '';
     document.getElementById('listenerStatus').value = 'active';
+    updatePortChannelField();
     $('#listenerModal').modal('show');
+}
+
+function buildCopiedListenerName(originalName) {
+    var baseName = (originalName || '').trim();
+    var copiedName = baseName ? baseName + ' Copy' : 'New Listener Copy';
+    var suffix = 2;
+
+    while (listenersData.some(function(existingListener) {
+        return existingListener.listenerName && existingListener.listenerName.toLowerCase() === copiedName.toLowerCase();
+    })) {
+        copiedName = baseName ? baseName + ' Copy ' + suffix : 'New Listener Copy ' + suffix;
+        suffix++;
+    }
+
+    return copiedName;
+}
+
+function populateListenerForm(listener, options) {
+    var sourceListener = listener || {};
+    var copyMode = options && options.copyMode;
+
+    document.getElementById('listenerId').value = copyMode ? '' : (sourceListener.id || '');
+    document.getElementById('listenerName').value = copyMode
+        ? buildCopiedListenerName(sourceListener.listenerName)
+        : (sourceListener.listenerName || '');
+    document.getElementById('listenerType').value = sourceListener.listenerType || '';
+    updatePortChannelField();
+    document.getElementById('listenerPort').value = sourceListener.portChannel || '';
+    document.getElementById('listenerStatus').value = sourceListener.status || 'active';
+    document.getElementById('listenerServiceKey').value = sourceListener.serviceKey || '';
+    document.getElementById('listenerDescription').value = sourceListener.description || '';
+    document.getElementById('listenerConfiguration').value = sourceListener.configuration || '';
 }
 
 function editListener(id) {
@@ -771,12 +970,18 @@ function editListener(id) {
     
     if (listener) {
         document.getElementById('listenerModalLabel').textContent = 'Edit Listener';
-        document.getElementById('listenerName').value = listener.listenerName;
-        document.getElementById('listenerType').value = listener.listenerType;
-        document.getElementById('listenerPort').value = listener.portChannel;
-        document.getElementById('listenerStatus').value = listener.status;
-        document.getElementById('listenerDescription').value = listener.description || '';
-        document.getElementById('listenerConfiguration').value = listener.configuration || '';
+        populateListenerForm(listener, { copyMode: false });
+        $('#listenerModal').modal('show');
+    }
+}
+
+function copyListener(id) {
+    editingListenerId = null;
+    var listener = listenersData.find(function(l) { return l.id === id; });
+
+    if (listener) {
+        document.getElementById('listenerModalLabel').textContent = 'Copy Listener';
+        populateListenerForm(listener, { copyMode: true });
         $('#listenerModal').modal('show');
     }
 }
@@ -786,17 +991,18 @@ async function saveListener() {
     var type = document.getElementById('listenerType').value;
     var port = document.getElementById('listenerPort').value.trim();
     var status = document.getElementById('listenerStatus').value;
+    var serviceKey = document.getElementById('listenerServiceKey').value.trim();
     var description = document.getElementById('listenerDescription').value.trim();
     var configuration = document.getElementById('listenerConfiguration').value.trim();
     
     if (!name || name === '') { showValidationError('Listener name is required'); return; }
     if (!type || type === '') { showValidationError('Listener type is required'); return; }
-    if (!port || port === '') { showValidationError('Port/Channel is required'); return; }
+    if (!port || port === '') { showValidationError(document.getElementById('listenerPortLabel').textContent.replace(' *', '') + ' is required'); return; }
     if (status !== 'active' && status !== 'inactive') { status = 'active'; }
     
     var listenerData = {
         listenerName: name, listenerType: type, portChannel: port,
-        status: status, description: description || '', configuration: configuration || ''
+        status: status, serviceKey: serviceKey || '', description: description || '', configuration: configuration || ''
     };
     
     Swal.fire({
@@ -1037,6 +1243,216 @@ function getUserName(jwtToken) {
     }
 }
 
+// ==================== BULK SELECTION FUNCTIONS ====================
+function resetBulkSelection() {
+    selectedListenerIds.clear();
+    var selectAll = document.getElementById('selectAllListeners');
+    if (selectAll) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+    }
+
+    var checkboxes = document.querySelectorAll('.listener-checkbox');
+    checkboxes.forEach(function(cb) { cb.checked = false; });
+    updateBulkActionBar();
+}
+
+function toggleSelectAll(masterCheckbox) {
+    var checkboxes = document.querySelectorAll('.listener-checkbox');
+    checkboxes.forEach(function(cb) {
+        cb.checked = masterCheckbox.checked;
+        var id = parseInt(cb.getAttribute('data-id'));
+        if (!isNaN(id)) {
+            if (masterCheckbox.checked) {
+                selectedListenerIds.add(id);
+            } else {
+                selectedListenerIds.delete(id);
+            }
+        }
+    });
+
+    masterCheckbox.indeterminate = false;
+    updateBulkActionBar();
+}
+
+function updateBulkActionBar() {
+    var checked = selectedListenerIds.size;
+    var visibleCheckboxes = document.querySelectorAll('.listener-checkbox');
+    var visibleChecked = document.querySelectorAll('.listener-checkbox:checked').length;
+    var selectAll = document.getElementById('selectAllListeners');
+    var countBadge = document.getElementById('selectedCount');
+    var btnEnable = document.getElementById('btnEnableSelected');
+    var btnDisable = document.getElementById('btnDisableSelected');
+
+    if (selectAll) {
+        if (visibleCheckboxes.length === 0) {
+            selectAll.checked = false;
+            selectAll.indeterminate = false;
+        } else if (visibleChecked === 0) {
+            selectAll.checked = false;
+            selectAll.indeterminate = false;
+        } else if (visibleChecked === visibleCheckboxes.length) {
+            selectAll.checked = true;
+            selectAll.indeterminate = false;
+        } else {
+            selectAll.checked = false;
+            selectAll.indeterminate = true;
+        }
+    }
+
+    if (countBadge) countBadge.textContent = checked + ' selected';
+    if (btnEnable) btnEnable.disabled = (checked === 0);
+    if (btnDisable) btnDisable.disabled = (checked === 0);
+}
+
+function getSelectedListenerIds() {
+    return Array.from(selectedListenerIds);
+}
+
+function onListenerSelectionChange(checkbox) {
+    var id = parseInt(checkbox.getAttribute('data-id'));
+    if (isNaN(id)) {
+        return;
+    }
+
+    if (checkbox.checked) {
+        selectedListenerIds.add(id);
+    } else {
+        selectedListenerIds.delete(id);
+    }
+
+    updateBulkActionBar();
+}
+
+function syncSelectedIdsWithCurrentData() {
+    var validIds = new Set(listenersData.map(function(listener) { return listener.id; }));
+    selectedListenerIds = new Set(Array.from(selectedListenerIds).filter(function(id) {
+        return validIds.has(id);
+    }));
+}
+
+function restoreSelectionOnRenderedRows() {
+    var checkboxes = document.querySelectorAll('.listener-checkbox');
+    checkboxes.forEach(function(cb) {
+        var id = parseInt(cb.getAttribute('data-id'));
+        cb.checked = !isNaN(id) && selectedListenerIds.has(id);
+    });
+}
+
+function bulkEnableSelected() {
+    var ids = getSelectedListenerIds();
+    if (ids.length === 0) { showValidationError('No listeners selected'); return; }
+    confirmBulkAction('enable', ids.length, function() { executeBulkAction('activate', ids); });
+}
+
+function bulkDisableSelected() {
+    var ids = getSelectedListenerIds();
+    if (ids.length === 0) { showValidationError('No listeners selected'); return; }
+    confirmBulkAction('disable', ids.length, function() { executeBulkAction('deactivate', ids); });
+}
+
+function enableAll() {
+    var ids = listenersData.map(function(l) { return l.id; });
+    if (ids.length === 0) { showValidationError('No listeners available'); return; }
+    confirmBulkAction('enable all', ids.length, function() { executeBulkAction('activate', ids); });
+}
+
+function disableAll() {
+    var ids = listenersData.map(function(l) { return l.id; });
+    if (ids.length === 0) { showValidationError('No listeners available'); return; }
+    confirmBulkAction('disable all', ids.length, function() { executeBulkAction('deactivate', ids); });
+}
+
+function confirmBulkAction(action, count, callback) {
+    Swal.fire({
+        title: 'Confirm Bulk Action',
+        text: 'Are you sure you want to ' + action + ' ' + count + ' listener(s)?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, proceed!'
+    }).then(function(result) {
+        if (result.value) { callback(); }
+    });
+}
+
+function executeBulkAction(action, ids) {
+    var actionLabel = action === 'activate' ? 'Enabling' : 'Disabling';
+    Swal.fire({
+        title: actionLabel + ' ' + ids.length + ' listener(s)...',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        onBeforeOpen: function() { Swal.showLoading(); }
+    });
+
+    var serviceCall = action === 'activate'
+        ? ListenerService.bulkActivate(ids)
+        : ListenerService.bulkDeactivate(ids);
+
+    serviceCall.then(function(result) {
+        return loadAllData().then(function() {
+            return result;
+        });
+    }).then(function(result) {
+        showBulkActionResult(action, result);
+    }).catch(function(error) {
+        var msg = error.response && error.response.data && error.response.data.message
+            ? error.response.data.message : (error.message || 'Unknown error');
+        showError('Bulk action failed: ' + msg);
+    });
+}
+
+function showBulkActionResult(action, result) {
+    var successCount = result && result.successCount ? result.successCount : 0;
+    var failureCount = result && result.failureCount ? result.failureCount : 0;
+    var skippedCount = result && result.skippedCount ? result.skippedCount : 0;
+    var totalRequested = result && result.totalRequested ? result.totalRequested : (successCount + failureCount + skippedCount);
+    var details = Array.isArray(result && result.results) ? result.results : [];
+
+    var failed = details.filter(function(item) { return item && item.status === 'failed'; });
+    var skipped = details.filter(function(item) { return item && item.status === 'skipped'; });
+
+    var html = '' +
+        '<div style="text-align:left">' +
+        '<p><strong>Total:</strong> ' + totalRequested + '</p>' +
+        '<p><strong>Success:</strong> ' + successCount + '</p>' +
+        '<p><strong>Failed:</strong> ' + failureCount + '</p>' +
+        '<p><strong>Skipped:</strong> ' + skippedCount + '</p>';
+
+    if (failed.length > 0) {
+        html += '<hr><p><strong>Failed Items:</strong></p><ul style="max-height:120px; overflow:auto; padding-left:18px;">';
+        failed.forEach(function(item) {
+            var name = item.listenerName ? item.listenerName : ('ID ' + item.id);
+            html += '<li>' + escapeHtml(name) + ' - ' + escapeHtml(item.message || 'Operation failed') + '</li>';
+        });
+        html += '</ul>';
+    }
+
+    if (skipped.length > 0) {
+        html += '<hr><p><strong>Skipped Items:</strong></p><ul style="max-height:120px; overflow:auto; padding-left:18px;">';
+        skipped.forEach(function(item) {
+            var name = item.listenerName ? item.listenerName : ('ID ' + item.id);
+            html += '<li>' + escapeHtml(name) + ' - ' + escapeHtml(item.message || 'Skipped') + '</li>';
+        });
+        html += '</ul>';
+    }
+
+    html += '</div>';
+
+    var icon = failureCount > 0 ? 'warning' : 'success';
+    var title = failureCount > 0
+        ? ('Bulk action completed with issues')
+        : ('Bulk action completed');
+
+    Swal.fire({
+        icon: icon,
+        title: title,
+        html: html,
+        confirmButtonText: 'OK'
+    });
+}
+
 // Make functions globally available
 window.refreshData = refreshData;
 window.addNewListener = addNewListener;
@@ -1052,6 +1468,13 @@ window.toggleEndpointStatus = toggleEndpointStatus;
 window.filterListeners = filterListeners;
 window.filterEndpoints = filterEndpoints;
 window.searchData = searchData;
+window.toggleSelectAll = toggleSelectAll;
+window.onListenerSelectionChange = onListenerSelectionChange;
+window.updateBulkActionBar = updateBulkActionBar;
+window.bulkEnableSelected = bulkEnableSelected;
+window.bulkDisableSelected = bulkDisableSelected;
+window.enableAll = enableAll;
+window.disableAll = disableAll;
 </script>
 </body>
 </html>

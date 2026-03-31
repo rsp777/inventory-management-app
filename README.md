@@ -9,6 +9,9 @@ Inventory Management App is a Spring Boot 3 backend and server-rendered UI for w
 - MySQL-backed persistence with JPA and custom repository adapters
 - Actuator health and build metadata endpoints
 - Test configuration with in-memory H2 database for repeatable local test runs
+- Listener and endpoint management UI with runtime health visibility
+- Kafka listener enable/disable support with local and remote control sync
+- Bulk listener actions with partial-success reporting and realtime status refresh
 
 ## Tech Stack
 
@@ -63,6 +66,19 @@ Recommended local override:
    - spring.datasource.username
    - spring.datasource.password
    - external.api.url
+
+Listener runtime control settings:
+
+- listener.runtime.monitor.enabled=true
+- listener.runtime.monitor.interval-ms=30000
+- listener.runtime.connect-timeout-ms=2000
+- listener.runtime.control-enabled=true
+- listener.runtime.control-base-urls=inventory-management-system=http://localhost:8085,inventory-management-app=http://localhost:8086
+
+The `listener.runtime.control-base-urls` property supports:
+
+- `key=value` mappings for service-based listener control
+- plain URLs, which are auto-mapped as `service1`, `service2`, and so on
 
 ## Build
 
@@ -122,6 +138,22 @@ Invoke-WebRequest -UseBasicParsing http://localhost:8086/inventory-ui/lpn/create
 - Main user-facing pages are Thymeleaf templates under src/main/resources/templates.
 - OpenAPI dependency is present (springdoc), so Swagger UI can be enabled/used based on runtime config.
 
+### Listener Management UI
+
+The endpoint/listener page now includes:
+
+- realtime listener runtime refresh every 10 seconds
+- runtime status badges: `connected`, `disconnected`, `disabled`, `unknown`
+- bulk actions: `Enable Selected`, `Disable Selected`, `Enable All`, `Disable All`
+- partial-success bulk result summaries with failed and skipped item details
+- selection persistence across search, filter changes, and realtime refreshes
+- listener copy support and service-key based remote-control routing
+
+### Endpoint Read Model
+
+Endpoint records shown in the UI are derived from menu definitions and exposed through `/inventory-ui/api/endpoints`.
+They are intended as an operational read view, not a separate editable endpoint registry.
+
 ## Container and Deployment
 
 ### Docker
@@ -156,6 +188,29 @@ A Jenkinsfile is included with stages:
 - Preparation
 - Build (mvn clean package)
 - Archive Artifacts (target/*.jar)
+
+## Branching Strategy
+
+Recommended workflow for this repository:
+
+- `main`: production-approved baseline only
+- `Dev_v2.6`: current stable integration branch for the Dev_v2.6 release line
+- feature branches created from `Dev_v2.6` for isolated work
+
+Suggested branch naming:
+
+- `feature/listener-management-ui`
+- `feature/ui-foundation`
+- `feature/common-table-ux`
+- `feature/role-aware-actions`
+- `feature/saved-filters`
+
+Branching rule:
+
+1. create feature branches from `Dev_v2.6`
+2. keep `Dev_v2.6` merge-ready and stable
+3. merge tested features back into `Dev_v2.6`
+4. promote `Dev_v2.6` to `main` only after validation
 
 ## Troubleshooting
 

@@ -39,7 +39,7 @@ public final class AppConstants {
 
 	public static final class SessionAttribute {
 		public static final String DECODED_TOKEN = "decodedtoken";
-		public static final String JWT_TOKEN = "jwtToken";
+		public static final String JWT_TOKEN = "secretKey";
 		public static final String USER_NAME = "user_name";
 		public static final String USER_NAME_LEGACY = "userName";
 
@@ -114,6 +114,7 @@ public final class AppConstants {
 
 	public static final class View {
 		public static final String CATEGORY = "category";
+		public static final String ENDPOINT = "endpoint";
 		public static final String ITEM = "item";
 		public static final String LOCATION = "location";
 		public static final String LOCATION_INQUIRY = "locationInquiry";

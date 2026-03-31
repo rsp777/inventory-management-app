@@ -542,7 +542,7 @@ public class MenuController {
 	@GetMapping("/legacy/endpoint")
 	public String endpoint() {
 		logger.info("endpoint");
-		return "endpoint";
+		return AppConstants.View.ENDPOINT;
 	}
 
 	private List<SopLocationRangeDto> populateSopConfigModel(Model model) throws IOException {

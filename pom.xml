@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.pawar.inventory.app</groupId>
 	<artifactId>inventory-management-app</artifactId>
-	<version>refactor/inventory-management-app</version>
+	<version>Dev_v2.6</version>
 	<packaging>jar</packaging>
 	<name>inventory-management-app</name>
 	<description>inventory-management-app</description>

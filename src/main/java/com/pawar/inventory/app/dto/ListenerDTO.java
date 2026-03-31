@@ -9,13 +9,17 @@ public class ListenerDTO {
     private String listenerType;
     private String portChannel;
     private String status;
+    private String runtimeStatus;
+    private String runtimeMessage;
     private LocalDateTime lastActivity;
+    private LocalDateTime lastConnectivityCheck;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String createdBy;
     private String updatedBy;
     private String description;
     private String configuration;
+    private String serviceKey;
     
     // Default constructor
     public ListenerDTO() {
@@ -81,6 +85,22 @@ public class ListenerDTO {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public String getRuntimeStatus() {
+        return runtimeStatus;
+    }
+
+    public void setRuntimeStatus(String runtimeStatus) {
+        this.runtimeStatus = runtimeStatus;
+    }
+
+    public String getRuntimeMessage() {
+        return runtimeMessage;
+    }
+
+    public void setRuntimeMessage(String runtimeMessage) {
+        this.runtimeMessage = runtimeMessage;
+    }
     
     public LocalDateTime getLastActivity() {
         return lastActivity;
@@ -88,6 +108,14 @@ public class ListenerDTO {
     
     public void setLastActivity(LocalDateTime lastActivity) {
         this.lastActivity = lastActivity;
+    }
+
+    public LocalDateTime getLastConnectivityCheck() {
+        return lastConnectivityCheck;
+    }
+
+    public void setLastConnectivityCheck(LocalDateTime lastConnectivityCheck) {
+        this.lastConnectivityCheck = lastConnectivityCheck;
     }
     
     public LocalDateTime getCreatedAt() {
@@ -136,5 +164,13 @@ public class ListenerDTO {
     
     public void setConfiguration(String configuration) {
         this.configuration = configuration;
+    }
+
+    public String getServiceKey() {
+        return serviceKey;
+    }
+
+    public void setServiceKey(String serviceKey) {
+        this.serviceKey = serviceKey;
     }
 }

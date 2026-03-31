@@ -23,6 +23,9 @@ public class ListenerRequestDTO {
     
     @Size(max = 500, message = "Description must not exceed 500 characters")
     private String description;
+
+    @Size(max = 100, message = "Service key must not exceed 100 characters")
+    private String serviceKey;
     
     private String configuration;
     
@@ -77,6 +80,14 @@ public class ListenerRequestDTO {
     
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getServiceKey() {
+        return serviceKey;
+    }
+
+    public void setServiceKey(String serviceKey) {
+        this.serviceKey = serviceKey;
     }
     
     public String getConfiguration() {

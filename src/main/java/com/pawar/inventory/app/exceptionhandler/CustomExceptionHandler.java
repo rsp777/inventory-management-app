@@ -15,13 +15,11 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import com.pawar.inventory.app.config.AppConstants;
 import com.pawar.inventory.app.exception.ErrorResponse;
 import com.pawar.inventory.app.exception.base.BaseException;
 import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.app.service.MenuService;
+import com.pawar.inventory.app.service.base.TokenService;
 import com.pawar.inventory.app.util.SessionUtil;
 
 import jakarta.servlet.http.HttpSession;
@@ -31,10 +29,12 @@ public class CustomExceptionHandler {
 
 	private final static Logger logger = LoggerFactory.getLogger(CustomExceptionHandler.class);
 
-	MenuService menuService;
+    private final MenuService menuService;
+    private final TokenService tokenService;
 
-	CustomExceptionHandler(MenuService menuService) {
+    CustomExceptionHandler(MenuService menuService, TokenService tokenService) {
 		this.menuService = menuService;
+        this.tokenService = tokenService;
 	}
 
     @ExceptionHandler(BaseException.class)
@@ -53,21 +53,20 @@ public class CustomExceptionHandler {
 
 	@ModelAttribute("user_name")
 	public String getUserName(HttpSession httpSession) {
-        String decodedToken = SessionUtil.getSessionToken(httpSession);
-		if (decodedToken != null) {
-			try {
-				DecodedJWT decodedJWT = JWT.decode(decodedToken);
-				String subject = decodedJWT.getSubject();
-				if (subject != null && !subject.isEmpty()) {
-					String user_name = subject.split("\\|")[0];
-					logger.info("Username : " + user_name);
-					return user_name;
-				}
-			} catch (Exception e) {
-				logger.warn("Could not extract username from token: " + e.getMessage());
-			}
-		}
-		return "unknown user";
+        String sessionUserName = SessionUtil.getSessionUserName(httpSession);
+        if (sessionUserName != null && !sessionUserName.isBlank()) {
+            return sessionUserName;
+        }
+
+        String token = SessionUtil.getSessionToken(httpSession);
+        if (token != null && !token.isBlank()) {
+            String decodedUserName = tokenService.getUserName(token);
+            if (decodedUserName != null && !decodedUserName.isBlank()) {
+                return decodedUserName;
+            }
+        }
+
+        return "unknown user";
 	}
 
 	@ModelAttribute("logout_url")

@@ -15,6 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pawar.inventory.app.config.AppConstants;
 import com.pawar.inventory.app.dto.MenuSignInRequestDTO;
 import com.pawar.inventory.app.exception.UnauthorizedException;
@@ -31,9 +32,9 @@ import jakarta.validation.Valid;
 @Controller
 @RequestMapping("/api/auth")
 public class AuthController {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
-    
+
     private final MenuService menuService;
     private final MenuAccessService menuAccessService;
 
@@ -41,7 +42,7 @@ public class AuthController {
         this.menuService = menuService;
         this.menuAccessService = menuAccessService;
     }
-    
+
     /**
      * Displays the index/login page
      */
@@ -49,7 +50,7 @@ public class AuthController {
     public String index(Model model) {
         return "index";
     }
-    
+
     /**
      * Handles user sign-in with credentials
      */
@@ -63,56 +64,97 @@ public class AuthController {
 
         String username = requestDTO.getUsername();
         String password = requestDTO.getPassword();
-        
+
         try {
             logger.info("Sign-in attempt for user: {}", username);
-            
+
             // Authenticate with external service
             String signInResponse = menuService.signIn(username, password);
-            
+
             if (signInResponse == null || signInResponse.isEmpty()) {
                 throw new UnauthorizedException("Invalid credentials for user: " + username);
             }
-            
-            // Store decoded token in session
-            httpSession.setAttribute(AppConstants.SessionAttribute.DECODED_TOKEN, signInResponse);
-            httpSession.setAttribute(AppConstants.SessionAttribute.JWT_TOKEN, signInResponse);
-            
-            String userName = menuAccessService.getUserName(signInResponse);
+
+            // Extract token from JSON response if it's wrapped
+            String tokenToStore = extractTokenFromResponse(signInResponse);
+
+            // Store token in session
+            httpSession.setAttribute(AppConstants.SessionAttribute.DECODED_TOKEN, tokenToStore);
+            httpSession.setAttribute(AppConstants.SessionAttribute.JWT_TOKEN, tokenToStore);
+
+            String userName = menuAccessService.getUserName(tokenToStore);
             httpSession.setAttribute(AppConstants.SessionAttribute.USER_NAME, userName);
             httpSession.setAttribute(AppConstants.SessionAttribute.USER_NAME_LEGACY, userName);
-            
+
             logger.info("Successful sign-in for user: {}", username);
             return "redirect:/api/showMenu";
-            
+
         } catch (UnauthorizedException unauthorized) {
             logger.error("Unauthorized access for user: {}", username);
             redirectAttributes.addFlashAttribute("invalidCredMessage", "Invalid username or password");
             return "redirect:/api/auth/index";
-            
+
         } catch (JWTDecodeException jwtError) {
             String errorMsg = "Token decoding error: " + jwtError.getMessage();
             logger.error(errorMsg);
             redirectAttributes.addFlashAttribute("invalidCredMessage", errorMsg);
             return "redirect:/api/auth/index";
-            
+
         } catch (JsonProcessingException jsonError) {
             logger.error("JSON processing error during sign-in", jsonError);
             redirectAttributes.addFlashAttribute("invalidCredMessage", "Server error processing response");
             return "redirect:/api/auth/index";
-            
+
         } catch (IOException error) {
             logger.error("HTTP client error during sign-in", error);
             redirectAttributes.addFlashAttribute("invalidCredMessage", "Server communication error");
             return "redirect:/api/auth/index";
-            
+
         } catch (Exception error) {
             logger.error("Unexpected error during sign-in", error);
             redirectAttributes.addFlashAttribute("invalidCredMessage", "Unexpected server error");
             return "redirect:/api/auth/index";
         }
     }
-    
+
+    /**
+     * Extracts JWT token from auth service response.
+     * The auth service returns either:
+     * <ul>
+     * <li>Raw JWT token string</li>
+     * <li>JSON object {"token": "..."}</li>
+     * </ul>
+     *
+     * @param response Raw response from auth service
+     * @return Extracted token string
+     */
+    private String extractTokenFromResponse(String response) throws JsonProcessingException {
+        // If response is wrapped in JSON, extract the token field
+        if (response != null && response.trim().startsWith("{")) {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                java.util.Map<String, Object> map = mapper.readValue(response, java.util.Map.class);
+                Object token = map.get("token");
+                if (token == null) {
+                    token = map.get("access_token");
+                }
+
+                if (token != null) {
+                    logger.debug("Extracted token from JSON response");
+                    return token.toString();
+                }
+
+                logger.warn("JSON response does not contain token or access_token field");
+            } catch (JsonProcessingException e) {
+                logger.warn("Failed to parse response as JSON: {}", e.getMessage());
+                throw e;
+            }
+        }
+        // Return response as-is if it's already the token (plain JWT or pipe-separated)
+        logger.debug("Using response as token directly");
+        return response;
+    }
+
     /**
      * Handles user logout
      */
@@ -120,16 +162,16 @@ public class AuthController {
     public String logout(RedirectAttributes redirectAttributes, HttpSession httpSession) {
         try {
             logger.info("Logout attempt");
-            
+
             String response = menuService.signout(httpSession);
             logger.info("Logout response: {}", response);
-            
+
             httpSession.invalidate();
             logger.info("Session invalidated");
-            
+
             redirectAttributes.addFlashAttribute("logoutMessage", "Successfully logged out");
             return "redirect:/api/auth/index";
-            
+
         } catch (IOException error) {
             logger.error("Error during logout", error);
             httpSession.invalidate();
