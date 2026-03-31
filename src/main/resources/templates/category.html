@@ -395,6 +395,7 @@ table.scrolldown {
 		src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script src="/inventory-ui/js/ui-feedback.js"></script>
 	
 	<script th:inline='javascript'>
 
@@ -610,7 +611,7 @@ table.scrolldown {
 						// console.log(xmlDoc);
 						console.log('Response Message '+targetTag.value);
                     
-					alert(targetTag.value);
+					InventoryUI.success(targetTag.value);
 					document.getElementById('categoryDiv').style.display = 'none';
 					document.getElementById('addCategoryButton').style.display = 'block';
 					isCategoryShown = false;
@@ -618,14 +619,14 @@ table.scrolldown {
 
 				},
 				error : function(response) {
-					alert('Error adding category');
+					InventoryUI.error('Error adding category');
 					location.reload();
 				}
 			};
 			$.ajax(ajaxRequest);
 			}
 			else{
-				alert("Please enter category name");
+				InventoryUI.warning("Please enter category name");
 			}
 
 			
@@ -672,7 +673,7 @@ table.scrolldown {
 							console.log("Status code:", xhr.status + ", "
 									+ textStatus);
 									
-							alert('Category updated successfully');
+							InventoryUI.success('Category updated successfully');
 							document.getElementById('categoryDiv').style.display = 'none';
 							document.getElementById('toggleButton').value = 'Add Category';
 							document.getElementById('saveButton').style.display = 'none';
@@ -681,13 +682,13 @@ table.scrolldown {
 							location.reload();
 						},
 						error : function(response) {
-							alert('Error updating category');
+							InventoryUI.error('Error updating category');
 							location.reload();
 						}
 					});
 				}
 				else{
-					alert('Please enter a category name!');
+					InventoryUI.warning('Please enter a category name!');
 				}
 		}
 		function confirmCategoryDeletion(category_id,category_name, deleteFlag) {

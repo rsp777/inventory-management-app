@@ -471,6 +471,7 @@ table {
 			src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script src="/inventory-ui/js/ui-feedback.js"></script>
 		<script type='text/javascript'>
 		const REFRESH_STORAGE_KEY = 'inventory.page.refresh.lpn';
 		const DEFAULT_REFRESH_INTERVAL_MS = 10000;
@@ -689,14 +690,14 @@ table {
 				success : function(response, textStatus, xhr) {
 					console.log("Status Code:", xhr.status
 							+ ", Status Message " + textStatus);
-					alert('Lpn edited successfully');
+					InventoryUI.success('Lpn edited successfully');
 					
 					isItemShown = false;
 					location.reload();
 
 				},
 				error : function(response) {
-					alert('Error editing Lpn');
+					InventoryUI.error('Error editing Lpn');
 					location.reload();
 				}
 			};

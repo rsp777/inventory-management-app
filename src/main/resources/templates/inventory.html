@@ -443,6 +443,7 @@ table {
 			src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script src="/inventory-ui/js/ui-feedback.js"></script>
         <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
 		<script type='text/javascript'>
 		
@@ -545,14 +546,14 @@ table {
 				success : function(response, textStatus, xhr) {
 					console.log("Status Code:", xhr.status
 							+ ", Status Message " + textStatus);
-					alert('Location edited successfully');
+					InventoryUI.success('Location edited successfully');
 					
 					isItemShown = false;
 					location.reload();
 
 				},
 				error : function(response) {
-					alert('Error editing Location');
+					InventoryUI.error('Error editing Location');
 					location.reload();
 				}
 			};
