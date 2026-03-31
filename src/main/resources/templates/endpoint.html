@@ -168,10 +168,21 @@ body { background-color: #f8f9fa; }
         <button class="btn btn-info" onclick="addNewListener()">
             <i class="fa fa-plus"></i> Add Listener
         </button>
-        <span class="badge badge-light" id="realtimeStatusBadge" style="font-size: 12px; padding: 8px 12px;">
-            Realtime: ON (10s)
-        </span>
-        <small class="text-muted" id="lastRealtimeSync" style="margin-left: 10px;">Last sync: never</small>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-left:auto;">
+            <div style="display:flex; align-items:center; gap:6px;">
+                <input type="number" min="1" step="1" class="form-control form-control-sm" id="realtimeIntervalInput" style="width:90px;" placeholder="Seconds" onkeydown="handleRealtimeIntervalInputKeyDown(event)">
+                <button class="btn btn-sm btn-outline-primary" onclick="applyRealtimeInterval()">
+                    Apply
+                </button>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" id="realtimeToggleButton" onclick="toggleRealtimeUpdates()">
+                Pause Realtime
+            </button>
+            <span class="badge badge-light" id="realtimeStatusBadge" style="font-size: 12px; padding: 8px 12px;">
+                Realtime: ON (10s)
+            </span>
+            <small class="text-muted" id="lastRealtimeSync">Last sync: never</small>
+        </div>
     </div>
     
     <div class="tabs-container">
@@ -397,7 +408,8 @@ const API_BASE_URL = '/inventory-ui/api';
 const listenersEndpoint = API_BASE_URL + '/listeners';
 const endpointsEndpoint = API_BASE_URL + '/endpoints';
 const listenerRuntimeRefreshEndpoint = listenersEndpoint + '/runtime/refresh';
-const REALTIME_REFRESH_INTERVAL_MS = 10000;
+const DEFAULT_REALTIME_REFRESH_INTERVAL_MS = 10000;
+const REALTIME_SETTINGS_STORAGE_KEY = 'inventory-ui.listener-realtime-settings';
 
 // Global Variables
 var listenersData = [];
@@ -408,10 +420,14 @@ var editingListenerId = null;
 var editingEndpointId = null;
 var realtimeRefreshTimer = null;
 var realtimeRefreshInProgress = false;
+var realtimeRefreshEnabled = true;
+var currentRealtimeIntervalMs = DEFAULT_REALTIME_REFRESH_INTERVAL_MS;
 var selectedListenerIds = new Set();
 
 // ==================== INITIALIZATION ====================
 $(document).ready(function() {
+    initializeRealtimeSettings();
+
     // Show initial loading state
     Swal.fire({
         title: 'Loading Data...',
@@ -471,6 +487,10 @@ async function refreshListenerRuntimeStatuses() {
 }
 
 async function realtimeRefreshTick() {
+    if (!realtimeRefreshEnabled) {
+        return;
+    }
+
     if (realtimeRefreshInProgress) {
         return;
     }
@@ -490,11 +510,16 @@ async function realtimeRefreshTick() {
 }
 
 function startRealtimeStatusUpdates() {
-    if (realtimeRefreshTimer) {
-        clearInterval(realtimeRefreshTimer);
+    stopRealtimeStatusUpdates();
+
+    if (!realtimeRefreshEnabled) {
+        updateRealtimeStatusBadge();
+        return;
     }
+
     realtimeRefreshTick();
-    realtimeRefreshTimer = setInterval(realtimeRefreshTick, REALTIME_REFRESH_INTERVAL_MS);
+    realtimeRefreshTimer = setInterval(realtimeRefreshTick, currentRealtimeIntervalMs);
+    updateRealtimeStatusBadge();
 }
 
 function stopRealtimeStatusUpdates() {
@@ -502,6 +527,8 @@ function stopRealtimeStatusUpdates() {
         clearInterval(realtimeRefreshTimer);
         realtimeRefreshTimer = null;
     }
+
+    updateRealtimeStatusBadge();
 }
 
 function updateRealtimeSyncLabel() {
@@ -510,6 +537,123 @@ function updateRealtimeSyncLabel() {
         return;
     }
     label.textContent = 'Last sync: ' + new Date().toLocaleTimeString();
+}
+
+function initializeRealtimeSettings() {
+    loadRealtimeSettings();
+    applyRealtimeControls();
+    updateRealtimeStatusBadge();
+}
+
+function loadRealtimeSettings() {
+    try {
+        var raw = window.localStorage.getItem(REALTIME_SETTINGS_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+
+        var saved = JSON.parse(raw);
+        if (saved && typeof saved.enabled === 'boolean') {
+            realtimeRefreshEnabled = saved.enabled;
+        }
+        if (saved && saved.intervalMs) {
+            var parsedInterval = parseInt(saved.intervalMs, 10);
+            if (!isNaN(parsedInterval) && parsedInterval > 0) {
+                currentRealtimeIntervalMs = parsedInterval;
+            }
+        }
+    } catch (error) {
+        console.warn('Failed to load realtime settings:', error);
+    }
+}
+
+function saveRealtimeSettings() {
+    try {
+        window.localStorage.setItem(REALTIME_SETTINGS_STORAGE_KEY, JSON.stringify({
+            enabled: realtimeRefreshEnabled,
+            intervalMs: currentRealtimeIntervalMs
+        }));
+    } catch (error) {
+        console.warn('Failed to save realtime settings:', error);
+    }
+}
+
+function applyRealtimeControls() {
+    var intervalInput = document.getElementById('realtimeIntervalInput');
+    var toggleButton = document.getElementById('realtimeToggleButton');
+
+    if (intervalInput) {
+        intervalInput.value = String(Math.round(currentRealtimeIntervalMs / 1000));
+    }
+
+    if (toggleButton) {
+        toggleButton.textContent = realtimeRefreshEnabled ? 'Pause Realtime' : 'Resume Realtime';
+        toggleButton.className = realtimeRefreshEnabled
+            ? 'btn btn-sm btn-outline-secondary'
+            : 'btn btn-sm btn-outline-success';
+    }
+}
+
+function updateRealtimeStatusBadge() {
+    var badge = document.getElementById('realtimeStatusBadge');
+    if (!badge) {
+        return;
+    }
+
+    if (realtimeRefreshEnabled) {
+        badge.textContent = 'Realtime: ON (' + formatRealtimeInterval(currentRealtimeIntervalMs) + ')';
+        badge.className = 'badge badge-light';
+    } else {
+        badge.textContent = 'Realtime: PAUSED';
+        badge.className = 'badge badge-warning';
+    }
+
+    applyRealtimeControls();
+}
+
+function formatRealtimeInterval(intervalMs) {
+    return Math.round(intervalMs / 1000) + 's';
+}
+
+function toggleRealtimeUpdates() {
+    realtimeRefreshEnabled = !realtimeRefreshEnabled;
+    saveRealtimeSettings();
+    if (realtimeRefreshEnabled) {
+        startRealtimeStatusUpdates();
+    } else {
+        stopRealtimeStatusUpdates();
+    }
+}
+
+function applyRealtimeInterval() {
+    var intervalInput = document.getElementById('realtimeIntervalInput');
+    if (!intervalInput) {
+        return;
+    }
+
+    var parsedSeconds = parseInt(intervalInput.value, 10);
+    if (isNaN(parsedSeconds) || parsedSeconds <= 0) {
+        showValidationError('Realtime interval must be a whole number greater than 0');
+        intervalInput.value = String(Math.round(currentRealtimeIntervalMs / 1000));
+        return;
+    }
+
+    currentRealtimeIntervalMs = parsedSeconds * 1000;
+    saveRealtimeSettings();
+    if (realtimeRefreshEnabled) {
+        startRealtimeStatusUpdates();
+    } else {
+        updateRealtimeStatusBadge();
+    }
+
+    showNotification('Realtime interval updated to ' + parsedSeconds + ' second(s)');
+}
+
+function handleRealtimeIntervalInputKeyDown(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        applyRealtimeInterval();
+    }
 }
 
 // ==================== API SERVICE ====================
@@ -1468,6 +1612,9 @@ window.toggleEndpointStatus = toggleEndpointStatus;
 window.filterListeners = filterListeners;
 window.filterEndpoints = filterEndpoints;
 window.searchData = searchData;
+window.toggleRealtimeUpdates = toggleRealtimeUpdates;
+window.applyRealtimeInterval = applyRealtimeInterval;
+window.handleRealtimeIntervalInputKeyDown = handleRealtimeIntervalInputKeyDown;
 window.toggleSelectAll = toggleSelectAll;
 window.onListenerSelectionChange = onListenerSelectionChange;
 window.updateBulkActionBar = updateBulkActionBar;
