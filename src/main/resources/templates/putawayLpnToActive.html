@@ -114,6 +114,7 @@
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="/inventory-ui/js/ui-feedback.js"></script>
     
     
 
@@ -142,10 +143,10 @@
 						var targetTag = xmlDoc.querySelector("#responseMessage"); // Replace with your actual tag ID
 						console.log('Response Message '+targetTag.value);
                     
-					alert(targetTag.value);
+                    InventoryUI.success(targetTag.value);
                 },
                 error: function(response) {
-                    alert('Error consuming LPN');
+                    InventoryUI.error('Error consuming LPN');
                 }
             }
             $.ajax(ajaxRequest);

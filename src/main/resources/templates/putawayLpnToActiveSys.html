@@ -124,6 +124,7 @@ body {
 		src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 	<script
 		src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+	<script src="/inventory-ui/js/ui-feedback.js"></script>
 
 
 
@@ -148,7 +149,7 @@ body {
 								document.getElementById('actLocnDiv').style.display = 'block';
 							},
 							error : function(response) {
-								alert('Error checking active inventory');
+								InventoryUI.error('Error checking active inventory');
 							}
 						});
 			} else {
@@ -175,10 +176,10 @@ body {
 					var targetTag = xmlDoc.querySelector("#responseMessage"); // Replace with your actual tag ID
 					console.log('Response Message ' + targetTag.value);
 
-					alert(targetTag.value);
+						InventoryUI.success(targetTag.value);
 				},
 				error : function(response) {
-					alert('Error consuming LPN');
+						InventoryUI.error('Error consuming LPN');
 				}
 			}
 			$.ajax(ajaxRequest);

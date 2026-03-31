@@ -194,7 +194,7 @@ margin-left: 0px;
 		<!-- Category table -->
 		<input style="width: 100px;" data-toggle="modal" data-target="#exampleModal" type="button" class="btn btn-primary" value="Add User" id="addItemButton" onclick="showButtons()">
 		<div class="scrollable-container">
-			<table class="table table-striped">
+			<table class="table table-striped" data-enhance-table="true">
 				<thead class="thead-dark">
 					<tr>
 						<th scope="col">User ID</th>
@@ -348,6 +348,8 @@ margin-left: 0px;
 			src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script src="/inventory-ui/js/ui-feedback.js"></script>
+		<script src="/inventory-ui/js/table-enhancements.js"></script>
 		<script type='text/javascript'>
 		
         function canelViewEditItem(){
@@ -393,11 +395,11 @@ margin-left: 0px;
 
 		 if (emptyFields.length == 1) {
 			console.log(emptyFields.length == 1);
-			alert('One field is blank!');
+			InventoryUI.warning('One field is blank!');
 			return true;
 		 }
          else if (emptyFields.length > 1) {
-             alert('More than one field is blank!');
+	             InventoryUI.warning('More than one field is blank!');
              return true;
          }
 		 else{
@@ -456,12 +458,12 @@ function validateField(fieldId) {
 						// console.log(xmlDoc);
 						console.log('Response Message '+targetTag.value);
                     
-					alert(targetTag.value);
+					InventoryUI.success(targetTag.value);
                 isItemShown = false;
                 location.reload();
             },
             error: function (response) {
-                alert('Error adding user');
+	                InventoryUI.error('Error adding user');
                 //location.reload();
             }
         };
@@ -522,14 +524,14 @@ function validateField(fieldId) {
 						// console.log(xmlDoc);
 						console.log('Response Message '+targetTag.value);
                     
-					alert(targetTag.value);
+					InventoryUI.success(targetTag.value);
 					
 					isItemShown = false;
 					location.reload();
 
 				},
 				error : function(response) {
-					alert('Error editing item');
+					InventoryUI.error('Error editing item');
 					location.reload();
 				}
 			};

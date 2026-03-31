@@ -127,6 +127,7 @@ padding-top: 70px;
 		src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 	<script
 		src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+	<script src="/inventory-ui/js/ui-feedback.js"></script>
 
 
 
@@ -157,10 +158,10 @@ padding-top: 70px;
 					quantity : quantity
 				},
 				success : function(response) {
-					alert('LPN created successfully');
+					InventoryUI.success('LPN created successfully');
 				},
 				error : function(response) {
-					alert('Error creating LPN');
+					InventoryUI.error('Error creating LPN');
 				}
 			});
 		}
