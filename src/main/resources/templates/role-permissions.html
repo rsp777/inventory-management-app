@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Role-Permission Assignment</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+body { background-color: #f8f9fa; }
+.page-container { max-width: 1200px; margin: 2rem auto; padding: 2rem; background: #fff; border-radius: 0.5rem; box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15); }
+.topnav { overflow: visible; background-color: #333; display: flex; justify-content: space-around; align-items: center; position: sticky; top: 0; width: 100%; z-index: 100; }
+.topnav a { float: left; display: block; color: #f2f2f2; text-align: center; padding: 20px 16px; text-decoration: none; font-size: 17px; }
+.topnav a:hover { background-color: #ddd; color: black; }
+.topnav a.active { background-color: royalblue; color: white; }
+.topnav .title { color: #f2f2f2; font-size: 20px; font-weight: bold; }
+.icon-name { margin-left: 200px; color: white; }
+.title { margin-left: 579px; }
+.links { margin-left: 75px; }
+.dropdown { position: relative; display: inline-flex; }
+.dropdown-button { background-color: #f9f9f9; border: none; padding: 10px; font-size: 14px; cursor: pointer; }
+.dropdown-menu { width: auto; }
+.dropdown-menu-left { left: auto !important; margin-left: -105px !important; }
+.dropdown-item { white-space: initial !important; margin-right: 0; margin-top: -8px; margin-bottom: -8px; height: 80px !important; width: 160px; color: black !important; }
+.dropdown-menu-main-content { color: white; margin-left: 0; }
+.arrow { float: right; font-size: 12px; margin-left: 10px; }
+.submenu-item { color: white; padding: 10px; display: block; text-decoration: none; }
+.submenu-item:hover { background-color: #575757; }
+.dropdown-item-container { position: relative; }
+.submenu { display: none; position: absolute; margin-top: 227%; left: 100%; background-color: #333; padding: 10px; border: 1px solid #333; width: 200px; }
+.dropdown-item-container:hover .submenu { display: block; }
+.panel-col { min-height: 400px; }
+.panel-header { font-weight: 600; font-size: 1rem; padding: 0.5rem 0.75rem; border-radius: 0.3rem 0.3rem 0 0; }
+.scrollable-panel { height: 450px; overflow-y: auto; border: 1px solid #dee2e6; border-top: none; border-radius: 0 0 0.3rem 0.3rem; }
+.scrollable-panel table { margin-bottom: 0; }
+.scrollable-panel thead { position: sticky; top: 0; z-index: 1; }
+.role-selector-bar { background: #f1f3f5; border: 1px solid #dee2e6; border-radius: 0.4rem; padding: 0.75rem 1rem; margin-bottom: 1.5rem; }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="links">
+    <button style="background-color:#333;border:none;" class="btn btn-secondary dropdown-toggle" type="button"
+            id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Menu</button>
+    <div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
+      <div th:each="menu : ${nav_menus}">
+        <div class="dropdown-item-container">
+          <a class="dropdown-item dropdown-menu-main-content"
+             th:if="${menu != null and menu.menu_type != 'CHILD_UI'}"
+             th:href="@{${menu.menu_link}}"
+             th:text="${menu.menuName}"
+             th:classappend="${#strings.contains(menu.menu_link ?: '', currentMenu ?: '') ? 'active' : ''}">
+            <span th:if="${menu != null and menu.menu_type == 'PARENT_UI'}" class="arrow">&#9654;</span>
+          </a>
+          <div class="submenu" th:if="${menu != null and menu.menu_type != null and menu.menu_type == 'PARENT_UI'}">
+            <a class="submenu-item" th:each="submenu : ${menu.children}"
+               th:href="@{${submenu.menu_link}}" th:text="${submenu.menuName}"></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="title">Warehouse Management System</div>
+  <span class="icon-name" th:text="${user_name}"></span>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <div class="dropdown">
+    <button style="background-color:#333;border:none;" class="btn btn-secondary dropdown-toggle" type="button"
+            data-toggle="dropdown">
+      <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-person-circle"
+           viewBox="0 0 16 16">
+        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+        <path fill-rule="evenodd"
+              d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+      </svg>
+    </button>
+    <div class="dropdown-menu dropdown-menu-left">
+      <a class="dropdown-item" href="#">Account</a>
+      <a class="dropdown-item" th:href="@{${settings_url.menu_link}}" th:text="${settings_url.menuName}"></a>
+      <a class="dropdown-item" th:href="@{${logout_url.menu_link}}" th:text="${logout_url.menuName}"></a>
+    </div>
+  </div>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+</div>
+
+<div class="page-container">
+  <div class="d-flex align-items-center mb-3">
+    <a href="/inventory-ui/api/roles" class="btn btn-outline-secondary btn-sm mr-3">
+      <i class="fa fa-arrow-left"></i> Roles
+    </a>
+    <a href="/inventory-ui/api/permissions" class="btn btn-outline-secondary btn-sm mr-3">
+      <i class="fa fa-key"></i> Permissions
+    </a>
+    <a href="/inventory-ui/api/menu-access-management" class="btn btn-outline-secondary btn-sm mr-3">
+      <i class="fa fa-bars"></i> Menu Access
+    </a>
+    <h4 class="mb-0 ml-auto">Role-Permission Assignment</h4>
+  </div>
+
+  <!-- Role selector -->
+  <div class="role-selector-bar d-flex align-items-center flex-wrap">
+    <label class="mb-0 mr-2 font-weight-bold">Role:</label>
+    <select id="roleSelect" class="form-control form-control-sm mr-3" style="width:auto;min-width:200px;"
+            onchange="navigateToRole(this.value)">
+      <option value="">— select a role —</option>
+      <option th:each="r : ${allRoles}"
+              th:value="${r.role_id}"
+              th:text="${r.name}"
+              th:selected="${r.role_id == selectedRoleId}"></option>
+    </select>
+    <span th:if="${selectedRole != null}" class="text-muted small">
+      <i class="fa fa-info-circle"></i>
+      <span th:text="${#lists.size(assignedPermissions)}"></span> assigned,
+      <span th:text="${#lists.size(availablePermissions)}"></span> available
+    </span>
+  </div>
+
+  <!-- Panels (only when a role is selected) -->
+  <div th:if="${selectedRole != null}" class="row">
+
+    <!-- Available Permissions -->
+    <div class="col-md-6 panel-col">
+      <div class="panel-header bg-light border border-bottom-0">
+        <i class="fa fa-list text-secondary"></i> Available Permissions
+        <span class="badge badge-secondary ml-1" th:text="${#lists.size(availablePermissions)}"></span>
+      </div>
+      <div class="scrollable-panel">
+        <table class="table table-sm table-hover mb-0">
+          <thead class="thead-light">
+            <tr>
+              <th>Name</th>
+              <th>Effect</th>
+              <th style="width:90px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="p : ${availablePermissions}">
+              <td><code th:text="${p.name}"></code></td>
+              <td><small class="text-muted" th:text="${@roleManagementController.describeCapability(p.name)}"></small></td>
+              <td>
+                <button class="btn btn-success btn-sm"
+                        th:disabled="${uiActions == null or !uiActions.manageUsers}"
+                        th:data-perm-id="${p.id}"
+                        th:data-perm-name="${p.name}"
+                        onclick="assignPerm(this.getAttribute('data-perm-id'), this.getAttribute('data-perm-name'))">
+                  <i class="fa fa-plus"></i> Assign
+                </button>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(availablePermissions)}">
+              <td colspan="3" class="text-center text-muted py-3">
+                <i class="fa fa-check-circle text-success"></i> All permissions are already assigned.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Assigned Permissions -->
+    <div class="col-md-6 panel-col">
+      <div class="panel-header bg-success text-white border border-success border-bottom-0">
+        <i class="fa fa-check-circle"></i> Assigned to
+        <strong th:text="${selectedRole.name}"></strong>
+        <span class="badge badge-light ml-1" th:text="${#lists.size(assignedPermissions)}"></span>
+      </div>
+      <div class="scrollable-panel">
+        <table class="table table-sm table-hover mb-0">
+          <thead class="thead-light">
+            <tr>
+              <th>Name</th>
+              <th>Effect</th>
+              <th style="width:90px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="p : ${assignedPermissions}">
+              <td><code th:text="${p.name}"></code></td>
+              <td><small class="text-muted" th:text="${@roleManagementController.describeCapability(p.name)}"></small></td>
+              <td>
+                <button class="btn btn-danger btn-sm"
+                        th:disabled="${uiActions == null or !uiActions.manageUsers}"
+                        th:data-perm-id="${p.id}"
+                        th:data-perm-name="${p.name}"
+                        onclick="removePerm(this.getAttribute('data-perm-id'), this.getAttribute('data-perm-name'))">
+                  <i class="fa fa-minus"></i> Remove
+                </button>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(assignedPermissions)}">
+              <td colspan="3" class="text-center text-muted py-3">
+                <i class="fa fa-exclamation-circle text-warning"></i> No permissions assigned yet.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prompt when no role is selected -->
+  <div th:if="${selectedRole == null}" class="text-center text-muted py-5">
+    <i class="fa fa-arrow-up fa-2x mb-2 d-block"></i>
+    Select a role above to manage its permission assignments.
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/inventory-ui/js/ui-feedback.js"></script>
+<script>
+  var selectedRoleId = /*[[${selectedRoleId}]]*/ null;
+
+  function navigateToRole(roleId) {
+    if (!roleId) return;
+    window.location.href = '/inventory-ui/api/role-permissions?roleId=' + roleId;
+  }
+
+  function assignPerm(permId, permName) {
+    axios.post('/inventory-ui/api/role-permissions/assign', null, {
+      params: { roleId: selectedRoleId, permissionId: permId }
+    }).then(function(res) {
+      InventoryUI.success('Assigned: ' + permName);
+      setTimeout(function() { location.reload(); }, 800);
+    }).catch(function(err) {
+      InventoryUI.error((err.response && err.response.data && err.response.data.error) || 'Failed to assign permission');
+    });
+  }
+
+  function removePerm(permId, permName) {
+    Swal.fire({
+      title: 'Remove Permission?',
+      html: 'Remove <strong>' + permName + '</strong> from this role?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Remove'
+    }).then(function(result) {
+      if (!result.isConfirmed) return;
+      axios.delete('/inventory-ui/api/role-permissions/unassign', {
+        params: { roleId: selectedRoleId, permissionId: permId }
+      }).then(function(res) {
+        InventoryUI.success('Removed: ' + permName);
+        setTimeout(function() { location.reload(); }, 800);
+      }).catch(function(err) {
+        InventoryUI.error((err.response && err.response.data && err.response.data.error) || 'Failed to remove permission');
+      });
+    });
+  }
+</script>
+</body>
+</html>

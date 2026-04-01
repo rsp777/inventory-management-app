@@ -121,10 +121,6 @@ table {
 	z-index: 0; 
 
   }
-
-  .scrollable-container th {
-   
-  }
   .bi bi-person-circle{
 	font-size: 10px;
  }
@@ -375,6 +371,7 @@ table {
 								View</button>
 							<button th:data-lpn-id="${lpn.lpn_id}"
                                     th:data-lpn-name="${lpn.lpn_name}"
+								th:disabled="${uiActions == null or !uiActions.manageLpns}"
 							    	onclick="confirmDeallocateLpn(this.getAttribute('data-lpn-id'),this.getAttribute('data-lpn-name'),true)"
 								    class="btn btn-danger">Deallocate</button>
 
@@ -454,9 +451,9 @@ table {
                 <button type="button" class="btn btn-primary"   onclick="saveLpnButton()">Save</button>
             </div> -->
 			<div id= "editLpnButton" class="modal-footer">
-				<button type="button" class="btn btn-primary"   onclick="adjustQty()">Adjust Quanity</button>
+				<button type="button" class="btn btn-primary" th:disabled="${uiActions == null or !uiActions.manageLpns}" onclick="adjustQty()">Adjust Quanity</button>
                 <button type="button" class="btn btn-secondary"	onclick="cancelViewLpn()" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary"   onclick="saveEditLpn()">Save</button>
+				<button type="button" class="btn btn-primary" th:disabled="${uiActions == null or !uiActions.manageLpns}" onclick="saveEditLpn()">Save</button>
             </div>
         </div>
     </div>

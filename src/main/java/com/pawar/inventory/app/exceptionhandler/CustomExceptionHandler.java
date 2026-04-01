@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import com.pawar.inventory.app.exception.ErrorResponse;
 import com.pawar.inventory.app.exception.base.BaseException;
 import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.app.service.MenuService;
+import com.pawar.inventory.app.service.MenuAccessService;
 import com.pawar.inventory.app.service.base.TokenService;
 import com.pawar.inventory.app.util.SessionUtil;
 
@@ -30,10 +32,12 @@ public class CustomExceptionHandler {
 	private final static Logger logger = LoggerFactory.getLogger(CustomExceptionHandler.class);
 
     private final MenuService menuService;
+    private final MenuAccessService menuAccessService;
     private final TokenService tokenService;
 
-    CustomExceptionHandler(MenuService menuService, TokenService tokenService) {
+	CustomExceptionHandler(MenuService menuService, MenuAccessService menuAccessService, TokenService tokenService) {
 		this.menuService = menuService;
+		this.menuAccessService = menuAccessService;
         this.tokenService = tokenService;
 	}
 
@@ -80,6 +84,18 @@ public class CustomExceptionHandler {
 		Menu menuLogout = menuService.getMenu("Settings");
 		return menuLogout;
 	}
+
+    @ModelAttribute("current_user_roles")
+    public Set<String> getCurrentUserRoles(HttpSession httpSession) {
+        String token = SessionUtil.getSessionToken(httpSession);
+        return menuAccessService.getRoleNames(token);
+    }
+
+    @ModelAttribute("uiActions")
+    public Map<String, Boolean> getUiActions(HttpSession httpSession) {
+        String token = SessionUtil.getSessionToken(httpSession);
+        return menuAccessService.getUiActions(token);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {

@@ -4,7 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,6 +32,7 @@ import com.pawar.inventory.app.config.AppConstants;
 import com.pawar.inventory.app.exception.MenuNotFoundException;
 import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.app.model.MenuAccess;
+import com.pawar.inventory.app.model.Permission;
 import com.pawar.inventory.app.model.Role;
 
 import com.pawar.inventory.app.repository.MenuAccessRepository;
@@ -68,7 +73,7 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 			throws JsonMappingException, JsonProcessingException, MenuNotFoundException {
 		logger.info("Getting accessible menus for user: {}", tokenService.getUserName(jwtToken));
 		String[] decodedToken = tokenService.decodeToken(jwtToken);
-		Set<Role> userRoles = getRoles(decodedToken);
+		Set<Role> userRoles = getPersistedRoles(decodedToken);
 		logger.info("Fetched total User roles: {}", userRoles.size());
 		logger.debug("Fetched User roles: {}", userRoles);
 
@@ -157,6 +162,97 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 
 	public String getUserName(String jwtToken) {
 		return tokenService.getUserName(jwtToken);
+	}
+
+	@Override
+	public Set<String> getRoleNames(String jwtToken) {
+		if (jwtToken == null || jwtToken.isBlank()) {
+			return Set.of();
+		}
+
+		try {
+			String[] decodedToken = tokenService.decodeToken(jwtToken);
+			return getPersistedRoles(decodedToken).stream()
+					.map(Role::getName)
+					.filter(name -> name != null && !name.isBlank())
+					.collect(Collectors.toCollection(LinkedHashSet::new));
+		} catch (Exception exception) {
+			logger.warn("Unable to extract role names from token", exception);
+			return Set.of();
+		}
+	}
+
+	@Override
+	public Map<String, Boolean> getUiActions(String jwtToken) {
+		Set<String> normalizedPermissions = getPermissionNames(jwtToken).stream()
+				.map(permission -> permission.toLowerCase(Locale.ROOT))
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+
+		boolean canAdminister = containsKeyword(normalizedPermissions,
+				"admin", "role", "permission", "user.manage", "user.write", "settings.write");
+		boolean canManageReferenceData = canAdminister || containsKeyword(normalizedPermissions,
+				"category", "item", "location", "reference", "menu", "write", "edit", "delete", "create");
+		boolean canManageOperations = canManageReferenceData || containsKeyword(normalizedPermissions,
+				"lpn", "inventory", "putaway", "allocate", "deallocate", "warehouse");
+		boolean canManageRuntime = canAdminister || containsKeyword(normalizedPermissions,
+				"listener", "endpoint", "runtime", "toggle", "activate", "deactivate");
+
+		Map<String, Boolean> uiActions = new LinkedHashMap<>();
+		uiActions.put("manageCategories", canManageReferenceData);
+		uiActions.put("manageItems", canManageReferenceData);
+		uiActions.put("manageLocations", canManageReferenceData);
+		uiActions.put("manageLpns", canManageOperations);
+		uiActions.put("manageMenus", canAdminister || containsKeyword(normalizedPermissions, "menu"));
+		uiActions.put("manageUsers", canAdminister);
+		uiActions.put("manageSopConfig", canAdminister || containsKeyword(normalizedPermissions, "sop", "slotting", "batch"));
+		uiActions.put("manageRuntime", canManageRuntime);
+		uiActions.put("manageSettings", canAdminister);
+		return uiActions;
+	}
+
+	private Set<Role> getPersistedRoles(String[] decodedToken) throws JsonMappingException, JsonProcessingException {
+		Set<Role> tokenRoles = getRoles(decodedToken);
+		if (tokenRoles.isEmpty()) {
+			return Set.of();
+		}
+
+		Set<Role> persistedRoles = new LinkedHashSet<>();
+		for (Role tokenRole : tokenRoles) {
+			Role persistedRole = roleRepository.findById(tokenRole.getRole_id()).orElse(tokenRole);
+			persistedRoles.add(persistedRole);
+		}
+		return persistedRoles;
+	}
+
+	private Set<String> getPermissionNames(String jwtToken) {
+		if (jwtToken == null || jwtToken.isBlank()) {
+			return Set.of();
+		}
+
+		try {
+			String[] decodedToken = tokenService.decodeToken(jwtToken);
+			return getPersistedRoles(decodedToken).stream()
+					.map(Role::getPermissions)
+					.filter(permissions -> permissions != null && !permissions.isEmpty())
+					.flatMap(Set::stream)
+					.map(Permission::getName)
+					.filter(name -> name != null && !name.isBlank())
+					.collect(Collectors.toCollection(LinkedHashSet::new));
+		} catch (Exception exception) {
+			logger.warn("Unable to extract permissions from token roles", exception);
+			return Set.of();
+		}
+	}
+
+	private boolean containsKeyword(Set<String> normalizedValues, String... keywords) {
+		for (String value : normalizedValues) {
+			for (String keyword : keywords) {
+				if (value.contains(keyword)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	@Override

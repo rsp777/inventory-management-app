@@ -122,10 +122,6 @@ table {
 	z-index: 0;
 }
 
-.scrollable-container th {
-	
-}
-
 .bi bi-person-circle {
 	font-size: 10px;
 }
@@ -345,6 +341,7 @@ table {
 		<!-- Category table -->
 		<input data-toggle="modal" data-target="#exampleModal" type="button"
 			class="btn btn-primary" value="Add Location" id="addLocationButton"
+			th:disabled="${uiActions == null or !uiActions.manageLocations}"
 			onclick="showButtons()">
 		<div class="scrollable-container">
 			<table class="table table-striped" data-enhance-table="true">
@@ -381,6 +378,7 @@ table {
 								View</button>
 							<button th:data-locn-id="${location.locn_id}"
 								th:data-locn-brcd="${location.locn_brcd}"
+								th:disabled="${uiActions == null or !uiActions.manageLocations}"
 								onclick="confirmLocationDeletion(this.getAttribute('data-locn-id'),this.getAttribute('data-locn-brcd'), true)"
 								class="btn btn-danger">Delete</button>
 
@@ -466,12 +464,14 @@ table {
 							<button type="button" class="btn btn-secondary"
 								onclick="cancelViewLocation()" data-dismiss="modal">Cancel</button>
 							<button type="button" class="btn btn-primary"
+								th:disabled="${uiActions == null or !uiActions.manageLocations}"
 								onclick="saveLocationButton()">Save</button>
 						</div>
 						<div id="editLocationButton" class="modal-footer">
 							<button type="button" class="btn btn-secondary"
 								onclick="cancelViewLocation()" data-dismiss="modal">Cancel</button>
 							<button type="button" class="btn btn-primary"
+								th:disabled="${uiActions == null or !uiActions.manageLocations}"
 								onclick="saveEditLocation()">Save</button>
 						</div>
 					</div>

@@ -353,10 +353,12 @@ table.scrolldown {
 						<td>
 							<button th:data-category-id="${category.category_id}"
 								th:data-category-name="${category.category_name}"
+								th:disabled="${uiActions == null or !uiActions.manageCategories}"
 								onclick="editCategory(this.getAttribute('data-category-id'), this.getAttribute('data-category-name'))"
 								class="btn btn-primary">Edit</button>
 							<button th:data-category-id="${category.category_id}"
 								th:data-category-name="${category.category_name}"
+								th:disabled="${uiActions == null or !uiActions.manageCategories}"
 								onclick="confirmCategoryDeletion(this.getAttribute('data-category-id'),this.getAttribute('data-category-name'), true)"
 								class="btn btn-danger">Delete</button>
 
@@ -369,12 +371,14 @@ table.scrolldown {
 			<label for="category">Category</label> <input type="text"
 				id="category" name="category" class="form-control" required>
 			&nbsp<input type="button" class="btn btn-primary" value="Save"
+				th:disabled="${uiActions == null or !uiActions.manageCategories}"
 				onclick="submitForm()" id="saveButton" style="display: none;">
 			&nbsp<button 
 				class="btn btn-primary" 
 				onclick="cancelAddCategory()" id="toggleCancelButton" style="display: none;">Cancel</button>
 			<div>
 				<button  class="btn btn-primary"
+				th:disabled="${uiActions == null or !uiActions.manageCategories}"
 				onclick="saveChanges()" id="saveCategoryButton"
 				style="display: none;"> Save</button>
 				&nbsp
@@ -386,6 +390,7 @@ table.scrolldown {
 			
 		</div>
 		<input type="button" class="btn btn-primary" value="Add Category"
+			th:disabled="${uiActions == null or !uiActions.manageCategories}"
 			onclick="showFields()" id="addCategoryButton">
 	</div>
 	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>

@@ -3,6 +3,7 @@ package com.pawar.inventory.app.service;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
 
 import javax.management.relation.RoleNotFoundException;
 
@@ -30,6 +31,8 @@ public interface MenuAccessService {
 
 	List<UserDto> getUsers() throws ClientProtocolException, IOException;
 	String getUserName(String jwtToken);
+	Set<String> getRoleNames(String jwtToken);
+	Map<String, Boolean> getUiActions(String jwtToken);
 	List<MenuAccess> getMenuAccesses() throws MenuNotFoundException;
 
 }

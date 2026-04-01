@@ -121,10 +121,6 @@ table {
 	z-index: 0; 
 
   }
-
-  .scrollable-container th {
-   
-  }
  
   .bi bi-person-circle{
 	font-size: 10px;
@@ -330,7 +326,8 @@ table {
 			</div>
 		</div>
 		<!-- Category table -->
-		<input data-toggle="modal" data-target="#exampleModal" type="button" class="btn btn-primary" value="Add Item" id="addItemButton" onclick="showButtons()">
+		<input data-toggle="modal" data-target="#exampleModal" type="button" class="btn btn-primary" value="Add Item" id="addItemButton" onclick="showButtons()"
+			th:disabled="${uiActions == null or !uiActions.manageItems}">
 		<div class="scrollable-container">
 			<table class="table table-striped" data-enhance-table="true">
 				<thead class="thead-dark">
@@ -363,6 +360,7 @@ table {
 
 								<button th:data-item-id="${item.item_id}"
 								th:data-description="${item.description}"
+								th:disabled="${uiActions == null or !uiActions.manageItems}"
 								onclick="confirmItemDeletion(this.getAttribute('data-item-id'),this.getAttribute('data-description'), true)"
 								class="btn btn-danger">Delete</button>
 
@@ -433,12 +431,14 @@ table {
                 <button type="button" class="btn btn-secondary"
 				onclick="canelViewItem()" data-dismiss="modal">Cancel</button>
                 <button id="saveButton" type="button" class="btn btn-primary"
+					th:disabled="${uiActions == null or !uiActions.manageItems}"
                     onclick="saveItem()">Save</button>
             </div>
 			<div id= "editItemButton" class="modal-footer">
                 <button type="button" class="btn btn-secondary"
 				onclick="canelViewItem()" data-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary"
+					th:disabled="${uiActions == null or !uiActions.manageItems}"
                     onclick="saveEditItem()">Save</button>
             </div>
         </div>

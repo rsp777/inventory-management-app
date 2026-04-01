@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Permission Management</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+body { background-color: #f8f9fa; }
+.container { max-width: 960px; margin-top: 2rem; padding: 2rem; background-color: #fff; border-radius: 0.5rem; box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15); }
+table { margin-top: 2rem; }
+.table th, .table td { vertical-align: middle; }
+.topnav { overflow: visible; background-color: #333; display: flex; justify-content: space-around; align-items: center; position: sticky; top: 0; width: 100%; }
+.topnav a { float: left; display: block; color: #f2f2f2; text-align: center; padding: 20px 16px; text-decoration: none; font-size: 17px; }
+.topnav a:hover { background-color: #ddd; color: black; }
+.topnav a.active { background-color: royalblue; color: white; }
+.scrollable-container { width: 100%; height: 520px; overflow-y: auto; }
+.scrollable-container table { width: 100%; }
+.scrollable-container thead { position: sticky; top: 0; background-color: #f8f9fa; z-index: 0; }
+.icon-name { margin-left: 200px; color: white; }
+.title { margin-left: 579px; }
+.links { margin-left: 75px; }
+.dropdown { position: relative; display: inline-flex; }
+.dropdown-menu { width: auto; }
+.dropdown-menu-left { left: auto !important; margin-left: -105px !important; }
+.dropdown-item { white-space: initial !important; margin-right: 0; margin-top: -8px; margin-bottom: -8px; height: 80px !important; width: 160px; color: black !important; }
+.dropdown-menu-main-content { color: white; margin-left: 0; }
+.arrow { float: right; font-size: 12px; margin-left: 10px; }
+.submenu-item { color: white; padding: 10px; display: block; text-decoration: none; }
+.submenu-item:hover { background-color: #575757; }
+.dropdown-item-container { position: relative; }
+.submenu { display: none; position: absolute; margin-top: 227%; left: 100%; background-color: #333; padding: 10px; border: 1px solid #333; width: 200px; }
+.dropdown-item-container:hover .submenu { display: block; }
+.add-section { margin-top: 1.5rem; padding: 1rem; background: #f1f3f5; border-radius: 0.4rem; border: 1px solid #dee2e6; }
+.keyword-badge { font-size: 0.72rem; background: #e9ecef; border: 1px solid #ced4da; border-radius: 3px; padding: 2px 6px; margin: 1px; display: inline-block; }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="links">
+    <button style="background-color:#333;border:none;" class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Menu</button>
+    <div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
+      <div th:each="menu : ${nav_menus}">
+        <div class="dropdown-item-container">
+          <a class="dropdown-item dropdown-menu-main-content"
+             th:if="${menu != null and menu.menu_type != 'CHILD_UI'}"
+             th:href="@{${menu.menu_link}}"
+             th:text="${menu.menuName}"
+             th:classappend="${#strings.contains(menu.menu_link ?: '', currentMenu ?: '') ? 'active' : ''}">
+            <span th:if="${menu != null and menu.menu_type == 'PARENT_UI'}" class="arrow">&#9654;</span>
+          </a>
+          <div class="submenu" th:if="${menu != null and menu.menu_type != null and menu.menu_type == 'PARENT_UI'}">
+            <a class="submenu-item" th:each="submenu : ${menu.children}" th:href="@{${submenu.menu_link}}" th:text="${submenu.menuName}"></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="title">Warehouse Management System</div>
+  <span class="icon-name" th:text="${user_name}"></span>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <div class="dropdown">
+    <button style="background-color:#333;border:none;" class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">
+      <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-person-circle" viewBox="0 0 16 16">
+        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+      </svg>
+    </button>
+    <div class="dropdown-menu dropdown-menu-left">
+      <a class="dropdown-item" href="#">Account</a>
+      <a class="dropdown-item" th:href="@{${settings_url.menu_link}}" th:text="${settings_url.menuName}"></a>
+      <a class="dropdown-item" th:href="@{${logout_url.menu_link}}" th:text="${logout_url.menuName}"></a>
+    </div>
+  </div>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+</div>
+
+<div class="container">
+  <h1 class="text-center">Permission Management</h1>
+  <input type="hidden" id="responseMessage" th:value="${responseMessage}"/>
+
+  <div class="d-flex justify-content-between align-items-center mb-2 mt-3">
+    <a href="/inventory-ui/api/roles" class="btn btn-outline-secondary btn-sm"><i class="fa fa-arrow-left"></i> Back to Roles</a>
+    <button class="btn btn-primary btn-sm" th:disabled="${uiActions == null or !uiActions.manageUsers}"
+            onclick="showAddPermSection()"><i class="fa fa-plus"></i> Add Permission</button>
+  </div>
+
+  <!-- Hint card -->
+  <div class="alert alert-info py-2 small">
+    <strong>Keyword hints:</strong> Permission names drive UI button visibility. Include one of these keywords in the name:
+    <span class="keyword-badge">admin</span>
+    <span class="keyword-badge">role</span>
+    <span class="keyword-badge">permission</span>
+    <span class="keyword-badge">user.manage</span>
+    <span class="keyword-badge">settings.write</span>
+    <span class="keyword-badge">menu.manage</span>
+    <span class="keyword-badge">category.write</span>
+    <span class="keyword-badge">item.write</span>
+    <span class="keyword-badge">location.write</span>
+    <span class="keyword-badge">lpn.write</span>
+    <span class="keyword-badge">inventory.write</span>
+    <span class="keyword-badge">putaway</span>
+    <span class="keyword-badge">listener.toggle</span>
+    <span class="keyword-badge">runtime</span>
+    <span class="keyword-badge">sop</span>
+    <span class="keyword-badge">slotting</span>
+    <span class="keyword-badge">batch</span>
+  </div>
+
+  <!-- Add Permission Section -->
+  <div id="addPermSection" class="add-section" style="display:none;">
+    <div class="form-inline">
+      <label class="mr-2" for="permName"><strong>Permission Name:</strong></label>
+      <input type="text" id="permName" class="form-control mr-2" placeholder="e.g. item.write" maxlength="100"
+             onkeydown="if(event.key==='Enter') addPermission()">
+      <button class="btn btn-success mr-2" onclick="addPermission()">Save</button>
+      <button class="btn btn-secondary" onclick="cancelAddPerm()">Cancel</button>
+    </div>
+    <small class="text-muted mt-1 d-block">Use dot-notation like <code>item.write</code>, <code>lpn.write</code>, <code>admin</code>, <code>sop.manage</code>.</small>
+  </div>
+
+  <div class="scrollable-container mt-3">
+    <table class="table table-striped" data-enhance-table="true">
+      <thead class="thead-dark">
+        <tr>
+          <th>ID</th>
+          <th>Permission Name</th>
+          <th>UI Capability Triggered</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="perm : ${permissions}">
+          <td th:text="${perm.id}"></td>
+          <td><code th:text="${perm.name}"></code></td>
+          <td><small class="text-muted" th:text="${@roleManagementController.describeCapability(perm.name)}"></small></td>
+          <td th:text="${#temporals.format(perm.createdDttm, 'yyyy-MM-dd HH:mm') ?: '—'}"></td>
+          <td>
+            <button class="btn btn-danger btn-sm"
+                    th:disabled="${uiActions == null or !uiActions.manageUsers}"
+                    th:data-perm-id="${perm.id}"
+                    th:data-perm-name="${perm.name}"
+                    onclick="deletePerm(this.getAttribute('data-perm-id'), this.getAttribute('data-perm-name'))">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(permissions)}">
+          <td colspan="5" class="text-center text-muted">No permissions found. Add the first one above.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/inventory-ui/js/ui-feedback.js"></script>
+<script src="/inventory-ui/js/table-enhancements.js"></script>
+<script>
+  function showAddPermSection() {
+    document.getElementById('addPermSection').style.display = 'block';
+    document.getElementById('permName').focus();
+  }
+
+  function cancelAddPerm() {
+    document.getElementById('addPermSection').style.display = 'none';
+    document.getElementById('permName').value = '';
+  }
+
+  function addPermission() {
+    var name = document.getElementById('permName').value.trim();
+    if (!name) {
+      InventoryUI.warning('Permission name is required');
+      return;
+    }
+    axios.post('/inventory-ui/api/permissions/add', null, { params: { name: name } })
+      .then(function(res) {
+        InventoryUI.success(res.data.message);
+        setTimeout(function() { location.reload(); }, 900);
+      })
+      .catch(function(err) {
+        InventoryUI.error((err.response && err.response.data && err.response.data.error) || 'Failed to add permission');
+      });
+  }
+
+  function deletePerm(id, name) {
+    Swal.fire({
+      title: 'Delete Permission?',
+      html: 'Delete permission <strong>' + name + '</strong>?<br><small class="text-muted">It will also be removed from all roles that currently hold it.</small>',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Delete'
+    }).then(function(result) {
+      if (!result.isConfirmed) return;
+      axios.delete('/inventory-ui/api/permissions/' + id)
+        .then(function(res) {
+          InventoryUI.success('Permission deleted');
+          setTimeout(function() { location.reload(); }, 900);
+        })
+        .catch(function(err) {
+          InventoryUI.error((err.response && err.response.data && err.response.data.error) || 'Failed to delete permission');
+        });
+    });
+  }
+</script>
+</body>
+</html>

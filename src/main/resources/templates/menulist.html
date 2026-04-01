@@ -92,10 +92,6 @@ table {
 	z-index: 0; 
 
   }
-
-  .scrollable-container th {
-   
-  }
  
   .bi bi-person-circle{
 	font-size: 10px;
@@ -192,7 +188,8 @@ margin-left: 0px;
 		<h1 class="text-center">Menu List</h1>
 		<input type="hidden" id="responseMessage" th:value="${responseMessage}"></input>
 		<!-- Category table -->
-		<input style="width: 100px;" data-toggle="modal" data-target="#exampleModal" type="button" class="btn btn-primary" value="Add Menu" id="addItemButton" onclick="showButtons()">
+		<input style="width: 100px;" data-toggle="modal" data-target="#exampleModal" type="button" class="btn btn-primary" value="Add Menu" id="addItemButton" onclick="showButtons()"
+			th:disabled="${uiActions == null or !uiActions.manageMenus}">
 		<div class="scrollable-container">
 			<table class="table table-striped" data-enhance-table="true">
 				<thead class="thead-dark">
@@ -235,6 +232,7 @@ margin-left: 0px;
 								View</button>
 
 								<button style="width: 80px;"th:data-menu-id="${menu.menu_id}" th:data-menuname="${menu.menuName}"
+								th:disabled="${uiActions == null or !uiActions.manageMenus}"
 								onclick="confirmMenuDeletion(this.getAttribute('data-menu-id'),this.getAttribute('data-menuname'), true)"
 								class="btn btn-danger">Delete</button>
 						</td>
@@ -303,6 +301,7 @@ margin-left: 0px;
 				onclick="canelViewMenu()" data-dismiss="modal">Cancel</button>
                 &nbsp;
                 <button style="width: 60px;" id="saveButton" type="button" class="btn btn-primary"
+					th:disabled="${uiActions == null or !uiActions.manageMenus}"
                     onclick="saveMenu()">Save</button>
             </div>
             
@@ -311,6 +310,7 @@ margin-left: 0px;
 				onclick="canelViewEditMenu()" data-dismiss="modal">Cancel</button>
                 &nbsp;
                 <button style="width: 60px;"  type="button" class="btn btn-primary"
+					th:disabled="${uiActions == null or !uiActions.manageMenus}"
                     onclick="saveEditMenu()">Save</button>
             </div>
         </div>

@@ -113,6 +113,10 @@ public final class AppConstants {
 	}
 
 	public static final class View {
+		public static final String ROLES = "roles";
+		public static final String PERMISSIONS = "permissions";
+		public static final String ROLE_PERMISSIONS = "role-permissions";
+		public static final String MENU_ACCESS_MGMT = "menu-access";
 		public static final String CATEGORY = "category";
 		public static final String ENDPOINT = "endpoint";
 		public static final String ITEM = "item";
