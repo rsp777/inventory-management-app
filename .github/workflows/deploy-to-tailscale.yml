@@ -47,6 +47,47 @@ jobs:
           distribution: 'temurin'
           cache: maven
       
+      - name: Create Maven Settings
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+            
+            <servers>
+              <server>
+                <id>custom-repo</id>
+                <username>${{ secrets.MAVEN_REPO_USERNAME }}</username>
+                <password>${{ secrets.MAVEN_REPO_PASSWORD }}</password>
+              </server>
+            </servers>
+            
+            <profiles>
+              <profile>
+                <id>custom-profile</id>
+                <repositories>
+                  <repository>
+                    <id>custom-repo</id>
+                    <url>${{ secrets.MAVEN_REPO_URL }}</url>
+                    <releases>
+                      <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                      <enabled>true</enabled>
+                    </snapshots>
+                  </repository>
+                </repositories>
+              </profile>
+            </profiles>
+            
+            <activeProfiles>
+              <activeProfile>custom-profile</activeProfile>
+            </activeProfiles>
+          </settings>
+          EOF
+      
       - name: Build with Maven
         id: build
         run: |
