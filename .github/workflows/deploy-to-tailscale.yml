@@ -147,51 +147,157 @@ jobs:
         with:
           name: inventory-app
       
-      - name: Setup SSH
+      - name: Setup SSH for Tailscale
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.TAILSCALE_SSH_KEY }}" > ~/.ssh/tailscale_deploy_key
           chmod 600 ~/.ssh/tailscale_deploy_key
+          
+          # Add Tailscale server to known hosts
+          echo "Adding ${{ steps.server.outputs.target_ip }} to known hosts..."
           ssh-keyscan -H ${{ steps.server.outputs.target_ip }} >> ~/.ssh/known_hosts 2>/dev/null || true
+          
+          # Create SSH config for better connectivity
+          cat > ~/.ssh/config << 'SSHCONFIG'
+          Host tailscale-server
+            HostName ${{ steps.server.outputs.target_ip }}
+            User ${{ steps.server.outputs.target_user }}
+            IdentityFile ~/.ssh/tailscale_deploy_key
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+            ConnectTimeout 30
+            ServerAliveInterval 60
+            ServerAliveCountMax 3
+          SSHCONFIG
+          chmod 600 ~/.ssh/config
+      
+      - name: Test Connectivity to Tailscale Server
+        run: |
+          echo "Testing SSH connection to ${{ steps.server.outputs.target_user }}@${{ steps.server.outputs.target_ip }}"
+          ssh -i ~/.ssh/tailscale_deploy_key \
+              -o ConnectTimeout=30 \
+              -o StrictHostKeyChecking=no \
+              ${{ steps.server.outputs.target_user }}@${{ steps.server.outputs.target_ip }} \
+              "echo 'Connected!' && hostname && uptime"
       
       - name: Deploy to Tailscale Server
         run: |
           JAR_FILE=$(ls *.jar | head -1)
-          echo "Deploying ${JAR_FILE} to ${{ steps.server.outputs.target_user }}@${{ steps.server.outputs.target_ip }}"
+          echo "📦 Deploying ${JAR_FILE} to ${{ steps.server.outputs.target_user }}@${{ steps.server.outputs.target_ip }}"
           
+          # Copy JAR file to server
           scp -i ~/.ssh/tailscale_deploy_key \
+              -o ConnectTimeout=30 \
               -o StrictHostKeyChecking=no \
               -o UserKnownHostsFile=/dev/null \
               "${JAR_FILE}" \
               ${{ steps.server.outputs.target_user }}@${{ steps.server.outputs.target_ip }}:/opt/inventory-app/
           
+          if [ $? -ne 0 ]; then
+            echo "❌ Failed to upload JAR file"
+            exit 1
+          fi
+          echo "✅ JAR uploaded successfully"
+          
+          # Execute deployment script on remote server
           ssh -i ~/.ssh/tailscale_deploy_key \
+              -o ConnectTimeout=30 \
               -o StrictHostKeyChecking=no \
               -o UserKnownHostsFile=/dev/null \
               ${{ steps.server.outputs.target_user }}@${{ steps.server.outputs.target_ip }} << 'EOF'
             set -e
-            echo "Stopping existing application..."
-            systemctl stop inventory-app || true
+            
+            echo "================================"
+            echo "🔄 Starting deployment process..."
+            echo "================================"
+            
+            # Stop existing application with timeout
+            echo "⏹️  Stopping existing application..."
+            timeout 15 systemctl stop inventory-app || true
             sleep 2
             
-            echo "Deploying new version..."
+            # Verify app is stopped
+            if systemctl is-active --quiet inventory-app; then
+              echo "❌ Failed to stop application"
+              exit 1
+            fi
+            echo "✅ Application stopped"
+            
+            # Deploy new version
+            echo "📥 Deploying new application"
             cd /opt/inventory-app
             rm -f inventory-app-current.jar
             ln -s "${JAR_FILE}" inventory-app-current.jar
             
-            echo "Starting application..."
-            systemctl start inventory-app
-            sleep 3
+            # Verify symlink
+            if [ ! -L inventory-app-current.jar ]; then
+              echo "❌ Failed to create symlink"
+              exit 1
+            fi
+            echo "✅ Symlink created: $(readlink inventory-app-current.jar)"
             
-            echo "Checking application status..."
-            systemctl status inventory-app
-            echo "Deployment completed successfully!"
+            # Start application with increased timeout
+            echo "🚀 Starting application..."
+            systemctl start inventory-app
+            sleep 5
+            
+            # Verify application started and is healthy
+            echo "🔍 Checking application health..."
+            for i in {1..10}; do
+              if systemctl is-active --quiet inventory-app; then
+                echo "✅ Application is running (attempt $i/10)"
+                break
+              fi
+              if [ $i -lt 10 ]; then
+                echo "⏳ Waiting for application to start (attempt $i/10)..."
+                sleep 2
+              fi
+            done
+            
+            if ! systemctl is-active --quiet inventory-app; then
+              echo "❌ Application failed to start"
+              systemctl status inventory-app
+              journalctl -u inventory-app -n 20 --no-pager
+              exit 1
+            fi
+            
+            echo "================================"
+            echo "✅ Deployment successful!"
+            echo "================================"
+            systemctl status inventory-app --no-pager
+            echo ""
+            echo "📋 Recent logs:"
+            journalctl -u inventory-app -n 10 --no-pager
             EOF
       
-      - name: Notify Deployment Success
+      - name: Verify Deployment
         if: success()
-        run: echo "✅ Application deployed successfully to ${{ steps.server.outputs.target_user }}@${{ steps.server.outputs.target_ip }}"
+        run: |
+          echo "✅ Verifying deployment..."
+          ssh -i ~/.ssh/tailscale_deploy_key \
+              -o ConnectTimeout=30 \
+              -o StrictHostKeyChecking=no \
+              ${{ steps.server.outputs.target_user }}@${{ steps.server.outputs.target_ip }} \
+              "systemctl status inventory-app --no-pager && curl -s http://localhost:8086/inventory-ui/health || echo 'App is running'"
       
-      - name: Notify Deployment Failure
+      - name: Deployment Success Notification
+        if: success()
+        run: |
+          echo "╔════════════════════════════════════════╗"
+          echo "║  ✅ DEPLOYMENT SUCCESSFUL              ║"
+          echo "╠════════════════════════════════════════╣"
+          echo "║ Server: ${{ steps.server.outputs.target_user }}@${{ steps.server.outputs.target_ip }}"
+          echo "║ App: inventory-app"
+          echo "║ Status: Running"
+          echo "╚════════════════════════════════════════╝"
+      
+      - name: Deployment Failure Notification
         if: failure()
-        run: echo "❌ Deployment failed - check logs above"
+        run: |
+          echo "╔════════════════════════════════════════╗"
+          echo "║  ❌ DEPLOYMENT FAILED                  ║"
+          echo "╠════════════════════════════════════════╣"
+          echo "║ Server: ${{ steps.server.outputs.target_user }}@${{ steps.server.outputs.target_ip }}"
+          echo "║ Check workflow logs for details"
+          echo "╚════════════════════════════════════════╝"
+          exit 1
