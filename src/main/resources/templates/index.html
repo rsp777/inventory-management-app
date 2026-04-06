@@ -2,210 +2,358 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
     <title>Warehouse Management System - Login</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
     />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
     />
     <style>
-      /* Add some basic styling to make it look better */
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f5f5f5;
+      :root {
+        --bg-1: #f5efe4;
+        --bg-2: #d7e7f2;
+        --ink-900: #1f2933;
+        --ink-700: #334e68;
+        --ink-500: #627d98;
+        --card: #fffefb;
+        --accent: #0f766e;
+        --accent-2: #0369a1;
+        --ring: rgba(15, 118, 110, 0.28);
+        --error-bg: #fde8e8;
+        --error-border: #f8b4b4;
+        --error-text: #9b1c1c;
       }
 
-      .container {
-        max-width: 500px;
-        margin: 40px auto;
-        padding: 20px;
-        background-color: #fff;
-        border: 1px solid #ddd;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "DM Sans", sans-serif;
+        color: var(--ink-900);
+        background: radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0) 38%),
+          radial-gradient(circle at 84% 14%, rgba(56, 189, 248, 0.17) 0%, rgba(56, 189, 248, 0) 34%),
+          linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      }
+
+      .login-shell {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 28px;
+      }
+
+      .login-card {
+        width: min(960px, 100%);
+        background: var(--card);
+        border-radius: 22px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 1.05fr 1fr;
+      }
+
+      .brand-pane {
+        padding: 42px 36px;
+        background: linear-gradient(165deg, #e6f4f1 0%, #e0ecf8 48%, #f8fafc 100%);
+        border-right: 1px solid rgba(148, 163, 184, 0.3);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 18px;
+      }
+
+      .logo-wrap {
+        width: 70px;
+        height: 70px;
+        border-radius: 18px;
+        background: #ffffff;
+        border: 1px solid rgba(15, 118, 110, 0.22);
+        display: grid;
+        place-items: center;
+        box-shadow: 0 8px 24px rgba(15, 118, 110, 0.14);
       }
 
       .logo {
-        width: 100px;
-        height: 100px;
-        margin: 20px auto;
-        display: block;
+        width: 52px;
+        height: 52px;
+        object-fit: contain;
       }
 
-      .form-group {
-        margin-bottom: 20px;
+      .brand-title {
+        margin: 0;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 30px;
+        line-height: 1.12;
+        letter-spacing: -0.02em;
+      }
+
+      .brand-subtitle {
+        margin: 10px 0 0;
+        color: var(--ink-700);
+        font-size: 15px;
+        line-height: 1.55;
+      }
+
+      .brand-chip {
+        width: fit-content;
+        margin-top: 14px;
+        padding: 7px 12px;
+        border-radius: 999px;
+        background: rgba(15, 118, 110, 0.12);
+        color: #0b5f58;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .brand-footnote {
+        margin: 0;
+        color: var(--ink-500);
+        font-size: 13px;
+      }
+
+      .form-pane {
+        padding: 42px 36px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .form-title {
+        margin: 0;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 29px;
+      }
+
+      .form-subtitle {
+        margin: 8px 0 24px;
+        color: var(--ink-500);
+        font-size: 15px;
       }
 
       .form-control {
-        height: 40px;
-        padding: 10px;
-        font-size: 16px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        transition: border-color 0.2s ease-in-out;
+        height: 46px;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.7);
+        background-color: #ffffff;
+        font-size: 15px;
+        padding: 10px 14px;
+        transition: all 0.2s ease;
       }
 
       .form-control:focus {
-        border-color: #337ab7;
-        box-shadow: 0 0 10px rgba(51, 122, 183, 0.5);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px var(--ring);
       }
 
       .form-label {
-        font-size: 14px;
-        color: #333;
-        margin-bottom: 5px;
-        display: block;
-        font-weight: bold;
+        font-size: 13px;
+        color: var(--ink-700);
+        margin-bottom: 7px;
+        font-weight: 700;
+        letter-spacing: 0.01em;
       }
 
-      .form-label::after {
-        content: ":";
-        margin-left: 5px;
-        color: #666;
+      .input-icon-group {
+        position: relative;
+      }
+
+      .input-icon-group .form-control {
+        padding-left: 40px;
+      }
+
+      .input-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--ink-500);
+        font-size: 14px;
+        pointer-events: none;
       }
 
       .btn-primary {
         width: 100%;
-        font-size: 18px;
-        padding: 10px 20px;
-        margin-bottom: 20px;
+        height: 46px;
+        border-radius: 12px;
+        border: none;
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: 0.02em;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        box-shadow: 0 12px 28px rgba(14, 116, 144, 0.3);
+        transition: transform 0.16s ease, box-shadow 0.16s ease;
       }
 
-      .forgot-password {
-        font-size: 14px;
-        color: #337ab7;
-        text-decoration: none;
+      .btn-primary:hover,
+      .btn-primary:focus {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 30px rgba(14, 116, 144, 0.34);
       }
 
-      .forgot-password:hover {
-        color: #23527c;
-        text-decoration: underline;
-      }
-
-      /* Add some hover effects to the textfields */
-      .form-control:hover {
-        border-color: #aaa;
-      }
-
-      /* Add some active effects to the textfields */
-      .form-control:active {
-        border-color: #337ab7;
-        box-shadow: 0 0 10px rgba(51, 122, 183, 0.5);
-      }
-
-      /* Make it responsive */
-      @media (max-width: 768px) {
-        .container {
-          margin: 20px auto;
-          padding: 15px;
-        }
-        .logo {
-          width: 80px;
-          height: 80px;
-        }
-        .form-control {
-          height: 35px;
-          padding: 8px;
-          font-size: 14px;
-        }
-        .btn-primary {
-          font-size: 16px;
-          padding: 8px 15px;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .container {
-          margin: 10px auto;
-          padding: 10px;
-        }
-        .logo {
-          width: 60px;
-          height: 60px;
-        }
-        .form-control {
-          height: 30px;
-          padding: 6px;
-          font-size: 12px;
-        }
-        .btn-primary {
-          font-size: 14px;
-          padding: 6px 10px;
-        }
-      }
       .error-message {
-        background-color: #ffe6e6;
-        border: 1px solid #ff9999;
-        border-radius: 5px;
-        padding: 10px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        font-size: 16px;
-        color: #cc0000;
+        background-color: var(--error-bg);
+        border: 1px solid var(--error-border);
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 13px;
+        color: var(--error-text);
         display: flex;
         align-items: center;
+        margin-bottom: 16px;
       }
 
       .error-icon {
         margin-right: 10px;
-        font-size: 24px;
-        color: red; /* Set the icon color to red */
+        color: var(--error-text);
       }
 
       .error-text {
-        font-weight: bold; /* Make the error message bold */
+        margin: 0;
+        font-weight: 700;
+      }
+
+      .support-text {
+        margin-top: 16px;
+        color: var(--ink-500);
+        font-size: 12px;
+        text-align: center;
+      }
+
+      @media (max-width: 900px) {
+        .login-card {
+          grid-template-columns: 1fr;
+        }
+
+        .brand-pane {
+          border-right: none;
+          border-bottom: 1px solid rgba(148, 163, 184, 0.28);
+          padding: 28px;
+          gap: 10px;
+        }
+
+        .brand-title {
+          font-size: 24px;
+        }
+
+        .form-pane {
+          padding: 28px;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .login-shell {
+          padding: 14px;
+        }
+
+        .login-card {
+          border-radius: 18px;
+        }
+
+        .form-pane,
+        .brand-pane {
+          padding: 20px;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <!-- Add your logo here -->
-      <img src="/inventory-ui/images/logo.jpeg" alt="Logo" class="logo mb-4" />
+    <div class="login-shell">
+      <main class="login-card" role="main" aria-label="Login panel">
+        <section class="brand-pane" aria-label="Brand information">
+          <div>
+            <div class="logo-wrap">
+              <img src="/inventory-ui/images/logo.jpeg" alt="Logo" class="logo" />
+            </div>
+            <h1 class="brand-title">Inventory Management</h1>
+            <p class="brand-subtitle">
+              Secure access portal for warehouse operations, cycle counts, and role-based inventory workflows.
+            </p>
+            <span class="brand-chip">Warehouse Ops</span>
+          </div>
+          <p class="brand-footnote">Use your assigned credentials to continue.</p>
+        </section>
 
-      <form th:action="@{/api/signIn}" method="post">
-        <h1 class="text-center">Warehouse Management System - Login</h1>
+        <section class="form-pane" aria-label="Sign in form">
+          <h2 class="form-title">Welcome Back</h2>
+          <p class="form-subtitle">Sign in to continue to your workspace.</p>
 
-        <div class="form-group">
-          <label for="username" class="form-label">Username</label>
-          <input
-            type="text"
-            class="form-control"
-            id="username"
-            name="username"
-            placeholder="Enter your username"
-            required
-          />
-        </div>
+          <form th:action="@{/api/signIn}" method="post">
+            <div th:if="${invalidCredMessage}" class="error-message" role="alert">
+              <span class="error-icon"><i class="fa fa-exclamation-triangle"></i></span>
+              <p class="error-text" th:text="${invalidCredMessage}"></p>
+            </div>
 
-        <div class="form-group">
-          <label for="password" class="form-label">Password</label>
-          <input
-            type="password"
-            class="form-control"
-            id="password"
-            name="password"
-            placeholder="Enter your password"
-            required
-          />
-        </div>
-        <div
-          th:if="${invalidCredMessage}"
-          class="error-message alert alert-danger"
-        >
-          <span class="error-icon">&#9888;</span>
-          <p class="error-text" th:text="${invalidCredMessage}"></p>
-        </div>
-        <!-- Add a Remember Me checkbox -->
-        <div class="form-group form-check">
-          <input type="checkbox" class="form-check-input" id="rememberMe" />
-          <label class="form-check-label" for="rememberMe">Remember Me</label>
-        </div>
+            <div class="form-group">
+              <label for="username" class="form-label">Username</label>
+              <div class="input-icon-group">
+                <span class="input-icon"><i class="fa fa-user"></i></span>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="username"
+                  name="username"
+                  placeholder="Enter username"
+                  autocomplete="username"
+                  required
+                />
+              </div>
+            </div>
 
-        <button type="submit" class="btn btn-primary">Login</button>
+            <div class="form-group">
+              <label for="password" class="form-label">Password</label>
+              <div class="input-icon-group">
+                <span class="input-icon"><i class="fa fa-lock"></i></span>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="password"
+                  name="password"
+                  placeholder="Enter password"
+                  autocomplete="current-password"
+                  required
+                />
+              </div>
+            </div>
 
-        <!-- Add a Forgot Password link -->
-        <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
-      </form>
+            <!--
+            Future auth-service support:
+            <div class="meta-row">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="rememberMe" />
+                <label class="form-check-label" for="rememberMe">Remember me</label>
+              </div>
+              <a href="/forgot-password" class="forgot-password">Forgot password?</a>
+            </div>
+            -->
+
+            <button type="submit" class="btn btn-primary">Sign In</button>
+            <p class="support-text">If you cannot access your account, contact system support.</p>
+          </form>
+        </section>
+      </main>
     </div>
   </body>
 </html>

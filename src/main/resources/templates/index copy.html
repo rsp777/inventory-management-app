@@ -195,16 +195,17 @@
           <span class="error-icon">&#9888;</span>
           <p class="error-text" th:text="${invalidCredMessage}"></p>
         </div>
-        <!-- Add a Remember Me checkbox -->
+
+        <!--
+        Future auth-service support:
         <div class="form-group form-check">
           <input type="checkbox" class="form-check-input" id="rememberMe" />
           <label class="form-check-label" for="rememberMe">Remember Me</label>
         </div>
+        <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
+        -->
 
         <button type="submit" class="btn btn-primary">Login</button>
-
-        <!-- Add a Forgot Password link -->
-        <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
       </form>
     </div>
   </body>
