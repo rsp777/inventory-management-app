@@ -1,11 +1,10 @@
 package com.pawar.inventory.app.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import com.pawar.inventory.app.exception.base.BaseException;
 
-@ResponseStatus(HttpStatus.BAD_REQUEST)
-public class MenuNotFoundException extends Exception {
+public class MenuNotFoundException extends BaseException {
 	public MenuNotFoundException(String message) {
-        super(message);
+		super(message, HttpStatus.NOT_FOUND, "MENU_NOT_FOUND");
     }
 }

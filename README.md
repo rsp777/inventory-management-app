@@ -1,93 +1,237 @@
 # Inventory Management App
 
+Inventory Management App is a Spring Boot 3 backend and server-rendered UI for warehouse inventory operations, including LPN management, item and category management, location management, inquiry screens, putaway workflows, user access, and operational health endpoints.
 
+## Highlights
 
-## Getting started
+- Multi-domain inventory operations: LPN, item, category, location, inventory, settings, and SOP flows
+- Spring MVC + Thymeleaf UI with REST-style endpoints under a shared context path
+- MySQL-backed persistence with JPA and custom repository adapters
+- Actuator health and build metadata endpoints
+- Test configuration with in-memory H2 database for repeatable local test runs
+- Listener and endpoint management UI with runtime health visibility
+- Kafka listener enable/disable support with local and remote control sync
+- Bulk listener actions with partial-success reporting and realtime status refresh
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Tech Stack
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+- Java 17
+- Spring Boot 3.1.12
+- Spring MVC, Spring Data JPA, Spring Data JDBC
+- Thymeleaf
+- MySQL 8 connector
+- Maven
+- JUnit 5 (Spring Boot Starter Test)
+- H2 (test scope)
 
-## Add your files
+## Project Structure
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+- src/main/java/com/pawar/inventory/app
+  - controller: web and API controllers
+  - service: domain services and base services
+  - repository: Spring Data repositories and custom implementations
+  - model: JPA entities
+  - dto: request and response DTOs
+- src/main/resources
+  - application.properties
+  - templates
+  - static
+- src/test/java
+  - controller and context tests
+- src/test/resources
+  - test application.properties (H2-based)
 
-```
-cd existing_repo
-git remote add origin https://gitlab.com/rsp777/inventory-management-app.git
-git branch -M main
-git push -uf origin main
-```
+## Prerequisites
 
-## Integrate with your tools
+- Java 17+
+- Maven 3.8+
+- MySQL (for local runtime outside tests)
 
-- [ ] [Set up project integrations](https://gitlab.com/rsp777/inventory-management-app/-/settings/integrations)
+## Configuration
 
-## Collaborate with your team
+Primary runtime settings are in src/main/resources/application.properties.
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+Important defaults in this repository:
 
-## Test and Deploy
+- Port: 8086
+- Context path: /inventory-ui
+- Datasource URL: jdbc:mysql://100.66.109.82:3306/menu
+- Actuator endpoints exposed: management.endpoints.web.exposure.include=*
 
-Use the built-in continuous integration in GitLab.
+Recommended local override:
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+1. Keep repository defaults untouched.
+2. Create an environment-specific override (for example, using JVM system properties or Spring profile file) for:
+   - spring.datasource.url
+   - spring.datasource.username
+   - spring.datasource.password
+   - external.api.url
 
-***
+Listener runtime control settings:
 
-# Editing this README
+- listener.runtime.monitor.enabled=true
+- listener.runtime.monitor.interval-ms=30000
+- listener.runtime.connect-timeout-ms=2000
+- listener.runtime.control-enabled=true
+- listener.runtime.control-base-urls=inventory-management-system=http://localhost:8085,inventory-management-app=http://localhost:8086
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+The `listener.runtime.control-base-urls` property supports:
 
-## Suggestions for a good README
+- `key=value` mappings for service-based listener control
+- plain URLs, which are auto-mapped as `service1`, `service2`, and so on
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+## Build
 
-## Name
-Choose a self-explaining name for your project.
+Run a full build:
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+mvn clean package
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+Build output:
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+- target/*.jar
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+## Run Locally
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+Run from Maven:
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+mvn spring-boot:run
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+Or run jar directly:
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+java -jar target/inventory-management-app-*.jar
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+Application base URL:
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+- http://localhost:8086/inventory-ui
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+## Test
+
+Run all tests:
+
+mvn test
+
+Run full package with tests:
+
+mvn clean package
+
+Notes:
+
+- Test configuration uses H2 in-memory datasource from src/test/resources/application.properties.
+- Kafka autoconfiguration is disabled in tests.
+
+## Manual Smoke Checks
+
+Health endpoint:
+
+- http://localhost:8086/inventory-ui/actuator/health
+
+Example checks (PowerShell):
+
+Invoke-WebRequest -UseBasicParsing http://localhost:8086/inventory-ui/actuator/health
+Invoke-WebRequest -UseBasicParsing http://localhost:8086/inventory-ui/api/auth/index
+Invoke-WebRequest -UseBasicParsing http://localhost:8086/inventory-ui/settings
+Invoke-WebRequest -UseBasicParsing http://localhost:8086/inventory-ui/lpn/create
+
+## API and UI Notes
+
+- Many compatibility routes in MenuController redirect to focused domain controllers.
+- Main user-facing pages are Thymeleaf templates under src/main/resources/templates.
+- OpenAPI dependency is present (springdoc), so Swagger UI can be enabled/used based on runtime config.
+
+### Listener Management UI
+
+The endpoint/listener page now includes:
+
+- realtime listener runtime refresh every 10 seconds
+- runtime status badges: `connected`, `disconnected`, `disabled`, `unknown`
+- bulk actions: `Enable Selected`, `Disable Selected`, `Enable All`, `Disable All`
+- partial-success bulk result summaries with failed and skipped item details
+- selection persistence across search, filter changes, and realtime refreshes
+- listener copy support and service-key based remote-control routing
+
+### Endpoint Read Model
+
+Endpoint records shown in the UI are derived from menu definitions and exposed through `/inventory-ui/api/endpoints`.
+They are intended as an operational read view, not a separate editable endpoint registry.
+
+## Container and Deployment
+
+### Docker
+
+A Dockerfile is included and exposes port 8086.
+
+Build image:
+
+docker build -t inventory-management-app .
+
+Run container:
+
+docker run -p 8086:8086 inventory-management-app
+
+Note: Ensure Dockerfile jar name matches actual generated jar in target.
+
+### Kubernetes
+
+- deployment.yaml
+- service.yaml
+- kustomization.yaml
+
+Apply manifests:
+
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+
+## CI
+
+A Jenkinsfile is included with stages:
+
+- Preparation
+- Build (mvn clean package)
+- Archive Artifacts (target/*.jar)
+
+## Branching Strategy
+
+Recommended workflow for this repository:
+
+- `main`: production-approved baseline only
+- `Dev_v2.6`: current stable integration branch for the Dev_v2.6 release line
+- feature branches created from `Dev_v2.6` for isolated work
+
+Suggested branch naming:
+
+- `feature/listener-management-ui`
+- `feature/ui-foundation`
+- `feature/common-table-ux`
+- `feature/role-aware-actions`
+- `feature/saved-filters`
+
+Branching rule:
+
+1. create feature branches from `Dev_v2.6`
+2. keep `Dev_v2.6` merge-ready and stable
+3. merge tested features back into `Dev_v2.6`
+4. promote `Dev_v2.6` to `main` only after validation
+
+## Troubleshooting
+
+- Port in use:
+  - change server.port or stop the process using 8086
+- Database connection errors:
+  - verify datasource URL, credentials, and network access
+- External API dependency errors:
+  - verify external.api.url and timeout settings
+- Build/test failures:
+  - start with mvn clean package and inspect target/surefire-reports
+
+## Documentation
+
+Additional project documentation is available in repository root, including:
+
+- REFACTORING_GUIDE.md
+- PROGRAM_STATUS.md
+- GENERALIZED_MIGRATION_PHASES.md
+- COMPLETION_REPORT.md
 
 ## License
-For open source projects, say how it is licensed.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+No license file is currently defined in this repository.

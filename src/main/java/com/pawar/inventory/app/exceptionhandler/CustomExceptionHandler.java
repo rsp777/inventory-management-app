@@ -1,51 +1,76 @@
 package com.pawar.inventory.app.exceptionhandler;
 
-import java.util.logging.Logger;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import com.pawar.inventory.app.exception.UnauthorizedException;
+import com.pawar.inventory.app.exception.ErrorResponse;
+import com.pawar.inventory.app.exception.base.BaseException;
 import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.app.service.MenuService;
+import com.pawar.inventory.app.service.MenuAccessService;
+import com.pawar.inventory.app.service.base.TokenService;
+import com.pawar.inventory.app.util.SessionUtil;
 
 import jakarta.servlet.http.HttpSession;
 
 @ControllerAdvice
 public class CustomExceptionHandler {
 
-	private final static Logger logger = Logger.getLogger(CustomExceptionHandler.class.getName());
+	private final static Logger logger = LoggerFactory.getLogger(CustomExceptionHandler.class);
 
-	MenuService menuService;
+    private final MenuService menuService;
+    private final MenuAccessService menuAccessService;
+    private final TokenService tokenService;
 
-	CustomExceptionHandler(MenuService menuService) {
+	CustomExceptionHandler(MenuService menuService, MenuAccessService menuAccessService, TokenService tokenService) {
 		this.menuService = menuService;
+		this.menuAccessService = menuAccessService;
+        this.tokenService = tokenService;
 	}
 
-	@ExceptionHandler(UnauthorizedException.class)
-	@ResponseStatus(HttpStatus.UNAUTHORIZED)
-	public ResponseEntity<String> handleUnauthorizedException(UnauthorizedException ex) {
-		// Customize the response (e.g., return an error message)
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
-	}
+    @ExceptionHandler(BaseException.class)
+    public ResponseEntity<ErrorResponse> handleBaseException(BaseException ex) {
+        logger.error("Base exception: {}", ex.getMessage());
+
+        ErrorResponse error = new ErrorResponse(
+            ex.getHttpStatus().value(),
+            ex.getHttpStatus().getReasonPhrase(),
+            ex.getMessage(),
+            ex.getTimestamp()
+        );
+
+        return new ResponseEntity<>(error, ex.getHttpStatus());
+    }
 
 	@ModelAttribute("user_name")
 	public String getUserName(HttpSession httpSession) {
-		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
-		if (decodedToken != null) {
-			DecodedJWT decodedJWT = JWT.decode(decodedToken);
-			String[] decodedString = decodedJWT.getSubject().split("\\|");
-			String user_name = decodedString[0];
-			logger.info("Username : " + user_name);
-			return user_name;
-		} else {
-			return "unknown user";
-		}
+        String sessionUserName = SessionUtil.getSessionUserName(httpSession);
+        if (sessionUserName != null && !sessionUserName.isBlank()) {
+            return sessionUserName;
+        }
+
+        String token = SessionUtil.getSessionToken(httpSession);
+        if (token != null && !token.isBlank()) {
+            String decodedUserName = tokenService.getUserName(token);
+            if (decodedUserName != null && !decodedUserName.isBlank()) {
+                return decodedUserName;
+            }
+        }
+
+        return "unknown user";
 	}
 
 	@ModelAttribute("logout_url")
@@ -59,4 +84,49 @@ public class CustomExceptionHandler {
 		Menu menuLogout = menuService.getMenu("Settings");
 		return menuLogout;
 	}
+
+    @ModelAttribute("current_user_roles")
+    public Set<String> getCurrentUserRoles(HttpSession httpSession) {
+        String token = SessionUtil.getSessionToken(httpSession);
+        return menuAccessService.getRoleNames(token);
+    }
+
+    @ModelAttribute("uiActions")
+    public Map<String, Boolean> getUiActions(HttpSession httpSession) {
+        String token = SessionUtil.getSessionToken(httpSession);
+        return menuAccessService.getUiActions(token);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        logger.error("Method argument validation failed");
+        
+        List<String> errors = ex.getBindingResult()
+            .getFieldErrors()
+            .stream()
+            .map(error -> error.getField() + ": " + error.getDefaultMessage())
+            .collect(Collectors.toList());
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", HttpStatus.BAD_REQUEST.value());
+        response.put("error", "Validation Failed");
+        response.put("errors", errors);
+        response.put("timestamp", LocalDateTime.now());
+        
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+    
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+        logger.error("Unexpected error occurred", ex);
+        
+        ErrorResponse error = new ErrorResponse(
+            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            "Internal Server Error",
+            "An unexpected error occurred. Please try again later.",
+            LocalDateTime.now()
+        );
+        
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

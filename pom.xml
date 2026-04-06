@@ -7,11 +7,10 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.1.12</version>
-		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.pawar.inventory.app</groupId>
 	<artifactId>inventory-management-app</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>Dev_v2.6-feature-role-aware-actions</version>
 	<packaging>jar</packaging>
 	<name>inventory-management-app</name>
 	<description>inventory-management-app</description>
@@ -21,12 +20,17 @@
 		<deploy.wildfly.port>9990</deploy.wildfly.port>
 		<deploy.wildfly.username>ravi</deploy.wildfly.username>
 		<deploy.wildfly.password>ravi</deploy.wildfly.password>
-		<java.version>17</java.version>
 		<jacoco.version>0.8.11</jacoco.version>
 
-		
+
+		<springdoc.version>2.5.0</springdoc.version>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${springdoc.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.jacoco</groupId>
 			<artifactId>jacoco-maven-plugin</artifactId>
@@ -87,16 +91,12 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 			<exclusions>
 				<exclusion>
-					<groupId>ch.qos.logback</groupId>
-					<artifactId>logback-classic</artifactId>
-				</exclusion>
-				<exclusion>
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-starter-tomcat</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
-
+			
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -126,9 +126,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
 		</dependency>
+		
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
@@ -150,7 +152,11 @@
 			<artifactId>jakarta.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>com.pawar.inventory</groupId>
+			<artifactId>sop-http2</artifactId>
+			<version>Dev_v2.1</version>
+		</dependency>
 	</dependencies>
 	<distributionManagement>
 		<!--<repository>
@@ -180,6 +186,19 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+						<configuration>
+							<additionalProperties>
+								<java.version>${java.version}</java.version>
+								<project.version>${project.version}</project.version>
+							</additionalProperties>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<!-- <plugin>
 				<groupId>org.wildfly.plugins</groupId>
@@ -200,7 +219,18 @@
 					<username>${deploy.wildfly.username}</username>
 					<password>${deploy.wildfly.password}</password>
 				</configuration>
-			</plugin> -->
+			</plugin> 
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>  -->
 		</plugins>
 	</build>
 </project>

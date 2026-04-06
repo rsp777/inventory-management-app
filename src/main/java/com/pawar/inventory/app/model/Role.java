@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -19,7 +18,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -81,7 +79,7 @@ public class Role {
 		super();
 		this.role_id = role_id;
 		this.name = name;
-		this.menus = this.menus;
+		this.menus = menus;
 		this.permissions = permissions;
 		this.createdDttm = createdDttm;
 		this.lastUpdatedDttm = lastUpdatedDttm;

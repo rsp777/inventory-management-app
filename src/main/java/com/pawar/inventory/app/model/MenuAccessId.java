@@ -8,7 +8,6 @@ public class MenuAccessId implements Serializable {
 	private int menuId;
 
 	public MenuAccessId() {
-		// TODO Auto-generated constructor stub
 	}
 
 	public MenuAccessId(Integer roleId, int menuId) {

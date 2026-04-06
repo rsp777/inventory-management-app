@@ -1,899 +1,1035 @@
 package com.pawar.inventory.app.controller;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-
-import java.util.logging.Logger;
-
 import org.apache.http.client.ClientProtocolException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.thymeleaf.context.LazyContextVariable;
 
-import com.auth0.jwt.exceptions.JWTDecodeException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pawar.inventory.app.exception.MenuNotFoundException;
-import com.pawar.inventory.app.exception.ParentMenuNotFoundException;
-import com.pawar.inventory.app.exception.UnauthorizedException;
-import com.pawar.inventory.app.model.Menu;
+import com.pawar.inventory.app.config.AppConstants;
+import com.pawar.inventory.app.dto.CategoryRequestDTO;
+import com.pawar.inventory.app.dto.ItemRequestDTO;
+import com.pawar.inventory.app.dto.MenuActiveLpnRequestDTO;
+import com.pawar.inventory.app.dto.MenuBatchRequestDTO;
+import com.pawar.inventory.app.dto.MenuCheckActiveInventoryRequestDTO;
+import com.pawar.inventory.app.dto.MenuEligibleUpcsRequestDTO;
+import com.pawar.inventory.app.dto.MenuLocationRequestDTO;
+import com.pawar.inventory.app.dto.MenuLocationRangeRequestDTO;
+import com.pawar.inventory.app.dto.MenuLpnCreateRequestDTO;
+import com.pawar.inventory.app.dto.MenuLpnEditRequestDTO;
+import com.pawar.inventory.app.dto.MenuReserveLpnRequestDTO;
+import com.pawar.inventory.app.dto.MenuUserAddRequestDTO;
+import com.pawar.inventory.app.model.CubiscanLog;
 import com.pawar.inventory.app.model.ResponseMessage;
 import com.pawar.inventory.app.service.MenuAccessService;
 import com.pawar.inventory.app.service.MenuService;
+import com.pawar.inventory.app.service.NavigationService;
+import com.pawar.inventory.app.service.PermissionService;
+import com.pawar.inventory.app.service.RoleService;
+import com.pawar.inventory.app.util.SessionUtil;
 import com.pawar.inventory.entity.Category;
-import com.pawar.inventory.entity.Inventory;
-import com.pawar.inventory.entity.Item;
-import com.pawar.inventory.entity.Location;
-import com.pawar.inventory.entity.Lpn;
+import com.pawar.inventory.entity.SopActionTypeDto;
+import com.pawar.inventory.entity.SopLocationRangeDto;
 import com.pawar.todo.dto.UserDto;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/api")
-// @EnableJpaRepositories
-@EnableJdbcRepositories
+
+@Tag(name = "Menu API", description = "API for managing menus")
 public class MenuController {
-	private final static Logger logger = Logger.getLogger(MenuController.class.getName());
-
-	@Autowired
-	private MenuService menuService;
-
-	@Autowired
-	private MenuAccessService menuAccessService;
-
-	@GetMapping("/index")
-	public String index(Model model) {
-
-		return "index";
-	}
-
-	@PostMapping("/addMenu")
-	public ResponseEntity<?> addMenu(@RequestParam String newProtocol, @RequestParam String newMenuName,
-			@RequestParam String newMenuLink, @RequestParam String newHostname, @RequestParam String newMenuType,
-			@RequestParam String newParentMenuName) {
-		logger.info("New Protocol : " + newProtocol);
-		logger.info("New Menu : " + newMenuName);
-		logger.info("New Menu Link : " + newMenuLink);
-		logger.info("New Hostname  : " + newHostname);
-		logger.info("New Menu Type : " + newMenuType);
-		logger.info("Parent Menu : " + newParentMenuName);
-
-		Menu newMenu;
-
-		newMenu = menuService.addMenu(newProtocol, newMenuName, newMenuLink, newHostname, newMenuType,
-				newParentMenuName);
-		logger.info("New Menu is now created : " + newMenu);
-		return ResponseEntity.ok("Menu Added Successfully : " + newMenu);
-
-	}
-
-	@PatchMapping("/updateMenu")
-	public ResponseEntity<?> updateMenu(@RequestParam String newProtocol, @RequestParam String newMenuName,
-			@RequestParam String newMenuLink, @RequestParam String newHostname, @RequestParam String newMenuType) {
-		logger.info("Update Protocol : " + newProtocol);
-		logger.info("Update Menu : " + newMenuName);
-		logger.info("Update Menu Link : " + newMenuLink);
-		logger.info("Update Hostname  : " + newHostname);
-		logger.info("Update Menu Type : " + newMenuType);
-
-		menuService.updateMenu(newProtocol, newMenuName, newMenuLink, newHostname, newMenuType);
-		logger.info("New Menu is now update : " + newMenuName);
-		return ResponseEntity.ok("Menu Update Successfully : " + newMenuName);
-	}
-
-	@GetMapping("/showMenu")
-	public String showMenu(Model model, HttpServletRequest request, HttpSession httpSession) {
-		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
-		List<Menu> menus;
-		try {
-			menus = menuAccessService.getAccessibleMenus(decodedToken);
-			List<Menu> rf = new ArrayList<>();
-			List<Menu> nav = new ArrayList<>();
-			// logger.info("" + menus);
-			for (Menu menu : menus) {
-				if (menu.getMenu_type().equals("RF")) {
-					rf.add(menu);
-				} else if (menu.getMenu_type().equals("UI")) {
-					nav.add(menu);
-				}
-			}
-			logger.info("Request URI :" + request.getRequestURI());
-			model.addAttribute("menus", rf);
-			model.addAttribute("currentMenu", request.getRequestURI());
-			model.addAttribute("nav_menus", nav);
-			return "menu";
-		} catch (JsonProcessingException | MenuNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return "menu";
-		}
-//		List<Menu> menus = menuService.getAllMenus();
-
-	}
-
-	@GetMapping("/createLpn")
-	public String createLpn(Model model) {
-		logger.info("Create Lpn");
-		return "createLpn";
-	}
-
-	@PostMapping("/newLpn")
-	public String newLpn(@RequestParam String lpn_name, @RequestParam String item_name, @RequestParam int quantity,
-			Model model) {
-		logger.info("New Lpn data : " + lpn_name + ", " + item_name + ", " + quantity);
-		try {
-			menuService.newLpn(lpn_name, item_name, quantity);
-			model.addAttribute("message", "Lpn Created Successfully");
-			return "createLpn";
-		} catch (IOException e) {
-			logger.log(Level.SEVERE, "IOException occurred: ", e);
-			// e.printStackTrace();
-			return "createLpn";
-		}
-
-	}
-
-	@GetMapping("/lpnInquiry")
-	public String lpnInquiry(Model model) {
-		List<Menu> menus = menuService.getAllMenus();
-		logger.info("" + menus);
-		logger.info("" + model.addAttribute("menus", menus));
-		return "menu";
-	}
-
-	@GetMapping("/inventoryByLocation")
-	public String inventoryByLocation(Model model) {
-		List<Menu> menus = menuService.getAllMenus();
-		logger.info("" + menus);
-		logger.info("" + model.addAttribute("menus", menus));
-		return "menu";
-	}
-
-	@GetMapping("/inventoryByLpn")
-	public String inventoryByLpn(Model model) {
-		List<Menu> menus = menuService.getAllMenus();
-		logger.info("" + menus);
-		logger.info("" + model.addAttribute("menus", menus));
-		return "menu";
-	}
-
-	@GetMapping("/inventoryByItem")
-	public String inventoryByItem(Model model) {
-		List<Menu> menus = menuService.getAllMenus();
-		logger.info("" + menus);
-		logger.info("" + model.addAttribute("menus", menus));
-		return "menu";
-	}
-
-	@GetMapping("/itemInquiry")
-	public String itemInquiry(Model model) {
-		logger.info("Item Inquiry");
-		return "itemInquiry";
-	}
-
-	@GetMapping("/itemInfo")
-	public String itemInfo(Model model, HttpServletRequest request, HttpSession httpSession) {
-		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
-		logger.info("Item");
-		try {
-			List<Menu> menus;
-			try {
-				menus = menuAccessService.getAccessibleMenus(decodedToken);
-				List<Menu> rf = new ArrayList<>();
-				List<Menu> nav = new ArrayList<>();
-				// logger.info("" + menus);
-				for (Menu menu : menus) {
-					if (menu.getMenu_type().equals("RF")) {
-						rf.add(menu);
-					} else if (menu.getMenu_type().equals("UI")) {
-						nav.add(menu);
-					}
-				}
-				Iterable<Item> items;
-
-				Iterable<Category> categories = menuService.getfindAllCategories();
-				items = menuService.getItems();
-				logger.info("Fetched Items : " + items);
-				model.addAttribute("categories", categories);
-				model.addAttribute("items", items);
-				model.addAttribute("nav_menus", nav);
-				model.addAttribute("currentMenu", request.getRequestURI());
-
-				// model.addAttribute("newCategory", new Category());
-				return "item";
-			} catch (MenuNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return "item";
-			}
-
-		} catch (IOException e) {
-
-			e.printStackTrace();
-			return "item";
-		}
-
-	}
-
-	@GetMapping("/getItem/{item_name}")
-	public String getItem(@PathVariable String item_name) {
-		logger.info("Item Inquiry : " + item_name);
-		Item item;
-		try {
-			item = menuService.getItem(item_name);
-			logger.info("Fetched Item : " + item);
-			return "itemInquiry";
-		} catch (IOException e) {
-
-			e.printStackTrace();
-			return "itemInquiry";
-		}
-
-	}
-
-	@GetMapping("/categoryInfo")
-	public String categoryInfo(Model model, HttpServletRequest request, HttpSession httpSession) {
-		logger.info("Category");
-		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
-		try {
-			List<Menu> menus = menuAccessService.getAccessibleMenus(decodedToken);
-			List<Menu> rf = new ArrayList<>();
-			List<Menu> nav = new ArrayList<>();
-			// logger.info("" + menus);
-			for (Menu menu : menus) {
-				if (menu.getMenu_type().equals("RF")) {
-					rf.add(menu);
-				} else if (menu.getMenu_type().equals("UI")) {
-					nav.add(menu);
-				}
-			}
-			Iterable<Category> categories;
-
-			categories = menuService.getfindAllCategories();
-			logger.info("Fetched Categories : ");
-
-			model.addAttribute("currentMenu", request.getRequestURI());
-			model.addAttribute("categories", categories);
-			model.addAttribute("nav_menus", nav);
-
-			// model.addAttribute("newCategory", new Category());
-			return "category";
-		} catch (IOException | MenuNotFoundException e) {
-
-			e.printStackTrace();
-			return "category";
-		}
-
-	}
-
-	@SuppressWarnings("unlikely-arg-type")
-	@PostMapping("/categoryAdd/{category_name}")
-	public String categoryAdd(Model model, @PathVariable String category_name) {
-		logger.info("New Category to Add : " + category_name);
-		ResponseMessage responseMessage = new ResponseMessage();
-		try {
-			String response = menuService.categoryAdd(category_name);
-			responseMessage.setResponseMessage(response);
-			model.addAttribute("responseMessage", new LazyContextVariable<String>() {
-
-				protected String loadValue() {
-					return responseMessage.getResponseMessage();
-				}
-			});
-
-			logger.info("Response Message : " + responseMessage.getResponseMessage());
-
-			return "category";
-
-		} catch (IOException e) {
-
-			e.printStackTrace();
-			return "category";
-		}
-
-	}
-
-	@PutMapping(value = "/categoryEdit/{category_name}", consumes = "application/json", produces = "application/json")
-	public String categoryEdit(Model model, @PathVariable String category_name, @RequestBody Category category) {
-		logger.info("Edit Existing Category to : " + category_name);
-		logger.info("Category : " + category);
-		menuService.categoryEdit(category_name, category);
-		logger.info("Category updated : " + category_name);
-		return "category";
-	}
-
-	@DeleteMapping("/categoryDelete/{category_name}")
-	public String categoryDelete(@PathVariable String category_name) {
-		logger.info("Delete Existing Category : " + category_name);
-		try {
-			menuService.categoryDelete(category_name);
-			return "category";
-		} catch (IOException e) {
-
-			e.printStackTrace();
-			return "category";
-		}
-
-	}
-
-	@DeleteMapping(value = "/deleteCategory/{category_id}")
-	public String deleteCategory(@PathVariable int category_id) {
-		logger.info("Delete Existing Category ID : " + category_id);
-		try {
-			menuService.deleteCategory(category_id);
-			return "category";
-		} catch (IOException e) {
-
-			e.printStackTrace();
-			return "category";
-		}
-
-	}
-
-	@PostMapping("/itemAdd")
-	public String itemAdd(Model model, @RequestParam String description, @RequestParam String category,
-			@RequestParam float length, @RequestParam float width, @RequestParam float height) {
-		logger.info("New Item to Add : " + description);
-		try {
-			String response = menuService.itemAdd(description, category, length, width, height);
-			ResponseMessage responseMessage = new ResponseMessage();
-			responseMessage.setResponseMessage(response);
-			model.addAttribute("responseMessage", responseMessage.getResponseMessage());
-			// if (responseMessage.equals("Item already exists")) {
-			logger.info("Response Message : " + responseMessage);
-			return "item";
-			// } else {
-			// logger.info("Item added : " + description);
-			// return "item";
-			// }
-
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "item";
-		}
-
-	}
-
-	@PutMapping("/itemEdit")
-	public String itemEdit(Model model, @RequestParam String description, @RequestParam String category,
-			@RequestParam float length, @RequestParam float width, @RequestParam float height) {
-		try {
-			ResponseEntity<String> responseMessage = menuService.itemEdit(description, category, length, width, height);
-			logger.info("responseMessage : " + responseMessage.getBody());
-			// ResponseMessage responseMessage = new ResponseMessage();
-			// responseMessage.setResponseMessage(response);
-			model.addAttribute("responseMessage", responseMessage.getBody());
-			// if (responseMessage.equals("Item already exists")) {
-			logger.info("Response Message : " + responseMessage);
-			return "item";
-			// } else {
-			// logger.info("Item Edit : " + description);
-			// return "item";
-			// }
-
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "item";
-		}
-
-	}
-
-	@DeleteMapping(value = "/deleteItem/{description}")
-	public String deleteItem(@PathVariable String description) {
-		logger.info("Delete Existing Item : " + description);
-		try {
-			menuService.deleteItem(description);
-			logger.info("Item deleted successfully : " + description);
-			return "item";
-		} catch (IOException e) {
-
-			e.printStackTrace();
-			return "item";
-		}
-
-	}
-
-	@GetMapping("/locationInfo")
-	public String locationInfo(Model model, HttpServletRequest request, HttpSession httpSession) {
-		logger.info("Location");
-		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
-		try {
-			List<Menu> menus = menuAccessService.getAccessibleMenus(decodedToken);
-			List<Menu> rf = new ArrayList<>();
-			List<Menu> nav = new ArrayList<>();
-			// logger.info("" + menus);
-			for (Menu menu : menus) {
-				if (menu.getMenu_type().equals("RF")) {
-					rf.add(menu);
-				} else if (menu.getMenu_type().equals("UI")) {
-					nav.add(menu);
-				}
-			}
-			Iterable<Location> locations;
-
-			locations = menuService.getLocations();
-			logger.info("Fetched Locations : " + locations);
-			model.addAttribute("locations", locations);
-			model.addAttribute("nav_menus", nav);
-			model.addAttribute("currentMenu", request.getRequestURI());
-
-			// model.addAttribute("newCategory", new Category());
-			return "location";
-		} catch (IOException | MenuNotFoundException e) {
-
-			e.printStackTrace();
-			return "location";
-		}
-
-	}
-
-	@PostMapping("/locationAdd")
-	public String locationAdd(Model model, @RequestParam String locn_brcd, @RequestParam String locn_class,
-			@RequestParam float length, @RequestParam float width, @RequestParam float height,
-			@RequestParam float max_vol, @RequestParam float max_qty, @RequestParam float max_weight) {
-		logger.info("New Location to Add : " + locn_brcd);
-		try {
-			String responseMessage = menuService.locationAdd(locn_brcd, locn_class, length, width, height, max_vol,
-					max_qty, max_weight);
-			model.addAttribute("responseMessage", responseMessage);
-			if (responseMessage.equals("Location already exists")) {
-				logger.info("Response Message : " + responseMessage);
-				return "location";
-			} else {
-				logger.info("Location added : " + locn_brcd);
-				return "location";
-			}
-
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "item";
-		}
-
-	}
-
-	@PutMapping("/locationEdit")
-	public String locationEdit(Model model, @RequestParam String locn_brcd, @RequestParam String locn_class,
-			@RequestParam float length, @RequestParam float width, @RequestParam float height,
-			@RequestParam float max_vol, @RequestParam float max_qty, @RequestParam float max_weight) {
-		logger.info("Location to Edit : " + locn_brcd);
-		try {
-			ResponseEntity<String> responseMessage = menuService.locationEdit(locn_brcd, locn_class, length, width,
-					height, max_vol, max_qty, max_weight);
-			model.addAttribute("responseMessage", responseMessage.getBody());
-			logger.info("Response Message : " + responseMessage.getBody());
-			return "location";
-
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "location";
-		}
-
-	}
-
-	@DeleteMapping(value = "/deleteLocation/{locn_brcd}")
-	public String deleteLocation(@PathVariable String locn_brcd) {
-		logger.info("Delete Existing Item : " + locn_brcd);
-		try {
-			menuService.deleteLocation(locn_brcd);
-			logger.info("Location deleted successfully : " + locn_brcd);
-			return "location";
-		} catch (IOException e) {
-
-			e.printStackTrace();
-			return "location";
-		}
-
-	}
-
-	@GetMapping("/lpnInfo")
-	public String lpnInfo(Model model, HttpServletRequest request, HttpSession httpSession) {
-		logger.info("LPN");
-		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
-		try {
-			List<Menu> menus = menuAccessService.getAccessibleMenus(decodedToken);
-			List<Menu> rf = new ArrayList<>();
-			List<Menu> nav = new ArrayList<>();
-			// logger.info("" + menus);
-			for (Menu menu : menus) {
-				if (menu.getMenu_type().equals("RF")) {
-					rf.add(menu);
-				} else if (menu.getMenu_type().equals("UI")) {
-					nav.add(menu);
-				}
-			}
-			Iterable<Lpn> lpns;
-
-			lpns = menuService.getLpns();
-			logger.info("Fetched Lpns : " + lpns);
-			model.addAttribute("lpns", lpns);
-			model.addAttribute("nav_menus", nav);
-			model.addAttribute("currentMenu", request.getRequestURI());
-
-			// model.addAttribute("newCategory", new Category());
-			return "lpn";
-		} catch (IOException | MenuNotFoundException e) {
-
-			e.printStackTrace();
-			return "lpn";
-		}
-	}
-
-	@PutMapping("/lpnEdit")
-	public String lpnEdit(@RequestParam String lpn_name, @RequestParam String item_desc, @RequestParam float length,
-			@RequestParam float width, @RequestParam float height, @RequestParam int quantity,
-			@RequestParam int adjustQty, @RequestParam int lpn_facility_status, @RequestParam float volume) {
-		logger.info("Lpn to Edit : " + lpn_name);
-		try {
-			String responseMessage = menuService.lpnEdit(lpn_name, item_desc, length, width, height, quantity,
-					adjustQty, lpn_facility_status, volume);
-			if (responseMessage.equals("Lpn already exists")) {
-				logger.info("Response Message : " + responseMessage);
-				return "lpn";
-			} else {
-				logger.info("Lpn Edit : " + lpn_name);
-				return "lpn";
-			}
-
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "lpn";
-		}
-
-	}
-
-	@GetMapping("/inventoryInfo")
-	public String inventoryInfo(Model model, HttpServletRequest request, HttpSession httpSession) {
-		logger.info("Inventory");
-		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
-		try {
-			List<Menu> menus = menuAccessService.getAccessibleMenus(decodedToken);
-			List<Menu> rf = new ArrayList<>();
-			List<Menu> nav = new ArrayList<>();
-			// logger.info("" + menus);
-			for (Menu menu : menus) {
-				if (menu.getMenu_type().equals("RF")) {
-					rf.add(menu);
-				} else if (menu.getMenu_type().equals("UI")) {
-					nav.add(menu);
-				}
-			}
-			Iterable<Inventory> inventories;
-
-			inventories = menuService.getInventories();
-			logger.info("Fetched Inventories : " + inventories);
-			model.addAttribute("inventories", inventories);
-			model.addAttribute("nav_menus", nav);
-			model.addAttribute("currentMenu", request.getRequestURI());
-
-			// model.addAttribute("newCategory", new Category());
-			return "inventory";
-		} catch (IOException | MenuNotFoundException e) {
-
-			e.printStackTrace();
-			return "inventory";
-		}
-
-	}
-
-	@GetMapping("/locationInquiry")
-	public String locationInquiry(Model model) {
-		List<Menu> menus = menuService.getAllMenus();
-		logger.info("" + menus);
-		logger.info("" + model.addAttribute("menus", menus));
-		return "menu";
-	}
-
-	@GetMapping("/putawayLpnToReserve")
-	public String putawayLpnToReserve(Model model) {
-		logger.info("putawayLpnToReserve");
-		return "putawayLpnToReserve";
-	}
-
-	@PostMapping("/locateLpnToReserve")
-	public String putawayLpnToReserve(Model model, @RequestParam String lpn_name, @RequestParam String resv_locn) {
-		logger.info("Location LPN : " + lpn_name + " to " + resv_locn + " Reserve location ");
-		String response = "";
-		try {
-			response = menuService.locateLpnToResv(lpn_name, resv_locn);
-			model.addAttribute("responseMessage", response);
-			return "putawayLpnToReserve";
-		} catch (IOException e) {
-			logger.log(Level.SEVERE, "IOException occurred: ", e);
-			// e.printStackTrace();
-			return "putawayLpnToReserve";
-		}
-	}
-
-	@GetMapping("/putawayLpnToActive")
-	public String putawayLpnToActive(Model model) {
-		logger.info("putawayLpnToActive");
-		return "putawayLpnToActive";
-	}
-	
-	@GetMapping("/putawayLpnToActiveSys")
-	public String putawayLpnToActiveSys(Model model) {
-		logger.info("putawayLpnToActiveSys");
-		return "putawayLpnToActiveSys";
-	}
-	
-	@PostMapping("/checkActiveInventory")
-	@ResponseBody
-	public String checkActiveInventory(Model model, @RequestParam String lpn_name) {
-		logger.info("LPN : " + lpn_name);
-		String response = "";
-//		try {
-			response = menuService.checkActiveInventory(lpn_name);
-			logger.info("Active Location : "+response);
-//			model.addAttribute("actLoc", response);
-//			logger.info(""+model.getAttribute("actLoc"));
-			return response;
-//		} 
-//		catch (IOException e) {
-//			logger.log(Level.SEVERE, "IOException occurred: ", e);
-//			// e.printStackTrace();
-//			return "putawayLpnToActiveSys";
-//		}
-	}
-
-	@PostMapping("/locateLpnToActive")
-	public String putawayLpnToActive(Model model, @RequestParam String lpn_name, @RequestParam String active_locn) {
-		logger.info("Location LPN : " + lpn_name + " to " + active_locn + " Active location ");
-		String response = "";
-		try {
-			response = menuService.locateLpnToActive(lpn_name, active_locn);
-			model.addAttribute("responseMessage", response);
-			return "putawayLpnToActive";
-		} catch (IOException e) {
-			logger.log(Level.SEVERE, "IOException occurred: ", e);
-			// e.printStackTrace();
-			return "putawayLpnToActive";
-		}
+	private final static Logger logger = LoggerFactory.getLogger(MenuController.class);
+
+	// Make these final so they MUST be initialized by the constructor
+	private final MenuService menuService;
+	private final MenuAccessService menuAccessService;
+	private final NavigationService navigationService;
+	private final RoleService roleService;
+	private final PermissionService permissionService;
+
+	// Single constructor for all dependencies (No @Autowired needed on individual
+	// fields)
+	public MenuController(MenuService menuService,
+			MenuAccessService menuAccessService,
+			NavigationService navigationService,
+			RoleService roleService,
+			PermissionService permissionService) {
+		this.menuService = menuService;
+		this.menuAccessService = menuAccessService;
+		this.navigationService = navigationService;
+		this.roleService = roleService;
+		this.permissionService = permissionService;
 	}
 
 	/**
-	 * @param model
-	 * @param redirectAttributes
-	 * @param username
-	 * @param password
-	 * @return
+	 * This method runs automatically before every request in this controller.
+	 * It ensures the navigation menus are always present in the model.
 	 */
-	@SuppressWarnings("unchecked")
-	@PostMapping("/signIn")
-	public String signIn(Model model, HttpSession httpSession, RedirectAttributes redirectAttributes,
-			@RequestParam String username, @RequestParam String password) {
-		try {
-			logger.info("Username: " + username);
-			String signInResponse = menuService.signIn(username, password);
-			ObjectMapper mapper = new ObjectMapper();
-			Map<String, String> token = mapper.readValue(signInResponse, Map.class);
-			String decodedtoken = token.get("token");
-			logger.info("token values : " + decodedtoken);
-			// redirectAttributes.addFlashAttribute("decodedtoken", decodedtoken);
-			// DecodedJWT decodedJWT = JWT.decode(decodedtoken);
-			// String user_name = decodedJWT.getSubject();
-			// logger.info("decodedJWT : " + user_name);
-			// redirectAttributes.addFlashAttribute("user_name", user_name);
-			httpSession.setAttribute("decodedtoken", decodedtoken);
-			logger.info("User logged in successfully: " + username);
+	@ModelAttribute
+	public void handleNavigation(Model model, HttpServletRequest request, HttpSession httpSession) {
+		navigationService.populateNavigation(model, request, httpSession);
+	}
 
-			return "redirect:/api/showMenu";
+	@GetMapping("/index")
+	public String index() {
+		return "redirect:/api/auth/index";
+	}
 
-		} catch (UnauthorizedException e) {
-			String invalidCredMessage = "Invalid Credentials for User : " + username;
-			redirectAttributes.addFlashAttribute("invalidCredMessage", invalidCredMessage);
-			logger.log(Level.SEVERE, "Unauthorized access for user: " + username);
-			return "redirect:/api/index";
-		} catch (HttpClientErrorException httpeErr) {
-			String invalidCredMessage = "Http Client Error : " + httpeErr.getMessage();
-			redirectAttributes.addFlashAttribute("invalidCredMessage", invalidCredMessage);
-			httpeErr.printStackTrace();
-			logger.log(Level.SEVERE, "Http Client Error : " + httpeErr.getMessage());
-			return "redirect:/api/index";
-		} catch (JsonProcessingException jsonProExp) {
-			String invalidCredMessage = "Error processing Json  : " + jsonProExp.getMessage();
-			redirectAttributes.addFlashAttribute("invalidCredMessage", invalidCredMessage);
-			logger.log(Level.SEVERE, "Error processing Json  : " + jsonProExp.getMessage());
-			return "redirect:/api/index";
-		} catch (JWTDecodeException jwtDecodeException) {
-			String invalidCredMessage = "There was an unexpected error  : " + jwtDecodeException.getMessage();
-			redirectAttributes.addFlashAttribute("invalidCredMessage", invalidCredMessage);
-			logger.log(Level.SEVERE, "There was an unexpected error : " + jwtDecodeException.getMessage());
-			return "redirect:/api/index";
-		} catch (Exception e) {
-			String invalidCredMessage = "An Error Occured  : " + e.getMessage();
-			redirectAttributes.addFlashAttribute("invalidCredMessage", invalidCredMessage);
-			logger.log(Level.SEVERE, "An Error Occured  : " + e.getMessage());
-			return "redirect:/api/index";
+	@GetMapping("/createLpn")
+	public String createLpn() {
+		return "redirect:/lpn/create";
+	}
+
+	@PostMapping("/newLpn")
+	public String newLpnAlias(Model model, @Valid @ModelAttribute MenuLpnCreateRequestDTO requestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("message", "Invalid LPN data");
+			return AppConstants.View.CREATE_LPN;
 		}
+		return handleLegacyNewLpn(model, requestDTO);
+	}
+
+	@PostMapping("/legacy/newLpn")
+	public String newLpn(Model model, @Valid @ModelAttribute MenuLpnCreateRequestDTO requestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("message", "Invalid LPN data");
+			return AppConstants.View.CREATE_LPN;
+		}
+		return handleLegacyNewLpn(model, requestDTO);
+	}
+
+	@GetMapping("/lpnInquiry")
+	public String lpnInquiry() {
+		return "redirect:/lpn/inquiry";
+	}
+
+	@GetMapping("/inventoryByLocation")
+	public String inventoryByLocation() {
+		return "redirect:/inventory/by-location";
+	}
+
+	@GetMapping("/inventoryByLpn")
+	public String inventoryByLpn() {
+		return "redirect:/inventory/by-lpn";
+	}
+
+	@GetMapping("/inventoryByItem")
+	public String inventoryByItem() {
+		return "redirect:/inventory/by-item";
+	}
+
+	@GetMapping("/legacy/itemInquiry")
+	public String itemInquiry() {
+		return "redirect:/api/itemInquiry";
+	}
+
+	@GetMapping("/legacy/itemInfo")
+	public String itemInfo() {
+		return AppConstants.Redirect.ITEM_INFO;
+	}
+
+	@GetMapping("/legacy/getItem/{item_name}")
+	public String getItem(@PathVariable String item_name) {
+		logger.info("Legacy item inquiry alias hit for item: {}", item_name);
+		return "redirect:/api/itemInquiry";
+	}
+
+	@GetMapping("/legacy/categoryInfo")
+	public String categoryInfo() {
+		return AppConstants.Redirect.CATEGORY_INFO;
+	}
+
+	@PostMapping("/legacy/categoryAdd/{category_name}")
+	public String categoryAdd(@PathVariable String category_name) {
+		return handleLegacyCategoryAdd(category_name);
+	}
+
+	@PutMapping(value = "/legacy/categoryEdit/{category_name}", consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity<?> categoryEdit(@PathVariable String category_name,
+			@Valid @RequestBody CategoryRequestDTO requestDTO) {
+		return handleLegacyCategoryEdit(category_name, requestDTO);
+	}
+
+	@DeleteMapping("/legacy/categoryDelete/{category_name}")
+	public String categoryDelete(@PathVariable String category_name) {
+		return handleLegacyCategoryDelete(category_name);
+	}
+
+	@DeleteMapping(value = "/deleteCategory/{category_id}")
+	public String deleteCategoryAlias(@PathVariable int category_id) {
+		return handleLegacyDeleteCategory(category_id);
+	}
+
+	@DeleteMapping(value = "/legacy/deleteCategory/{category_id}")
+	public String deleteCategory(@PathVariable int category_id) {
+		return handleLegacyDeleteCategory(category_id);
+	}
+
+	@PostMapping("/legacy/itemAdd")
+	public String itemAdd(Model model, @Valid @ModelAttribute ItemRequestDTO requestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors());
+			return AppConstants.View.ITEM;
+		}
+		return handleLegacyItemAdd(model, requestDTO);
+	}
+
+	@PutMapping("/legacy/itemEdit")
+	public String itemEdit(Model model, @Valid @ModelAttribute ItemRequestDTO requestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("error", bindingResult.getAllErrors());
+			return AppConstants.View.ITEM;
+		}
+		return handleLegacyItemEdit(model, requestDTO);
+	}
+
+	@DeleteMapping(value = "/legacy/deleteItem/{item_id}")
+	public String deleteItem(@PathVariable int item_id) {
+		return handleLegacyDeleteItem(item_id);
+	}
+
+	@GetMapping("/locationInfo")
+	public String locationInfo() {
+		return "redirect:/location";
+	}
+
+	@PostMapping("/locationAdd")
+	public String locationAddAlias(Model model, @Valid @ModelAttribute MenuLocationRequestDTO requestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("responseMessage", "Invalid location data");
+			return AppConstants.View.LOCATION;
+		}
+		return handleLegacyLocationAdd(model, requestDTO);
+	}
+
+	@PostMapping("/legacy/locationAdd")
+	public String locationAdd(Model model, @Valid @ModelAttribute MenuLocationRequestDTO requestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("responseMessage", "Invalid location data");
+			return AppConstants.View.LOCATION;
+		}
+		return handleLegacyLocationAdd(model, requestDTO);
+	}
+
+	@PutMapping("/locationEdit")
+	public String locationEditAlias(Model model, @Valid @ModelAttribute MenuLocationRequestDTO requestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("responseMessage", "Invalid location data");
+			return AppConstants.View.LOCATION;
+		}
+		return handleLegacyLocationEdit(model, requestDTO);
+	}
+
+	@PutMapping("/legacy/locationEdit")
+	public String locationEdit(Model model, @Valid @ModelAttribute MenuLocationRequestDTO requestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("responseMessage", "Invalid location data");
+			return AppConstants.View.LOCATION;
+		}
+		return handleLegacyLocationEdit(model, requestDTO);
+	}
+
+	@DeleteMapping(value = "/deleteLocation/{locn_brcd}")
+	public String deleteLocationAlias(@PathVariable String locn_brcd) {
+		return handleLegacyDeleteLocation(locn_brcd);
+	}
+
+	@DeleteMapping(value = "/legacy/deleteLocation/{locn_brcd}")
+	public String deleteLocation(@PathVariable String locn_brcd) {
+		return handleLegacyDeleteLocation(locn_brcd);
+	}
+
+	@GetMapping("/lpnInfo")
+	public String lpnInfo() {
+		return "redirect:/lpn";
+	}
+
+	@PutMapping("/lpnEdit")
+	public String lpnEditAlias(@Valid @ModelAttribute MenuLpnEditRequestDTO requestDTO, BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			return AppConstants.View.LPN;
+		}
+		return handleLegacyLpnEdit(requestDTO);
+	}
+
+	@PutMapping("/legacy/lpnEdit")
+	public String lpnEdit(@Valid @ModelAttribute MenuLpnEditRequestDTO requestDTO, BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			return AppConstants.View.LPN;
+		}
+		return handleLegacyLpnEdit(requestDTO);
+	}
+
+	@GetMapping("/inventoryInfo")
+	public String inventoryInfo() {
+		return "redirect:/inventory";
+	}
+
+	@GetMapping("/locationInquiry")
+	public String locationInquiry() {
+		return "redirect:/location/inquiry";
+	}
+
+	@GetMapping("/putawayLpnToReserve")
+	public String putawayLpnToReserveAlias() {
+		return "redirect:/lpn/putaway-reserve";
+	}
+
+	@GetMapping("/legacy/putawayLpnToReserve")
+	public String putawayLpnToReserve() {
+		return "redirect:/lpn/putaway-reserve";
+	}
+
+	@PostMapping("/locateLpnToReserve")
+	public String locateLpnToReserveAlias(Model model, @Valid @ModelAttribute MenuReserveLpnRequestDTO requestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("responseMessage", "Invalid reserve location data");
+			return AppConstants.View.PUTAWAY_RESERVE;
+		}
+		return handleLegacyPutawayReserve(model, requestDTO);
+	}
+
+	@PostMapping("/legacy/locateLpnToReserve")
+	public String putawayLpnToReserve(Model model, @Valid @ModelAttribute MenuReserveLpnRequestDTO requestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("responseMessage", "Invalid reserve location data");
+			return AppConstants.View.PUTAWAY_RESERVE;
+		}
+		return handleLegacyPutawayReserve(model, requestDTO);
+	}
+
+	@GetMapping("/putawayLpnToActive")
+	public String putawayLpnToActiveAlias() {
+		return "redirect:/lpn/putaway-active";
+	}
+
+	@GetMapping("/legacy/putawayLpnToActive")
+	public String putawayLpnToActive() {
+		return "redirect:/lpn/putaway-active";
+	}
+
+	@GetMapping("/putawayLpnToActiveSys")
+	public String putawayLpnToActiveSysAlias() {
+		return "redirect:/lpn/putaway-active-sys";
+	}
+
+	@GetMapping("/legacy/putawayLpnToActiveSys")
+	public String putawayLpnToActiveSys() {
+		return "redirect:/lpn/putaway-active-sys";
+	}
+
+	@PostMapping("/checkActiveInventory")
+	@ResponseBody
+	public String checkActiveInventoryAlias(@Valid @ModelAttribute MenuCheckActiveInventoryRequestDTO requestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			return "";
+		}
+		return handleLegacyCheckActiveInventory(requestDTO);
+	}
+
+	@PostMapping("/legacy/checkActiveInventory")
+	@ResponseBody
+	public String checkActiveInventory(@Valid @ModelAttribute MenuCheckActiveInventoryRequestDTO requestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			return "";
+		}
+		return handleLegacyCheckActiveInventory(requestDTO);
+	}
+
+	@PostMapping("/locateLpnToActive")
+	public String locateLpnToActiveAlias(Model model, @Valid @ModelAttribute MenuActiveLpnRequestDTO requestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("responseMessage", "Invalid active location data");
+			return AppConstants.View.PUTAWAY_ACTIVE;
+		}
+		return handleLegacyPutawayActive(model, requestDTO);
+	}
+
+	@PostMapping("/legacy/locateLpnToActive")
+	public String putawayLpnToActive(Model model, @Valid @ModelAttribute MenuActiveLpnRequestDTO requestDTO,
+			BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("responseMessage", "Invalid active location data");
+			return AppConstants.View.PUTAWAY_ACTIVE;
+		}
+		return handleLegacyPutawayActive(model, requestDTO);
+	}
+
+	@PostMapping("/signIn")
+	public String signIn() {
+		return "forward:/api/auth/signIn";
 	}
 
 	@GetMapping("/logout")
-	public String logout(RedirectAttributes redirectAttributes, HttpSession httpSession) {
-		String response;
-		try {
-			response = menuService.signout(httpSession);
-			logger.info("Response : " + response);
-			redirectAttributes.addFlashAttribute("response", response);
-			httpSession.removeAttribute("decodedtoken");
-			return "redirect:/api/index";
-		} catch (IOException e) {
-			e.printStackTrace();
-			redirectAttributes.addFlashAttribute("response", "An error occured while logging out!!");
-			return null;
-		}
+	public String logout() {
+		return "redirect:/api/auth/logout";
 
 	}
 
 	@GetMapping("/settings")
-	public String settings(Model model, HttpServletRequest request, HttpSession httpSession) {
-		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
-		List<Menu> menus;
-
-		try {
-			menus = menuAccessService.getAccessibleMenus(decodedToken);
-			List<Menu> rf = new ArrayList<>();
-			List<Menu> nav = new ArrayList<>();
-			List<Menu> side = new ArrayList<>();
-			// logger.info("" + menus);
-			for (Menu menu : menus) {
-				if (menu.getMenu_type().equals("RF")) {
-					rf.add(menu);
-				} else if (menu.getMenu_type().equals("UI")) {
-					nav.add(menu);
-				} else if (!menu.getMenu_type().equals("AUTH")) {
-					side.add(menu);
-				}
-			}
-			logger.info("Side Menus : " + side);
-			model.addAttribute("menus", rf);
-			model.addAttribute("currentMenu", request.getRequestURI());
-			model.addAttribute("nav_menus", nav);
-			model.addAttribute("side_menus", side);
-		} catch (JsonMappingException e) {
-			e.printStackTrace();
-		} catch (JsonProcessingException e) {
-
-			e.printStackTrace();
-		} catch (MenuNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JWTDecodeException e) {
-			model.addAttribute("responseMessage", "Session Expired please Login Again");
-			return "redirect:/api/index";
-		}
-
-		logger.info("settings");
-		return "settings";
+	public String settings() {
+		return "redirect:/settings";
 	}
 
 	@GetMapping("/userlist")
-	public String userList(Model model, HttpServletRequest request, HttpSession httpSession) {
-		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
-		List<Menu> menus;
-		List<UserDto> userDtos;
-		try {
-			userDtos = menuAccessService.getUsers();
-			menus = menuAccessService.getAccessibleMenus(decodedToken);
-			List<Menu> rf = new ArrayList<>();
-			List<Menu> nav = new ArrayList<>();
-			List<Menu> side = new ArrayList<>();
-			// logger.info("" + menus);
-			for (Menu menu : menus) {
-				if (menu.getMenu_type().equals("RF")) {
-					rf.add(menu);
-				} else if (menu.getMenu_type().equals("UI")) {
-					nav.add(menu);
-				} else if (!menu.getMenu_type().equals("AUTH")) {
-					side.add(menu);
-				}
-			}
-			logger.info("Side Menus : " + side);
-			model.addAttribute("menus", rf);
-			model.addAttribute("currentMenu", request.getRequestURI());
-			model.addAttribute("nav_menus", nav);
-			model.addAttribute("side_menus", side);
-			model.addAttribute("users", userDtos);
-		} catch (JsonMappingException e) {
-			e.printStackTrace();
-		} catch (JsonProcessingException e) {
+	public String userListAlias(Model model, HttpSession session) {
+		return handleLegacyUserList(model, session);
+	}
 
-			e.printStackTrace();
-		} catch (MenuNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		logger.info("userlist");
-		return "userlist";
+	@GetMapping("/legacy/userlist")
+	public String userList(Model model, HttpSession session) { // Removed unused parameters
+		return handleLegacyUserList(model, session);
 	}
 
 	@PostMapping("/userAdd")
-	public String userAdd(Model model, @RequestParam String firstname, @RequestParam String middlename,
-			@RequestParam String lastname, @RequestParam String username, @RequestParam String password,
-			@RequestParam String email) {
-		logger.info("New User to Add : " + username);
-		String response = menuService.userAdd(firstname, middlename, lastname, username, password, email);
-		ResponseMessage responseMessage = new ResponseMessage();
-		responseMessage.setResponseMessage(response);
-		model.addAttribute("responseMessage", responseMessage.getResponseMessage());
-		logger.info("Response Message : " + responseMessage);
-		return "userlist";
+	public String userAddAlias(Model model, @Valid @ModelAttribute MenuUserAddRequestDTO requestDTO,
+			BindingResult bindingResult, HttpSession session) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("responseMessage", "Invalid user data");
+			return AppConstants.View.USER_LIST;
+		}
+		return handleLegacyUserAdd(model, requestDTO, session);
 	}
 
-	@GetMapping("/menulist")
-	public String menuList(Model model, HttpServletRequest request, HttpSession httpSession) {
-		String decodedToken = (String) httpSession.getAttribute("decodedtoken");
-		List<Menu> menus;
-		List<Menu> allMenus;
-		
-		try {
-			
-			menus = menuAccessService.getAccessibleMenus(decodedToken);
-			allMenus = menuService.getAllMenus();
-			List<Menu> rf = new ArrayList<>();
-			List<Menu> nav = new ArrayList<>();
-			List<Menu> side = new ArrayList<>();
-			// logger.info("" + menus);
-			for (Menu menu : menus) {
-				if (menu.getMenu_type().equals("RF")) {
-					rf.add(menu);
-				} else if (menu.getMenu_type().equals("UI")) {
-					nav.add(menu);
-				} else if (!menu.getMenu_type().equals("AUTH")) {
-					side.add(menu);
-				}
-			}
-			logger.info("Side Menus : " + side);
-			model.addAttribute("menus", rf);
-			model.addAttribute("currentMenu", request.getRequestURI());
-			model.addAttribute("nav_menus", nav);
-			model.addAttribute("side_menus", side);
-			model.addAttribute("allMenus", allMenus);
-			logger.info("All menus : "+allMenus);
-		} catch (JsonMappingException e) {
-			e.printStackTrace();
-		} catch (JsonProcessingException e) {
+	@PostMapping("/legacy/userAdd")
+	public String userAdd(Model model, @Valid @ModelAttribute MenuUserAddRequestDTO requestDTO,
+			BindingResult bindingResult, HttpSession session) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("responseMessage", "Invalid user data");
+			return AppConstants.View.USER_LIST;
+		}
+		return handleLegacyUserAdd(model, requestDTO, session);
+	}
 
-			e.printStackTrace();
-		} catch (MenuNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}  catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	@PostMapping("/assign/roles/user/{userId}/role/{roleId}")
+	@ResponseBody
+	public ResponseEntity<?> assignRoleToExistingUser(@PathVariable Integer userId, @PathVariable Integer roleId,
+			HttpSession session) {
+		if (!hasManageUsersAccess(session)) {
+			return ResponseEntity.status(403).body("You do not have permission to manage users.");
+		}
+		try {
+			String response = menuService.assignRoleToUser(userId, roleId);
+			return ResponseEntity.ok(response);
+		} catch (IOException e) {
+			logger.error("Failed to assign role {} to user {}", roleId, userId, e);
+			return ResponseEntity.internalServerError().body("Unable to assign role at this time.");
+		} catch (Exception e) {
+			logger.error("Unexpected error assigning role {} to user {}", roleId, userId, e);
+			return ResponseEntity.internalServerError().body("Unexpected error while assigning role.");
+		}
+	}
+
+	@DeleteMapping("/unassign/roles/user/{userId}/role/{roleId}")
+	@ResponseBody
+	public ResponseEntity<?> unassignRoleFromExistingUser(@PathVariable Integer userId, @PathVariable Integer roleId,
+			HttpSession session) {
+		if (!hasManageUsersAccess(session)) {
+			return ResponseEntity.status(403).body("You do not have permission to manage users.");
+		}
+		try {
+			String response = menuService.unassignRoleFromUser(userId, roleId);
+			return ResponseEntity.ok(response);
+		} catch (IOException e) {
+			logger.error("Failed to unassign role {} from user {}", roleId, userId, e);
+			return ResponseEntity.internalServerError().body("Unable to unassign role at this time.");
+		} catch (Exception e) {
+			logger.error("Unexpected error unassigning role {} from user {}", roleId, userId, e);
+			return ResponseEntity.internalServerError().body("Unexpected error while unassigning role.");
+		}
+	}
+
+	@GetMapping("/user/{userId}/roles")
+	@ResponseBody
+	public ResponseEntity<?> getExistingUserRoles(@PathVariable Integer userId, HttpSession session) {
+		if (!hasManageUsersAccess(session)) {
+			return ResponseEntity.status(403).body("You do not have permission to manage users.");
+		}
+		try {
+			String response = menuService.getUserRoles(userId);
+			return ResponseEntity.ok(response);
+		} catch (IOException e) {
+			logger.error("Failed to fetch roles for user {}", userId, e);
+			return ResponseEntity.internalServerError().body("Unable to fetch user roles at this time.");
+		} catch (Exception e) {
+			logger.error("Unexpected error fetching roles for user {}", userId, e);
+			return ResponseEntity.internalServerError().body("Unexpected error while fetching user roles.");
+		}
+	}
+
+	@DeleteMapping("/user/{userId}")
+	@ResponseBody
+	public ResponseEntity<?> deleteExistingUser(@PathVariable Integer userId, HttpSession session) {
+		if (!hasManageUsersAccess(session)) {
+			return ResponseEntity.status(403).body("You do not have permission to manage users.");
+		}
+		try {
+			String response = menuService.deleteUser(userId);
+			return ResponseEntity.ok(response);
+		} catch (IOException e) {
+			logger.error("Failed to delete user {}", userId, e);
+			return ResponseEntity.internalServerError().body("Unable to delete user at this time.");
+		} catch (Exception e) {
+			logger.error("Unexpected error deleting user {}", userId, e);
+			return ResponseEntity.internalServerError().body("Unexpected error while deleting user.");
+		}
+	}
+
+	@GetMapping("/legacy/menulist")
+	public String menuList() {
+		return "redirect:/api/menulist";
+	}
+
+	@GetMapping("/sopConfig")
+	public String sopConfigAlias(Model model) {
+		return handleLegacySopConfig(model);
+	}
+
+	@GetMapping("/sop-config")
+	public String sopConfigHyphenAlias(Model model) {
+		return handleLegacySopConfig(model);
+	}
+
+	@GetMapping("/legacy/sopConfig")
+	public String sopConfig(Model model) {
+		return handleLegacySopConfig(model);
+	}
+
+	@GetMapping("/legacy/sop-config")
+	public String sopConfigHyphenLegacy(Model model) {
+		return handleLegacySopConfig(model);
+	}
+
+	@PostMapping("/sop/runBatch")
+	public String runBatchAlias(@Valid @ModelAttribute MenuBatchRequestDTO requestDTO,
+			BindingResult bindingResult, Model model) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("responseMessage", "Invalid batch request");
+			return AppConstants.View.SOP_CONFIG;
+		}
+		return handleLegacyRunBatch(requestDTO, model);
+	}
+
+	@PostMapping("/legacy/sop/runBatch")
+	public String runBatch(@Valid @ModelAttribute MenuBatchRequestDTO requestDTO,
+			BindingResult bindingResult, Model model) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("responseMessage", "Invalid batch request");
+			return AppConstants.View.SOP_CONFIG;
+		}
+		return handleLegacyRunBatch(requestDTO, model);
+	}
+
+	@PostMapping("/sop/location-range/add")
+	public String addLocationRangeAlias(@Valid @ModelAttribute MenuLocationRangeRequestDTO requestDTO,
+			BindingResult bindingResult, Model model, HttpSession httpSession) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("activeTab", requestDTO.getActiveTab());
+			model.addAttribute("locationRangeAddresponseMessage", "Invalid location range data");
+			return AppConstants.View.SOP_CONFIG;
+		}
+		return handleLegacyAddLocationRange(requestDTO, model, httpSession);
+	}
+
+	@PostMapping("/legacy/sop/location-range/add")
+	public String addLocationRange(@Valid @ModelAttribute MenuLocationRangeRequestDTO requestDTO,
+			BindingResult bindingResult, Model model, HttpSession httpSession) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("activeTab", requestDTO.getActiveTab());
+			model.addAttribute("locationRangeAddresponseMessage", "Invalid location range data");
+			return AppConstants.View.SOP_CONFIG;
+		}
+		return handleLegacyAddLocationRange(requestDTO, model, httpSession);
+	}
+
+	@PostMapping("/sop/location-range/update")
+	public String updatecationRangeAlias(@Valid @ModelAttribute MenuLocationRangeRequestDTO requestDTO,
+			BindingResult bindingResult, Model model, HttpSession httpSession) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("activeTab", requestDTO.getActiveTab());
+			model.addAttribute("locationRangeUpdateresponseMessage", "Invalid location range data");
+			return AppConstants.View.SOP_CONFIG;
+		}
+		return handleLegacyUpdateLocationRange(requestDTO, model, httpSession);
+	}
+
+	@PostMapping("/legacy/sop/location-range/update")
+	public String updatecationRange(@Valid @ModelAttribute MenuLocationRangeRequestDTO requestDTO,
+			BindingResult bindingResult, Model model, HttpSession httpSession) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("activeTab", requestDTO.getActiveTab());
+			model.addAttribute("locationRangeUpdateresponseMessage", "Invalid location range data");
+			return AppConstants.View.SOP_CONFIG;
+		}
+		return handleLegacyUpdateLocationRange(requestDTO, model, httpSession);
+	}
+
+	@PostMapping("/sop/getEligibleUpcsForSop/{category}")
+	public String getEligibleUpcsForSopAlias(@PathVariable String category,
+			@Valid @ModelAttribute MenuEligibleUpcsRequestDTO requestDTO,
+			BindingResult bindingResult, Model model) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("activeTab", requestDTO.getActiveTab());
+			return AppConstants.View.SOP_CONFIG;
+		}
+		return handleLegacyEligibleUpcs(requestDTO, model);
+	}
+
+	@PostMapping("/legacy/sop/getEligibleUpcsForSop/{category}")
+	public String getEligibleUpcsForSop(@Valid @ModelAttribute MenuEligibleUpcsRequestDTO requestDTO,
+			BindingResult bindingResult, Model model, HttpSession httpSession) {
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("activeTab", requestDTO.getActiveTab());
+			return AppConstants.View.SOP_CONFIG;
+		}
+		return handleLegacyEligibleUpcs(requestDTO, model);
+	}
+
+	@GetMapping("/cubiscanLog")
+	public String cubiscanLogAlias(Model model) {
+		return handleLegacyCubiscanLog(model);
+	}
+
+	@GetMapping("/legacy/cubiscanLog")
+	public String cubiscanLog(Model model) {
+		return handleLegacyCubiscanLog(model);
+	}
+
+	@GetMapping("/endpoint")
+	public String endpointAlias() {
+		return endpoint();
+	}
+
+	@GetMapping("/legacy/endpoint")
+	public String endpoint() {
+		logger.info("endpoint");
+		return AppConstants.View.ENDPOINT;
+	}
+
+	private List<SopLocationRangeDto> populateSopConfigModel(Model model) throws IOException {
+		List<SopLocationRangeDto> sopLocationRangeDtos = menuService.getLocationRanges();
+		List<Category> categories = menuService.getCategories();
+		List<SopActionTypeDto> sopActionTypeDtos = menuService.getSopActionTypes();
+		logger.info("Location Range : {}", sopLocationRangeDtos);
+		logger.info("Action Type : {}", sopActionTypeDtos);
+		logger.info("Categories : {}", categories);
+
+		model.addAttribute("locationRanges", sopLocationRangeDtos);
+		model.addAttribute("actionTypes", sopActionTypeDtos);
+		model.addAttribute("categories", categories);
+		return sopLocationRangeDtos;
+	}
+
+	private String handleLegacyNewLpn(Model model, MenuLpnCreateRequestDTO requestDTO) {
+		logger.info("New Lpn data : {}, {}, {}", requestDTO.getLpn_name(), requestDTO.getItem_name(),
+				requestDTO.getQuantity());
+		try {
+			menuService.newLpn(requestDTO.getLpn_name(), requestDTO.getItem_name(), requestDTO.getQuantity());
+			model.addAttribute("message", "Lpn Created Successfully");
+			return AppConstants.View.CREATE_LPN;
+		} catch (IOException e) {
+			logger.error("IOException occurred while creating LPN", e);
+			return AppConstants.View.CREATE_LPN;
+		}
+	}
+
+	private String handleLegacyCategoryAdd(String categoryName) {
+		try {
+			logger.info("Creating legacy category: {}", categoryName);
+			menuService.categoryAdd(categoryName);
+			return AppConstants.Redirect.CATEGORY_INFO;
+		} catch (IOException exception) {
+			logger.error("Failed to create category: {}", categoryName, exception);
+			return AppConstants.View.CATEGORY;
+		}
+	}
+
+	private ResponseEntity<?> handleLegacyCategoryEdit(String categoryName, CategoryRequestDTO requestDTO) {
+		try {
+			logger.info("Updating legacy category: {}", categoryName);
+			menuService.categoryEdit(categoryName, requestDTO.getCategoryName());
+			return ResponseEntity.ok("Category updated successfully");
+		} catch (Exception exception) {
+			logger.error("Failed to update category: {}", categoryName, exception);
+			return ResponseEntity.badRequest().body("Error updating category: " + exception.getMessage());
+		}
+	}
+
+	private String handleLegacyCategoryDelete(String categoryName) {
+		try {
+			logger.info("Deleting legacy category by name: {}", categoryName);
+			menuService.categoryDelete(categoryName);
+			return AppConstants.Redirect.CATEGORY_INFO;
+		} catch (IOException exception) {
+			logger.error("Failed to delete category: {}", categoryName, exception);
+			return AppConstants.View.CATEGORY;
+		}
+	}
+
+	private String handleLegacyDeleteCategory(int categoryId) {
+		try {
+			logger.info("Deleting legacy category by id: {}", categoryId);
+			menuService.deleteCategory(categoryId);
+			return AppConstants.Redirect.CATEGORY_INFO;
+		} catch (IOException exception) {
+			logger.error("Failed to delete category id: {}", categoryId, exception);
+			return AppConstants.View.CATEGORY;
+		}
+	}
+
+	private String handleLegacyItemAdd(Model model, ItemRequestDTO requestDTO) {
+		try {
+			logger.info("Creating legacy item: {}", requestDTO.getDescription());
+			menuService.itemAdd(requestDTO.getDescription(), requestDTO.getCategory(), requestDTO.getLength(),
+					requestDTO.getWidth(), requestDTO.getHeight());
+			return AppConstants.Redirect.ITEM_INFO;
+		} catch (IOException exception) {
+			logger.error("Failed to create item: {}", requestDTO.getDescription(), exception);
+			return AppConstants.View.ITEM;
+		}
+	}
+
+	private String handleLegacyItemEdit(Model model, ItemRequestDTO requestDTO) {
+		if (requestDTO.getItemId() == null || requestDTO.getItemId() <= 0) {
+			model.addAttribute("error", "Item ID is required for update");
+			return AppConstants.View.ITEM;
 		}
 
-		logger.info("menulist");
-		return "menulist";
+		try {
+			logger.info("Updating legacy item: {}", requestDTO.getItemId());
+			menuService.itemEdit(requestDTO.getItemId(), requestDTO.getDescription(), requestDTO.getCategory(),
+					requestDTO.getLength(), requestDTO.getWidth(), requestDTO.getHeight());
+			return AppConstants.Redirect.ITEM_INFO;
+		} catch (IOException exception) {
+			logger.error("Failed to update item: {}", requestDTO.getItemId(), exception);
+			return AppConstants.View.ITEM;
+		}
 	}
+
+	private String handleLegacyDeleteItem(int itemId) {
+		try {
+			logger.info("Deleting legacy item: {}", itemId);
+			menuService.deleteItem(itemId);
+			return AppConstants.Redirect.ITEM_INFO;
+		} catch (IOException exception) {
+			logger.error("Failed to delete item: {}", itemId, exception);
+			return AppConstants.View.ITEM;
+		}
+	}
+
+	private String handleLegacySopConfig(Model model) {
+		logger.info("sop-config");
+		try {
+			List<SopLocationRangeDto> sopLocationRangeDtos = populateSopConfigModel(model);
+
+			Map<Integer, Boolean> selectedRanges = new java.util.HashMap<>();
+			for (SopLocationRangeDto range : sopLocationRangeDtos) {
+				selectedRanges.put(range.getId(), false);
+			}
+			logger.info("selectedRanges : {}", selectedRanges);
+			model.addAttribute("selectedRanges", selectedRanges);
+			return AppConstants.View.SOP_CONFIG;
+		} catch (Exception e) {
+			logger.error("Failed to load SOP config", e);
+			return AppConstants.View.SOP_CONFIG;
+		}
+	}
+
+	private String handleLegacyRunBatch(MenuBatchRequestDTO requestDTO, Model model) {
+		try {
+			logger.info("Run Batch for Action Type : {} and Category : {}", requestDTO.getActionType(),
+					requestDTO.getCategory_name());
+			populateSopConfigModel(model);
+
+			if (AppConstants.SopBatch.ACTION_ASSIGN.equals(requestDTO.getActionType())) {
+				String batchAssign = AppConstants.SopBatch.JOB_ASSIGN;
+				menuService.assignBatch(requestDTO.getActionType(), batchAssign, requestDTO.getCategory_name());
+				logger.info("Assign Batch triggered for category : {}", requestDTO.getCategory_name());
+				model.addAttribute("responseMessage", requestDTO.getActionType() + "Batch Submitted Successfully!!");
+				return AppConstants.View.SOP_CONFIG;
+			}
+
+			if (AppConstants.SopBatch.ACTION_UNASSIGN.equals(requestDTO.getActionType())) {
+				String batchAssign = AppConstants.SopBatch.JOB_UNASSIGN;
+				menuService.unassignBatch(requestDTO.getActionType(), batchAssign, requestDTO.getCategory_name());
+				logger.info("Unassign Batch triggered for category : {}", requestDTO.getCategory_name());
+				model.addAttribute("responseMessage", requestDTO.getActionType() + "Batch Submitted Successfully!!");
+				return AppConstants.View.SOP_CONFIG;
+			}
+		} catch (Exception e) {
+			logger.error("Failed to run SOP batch", e);
+		}
+		model.addAttribute("activeTab", requestDTO.getActiveTab());
+		return AppConstants.View.SOP_CONFIG;
+	}
+
+	private String handleLegacyAddLocationRange(MenuLocationRangeRequestDTO requestDTO, Model model,
+			HttpSession httpSession) {
+		String decodedToken = SessionUtil.getSessionToken(httpSession);
+		try {
+			String username = menuAccessService.getUserName(decodedToken);
+			populateSopConfigModel(model);
+			logger.info("Add Location Range for Action Type : {} and Category : {}", requestDTO.getActionType(),
+					requestDTO.getCategory());
+
+			String locationRangeAddresponseMessage = menuService.addLocationRange(requestDTO.getActionType(),
+					requestDTO.getCategory(), requestDTO.getFromLocation(), requestDTO.getToLocation(),
+					requestDTO.getIsActive(), username);
+
+			model.addAttribute("locationRangeAddresponseMessage", locationRangeAddresponseMessage);
+		} catch (Exception e) {
+			logger.error("Failed to add location range", e);
+		}
+		model.addAttribute("activeTab", requestDTO.getActiveTab());
+		return AppConstants.View.SOP_CONFIG;
+	}
+
+	private String handleLegacyUpdateLocationRange(MenuLocationRangeRequestDTO requestDTO, Model model,
+			HttpSession httpSession) {
+		String decodedToken = SessionUtil.getSessionToken(httpSession);
+		try {
+			String username = menuAccessService.getUserName(decodedToken);
+			populateSopConfigModel(model);
+			logger.info("Add Location Range for Action Type : {} and Category : {}", requestDTO.getActionType(),
+					requestDTO.getCategory());
+
+			String locationRangeUpdateresponseMessage = menuService.updateLocationRange(requestDTO.getId(),
+					requestDTO.getActionType(), requestDTO.getCategory(), requestDTO.getFromLocation(),
+					requestDTO.getToLocation(), requestDTO.getIsActive(), username);
+			logger.info("locationRangeUpdateresponseMessage : {}", locationRangeUpdateresponseMessage);
+			model.addAttribute("locationRangeUpdateresponseMessage", locationRangeUpdateresponseMessage);
+		} catch (Exception e) {
+			logger.error("Failed to update location range", e);
+		}
+		model.addAttribute("activeTab", requestDTO.getActiveTab());
+		return AppConstants.View.SOP_CONFIG;
+	}
+
+	private String handleLegacyEligibleUpcs(MenuEligibleUpcsRequestDTO requestDTO, Model model) {
+		try {
+			logger.info("Eligible UPCs For Category : {}", requestDTO.getCategory());
+			populateSopConfigModel(model);
+
+			if (requestDTO.getCategory() != null) {
+				List<String> eligibleUpcsForSop = menuService.getEligibleUpcsForSop(requestDTO.getCategory());
+				model.addAttribute("eligibleUpcsForSop", eligibleUpcsForSop);
+				return AppConstants.View.SOP_CONFIG;
+			}
+
+			logger.info("Unable to fetch eligibleUpcsForSop of category : {}", requestDTO.getCategory());
+		} catch (Exception e) {
+			logger.error("Failed to fetch eligible UPCs for SOP", e);
+		}
+		model.addAttribute("activeTab", requestDTO.getActiveTab());
+		return AppConstants.View.SOP_CONFIG;
+	}
+
+	private String handleLegacyLocationAdd(Model model, MenuLocationRequestDTO requestDTO) {
+		logger.info("New Location to Add : {}", requestDTO.getLocn_brcd());
+		try {
+			String responseMessage = menuService.locationAdd(requestDTO.getLocn_brcd(), requestDTO.getGrp(),
+					requestDTO.getLocn_class(), requestDTO.getLength(), requestDTO.getWidth(), requestDTO.getHeight(),
+					requestDTO.getMax_vol(), requestDTO.getMax_qty(), requestDTO.getMax_weight());
+			model.addAttribute("responseMessage", responseMessage);
+			if ("Location already exists".equals(responseMessage)) {
+				logger.info("Response Message : {}", responseMessage);
+			} else {
+				logger.info("Location added : {}", requestDTO.getLocn_brcd());
+			}
+			return AppConstants.View.LOCATION;
+		} catch (IOException e) {
+			logger.error("Failed to add location", e);
+			return AppConstants.View.LOCATION;
+		}
+	}
+
+	private String handleLegacyLocationEdit(Model model, MenuLocationRequestDTO requestDTO) {
+		logger.info("Location to Edit : {}", requestDTO.getLocn_brcd());
+		try {
+			ResponseEntity<String> responseMessage = menuService.locationEdit(requestDTO.getLocn_brcd(),
+					requestDTO.getGrp(), requestDTO.getLocn_class(), requestDTO.getLength(), requestDTO.getWidth(),
+					requestDTO.getHeight(), requestDTO.getMax_vol(), requestDTO.getMax_qty(),
+					requestDTO.getMax_weight());
+			model.addAttribute("responseMessage", responseMessage.getBody());
+			logger.info("Response Message : {}", responseMessage.getBody());
+			return AppConstants.View.LOCATION;
+		} catch (IOException e) {
+			logger.error("Failed to edit location", e);
+			return AppConstants.View.LOCATION;
+		}
+	}
+
+	private String handleLegacyPutawayReserve(Model model, MenuReserveLpnRequestDTO requestDTO) {
+		logger.info("Location LPN : {} to {} Reserve location ", requestDTO.getLpn_name(), requestDTO.getResv_locn());
+		try {
+			String response = menuService.locateLpnToResv(requestDTO.getLpn_name(), requestDTO.getResv_locn());
+			model.addAttribute("responseMessage", response);
+			return AppConstants.View.PUTAWAY_RESERVE;
+		} catch (IOException e) {
+			logger.error("Failed to putaway LPN to reserve", e);
+			return AppConstants.View.PUTAWAY_RESERVE;
+		}
+	}
+
+	private String handleLegacyPutawayActive(Model model, MenuActiveLpnRequestDTO requestDTO) {
+		logger.info("Location LPN : {} to {} Active location ", requestDTO.getLpn_name(), requestDTO.getActive_locn());
+		try {
+			String response = menuService.locateLpnToActive(requestDTO.getLpn_name(), requestDTO.getActive_locn());
+			model.addAttribute("responseMessage", response);
+			return AppConstants.View.PUTAWAY_ACTIVE;
+		} catch (IOException e) {
+			logger.error("Failed to putaway LPN to active", e);
+			return AppConstants.View.PUTAWAY_ACTIVE;
+		}
+	}
+
+	private String handleLegacyDeleteLocation(String locn_brcd) {
+		logger.info("Delete Existing Item : {}", locn_brcd);
+		try {
+			menuService.deleteLocation(locn_brcd);
+			logger.info("Location deleted successfully : {}", locn_brcd);
+			return AppConstants.View.LOCATION;
+		} catch (IOException e) {
+			logger.error("Failed to delete location", e);
+			return AppConstants.View.LOCATION;
+		}
+	}
+
+	private String handleLegacyLpnEdit(MenuLpnEditRequestDTO requestDTO) {
+		logger.info("Lpn to Edit : {}", requestDTO.getLpn_name());
+		try {
+			String responseMessage = menuService.lpnEdit(requestDTO.getLpn_name(), requestDTO.getItem_desc(),
+					requestDTO.getLength(), requestDTO.getWidth(), requestDTO.getHeight(), requestDTO.getQuantity(),
+					requestDTO.getAdjustQty(), requestDTO.getLpn_facility_status(), requestDTO.getVolume());
+			if ("Lpn already exists".equals(responseMessage)) {
+				logger.info("Response Message : {}", responseMessage);
+			} else {
+				logger.info("Lpn Edit : {}", requestDTO.getLpn_name());
+			}
+			return AppConstants.View.LPN;
+		} catch (IOException e) {
+			logger.error("Failed to edit LPN", e);
+			return AppConstants.View.LPN;
+		}
+	}
+
+	private String handleLegacyCheckActiveInventory(MenuCheckActiveInventoryRequestDTO requestDTO) {
+		try {
+			logger.info("LPN : {}", requestDTO.getLpn_name());
+			String response = menuService.checkActiveInventory(requestDTO.getLpn_name());
+			logger.info("Active Location : {}", response);
+			return response;
+		} catch (ClientProtocolException e) {
+			logger.error("Client protocol error while checking active inventory", e);
+			return "";
+		} catch (IOException e) {
+			logger.error("I/O error while checking active inventory", e);
+			return "";
+		}
+	}
+
+	private String handleLegacyUserList(Model model, HttpSession session) {
+		logger.info("Accessing userlist");
+		if (!hasManageUsersAccess(session)) {
+			logger.warn("Blocked unauthorized user-list access attempt");
+			model.addAttribute("errorMessage", "You do not have permission to manage users.");
+			return AppConstants.View.ERROR;
+		}
+		try {
+			List<UserDto> userDtos = menuAccessService.getUsers();
+			model.addAttribute("users", userDtos);
+			model.addAttribute("allRoles", roleService.getAllRoles());
+			model.addAttribute("allPermissions", permissionService.getAllPermissions());
+			return AppConstants.View.USER_LIST;
+		} catch (IOException e) {
+			logger.error("Failed to fetch users", e);
+			model.addAttribute("errorMessage", "Unable to load the user list at this time.");
+			return AppConstants.View.ERROR;
+		}
+	}
+
+	private String handleLegacyUserAdd(Model model, MenuUserAddRequestDTO requestDTO, HttpSession session) {
+		logger.info("New User to Add : {}", requestDTO.getUsername());
+		if (!hasManageUsersAccess(session)) {
+			logger.warn("Blocked unauthorized user-add attempt for username: {}", requestDTO.getUsername());
+			model.addAttribute("errorMessage", "You do not have permission to create users.");
+			return AppConstants.View.ERROR;
+		}
+		String response;
+		try {
+			response = menuService.userAdd(requestDTO.getFirstname(), requestDTO.getMiddlename(),
+					requestDTO.getLastname(), requestDTO.getUsername(), requestDTO.getPassword(), requestDTO.getEmail(),
+					requestDTO.getRoles(), requestDTO.getPermissions());
+			ResponseMessage responseMessage = new ResponseMessage();
+			responseMessage.setResponseMessage(response);
+			model.addAttribute("responseMessage", responseMessage.getResponseMessage());
+			logger.info("Response Message : {}", responseMessage);
+			return AppConstants.View.USER_LIST;
+		} catch (IOException e) {
+			logger.error("Failed to add user: {}", requestDTO.getUsername(), e);
+			model.addAttribute("errorMessage", "Unable to add the user at this time.");
+			return AppConstants.View.ERROR;
+		} catch (Exception e) {
+			logger.error("Unexpected error while adding user: {}", requestDTO.getUsername(), e);
+			model.addAttribute("errorMessage", "An unexpected error occurred while adding the user.");
+			return AppConstants.View.ERROR;
+		}
+
+	}
+
+	private boolean hasManageUsersAccess(HttpSession session) {
+		String jwtToken = SessionUtil.getSessionToken(session);
+		if (jwtToken == null || jwtToken.isBlank()) {
+			return false;
+		}
+		Map<String, Boolean> uiActions = menuAccessService.getUiActions(jwtToken);
+		return uiActions != null && Boolean.TRUE.equals(uiActions.get("manageUsers"));
+	}
+
+	private String handleLegacyCubiscanLog(Model model) {
+		logger.info("cubiscan-log");
+		try {
+			List<CubiscanLog> cubiscanLogs = menuService.getCubiscanLogs();
+			logger.info("{}", cubiscanLogs);
+			model.addAttribute("cubiscanLogs", cubiscanLogs);
+			return AppConstants.View.CUBISCAN_LOG;
+		} catch (Exception e) {
+			logger.error("Failed to fetch cubiscan logs", e);
+			model.addAttribute("responseMessage", "An error occured, Please check with administrator");
+			return AppConstants.View.CUBISCAN_LOG;
+		}
+	}
+
 }

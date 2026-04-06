@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <title>LPN</title>
@@ -6,6 +6,7 @@
 	href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 <link rel="stylesheet"
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/inventory-ui/css/operations-ui.css">
 
 <style>
 body {
@@ -37,47 +38,40 @@ table {
 	display: inline-block;
 	margin-right: 10px; /* Add a little space between buttons */
 }
-
-.topnav {
-	overflow: visible;
-	background-color: #333;
-	display: flex;
-	justify-content: space-around;
-	align-items: center;
-	position: sticky;
-    top: 0;
-    width: 100%;
-}
-
-.topnav a {
-	float: left;
-	display: block;
-	color: #f2f2f2;
-	text-align: center;
-	padding: 20px 16px; /* Increase the vertical padding */
-	text-decoration: none;
-	font-size: 17px;
-}
-
-.topnav a:hover {
-	background-color: #ddd;
-	color: black;
-}
-
-.topnav a.active {
-	background-color: royalblue;
-	color: white;
-}
-
-.topnav .title {
-	color: #f2f2f2;
-	font-size: 20px;
-	font-weight: bold;
-}
 .scrollable-container {
     width: 100%;
     height: 600px; 
     overflow-y: auto; 
+}
+
+.refresh-toolbar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	flex-wrap: wrap;
+	margin: 1rem 0;
+	padding: 0.85rem 1rem;
+	border: 1px solid #d7e3f3;
+	border-radius: 0.5rem;
+	background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
+}
+
+.refresh-toolbar-meta {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.refresh-toolbar-controls {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.refresh-toolbar-seconds {
+	width: 88px;
 }
 
   .scrollable-container table {
@@ -91,113 +85,55 @@ table {
 	z-index: 0; 
 
   }
-
-  .scrollable-container th {
-   
-  }
-  .bi bi-person-circle{
-	font-size: 10px;
- }
- /* .icon-container {
+/* .icon-container {
     display: flex;
     align-items: right;
    
 } */
-
-.icon-name {
-    margin-left: 200px; /* Adjust spacing between icon and name */
-    /* Add styles for the name (e.g., font-size, color) */
-	color: white;
-}
-.title{
-	margin-left: 579px;
-}
-.links{
-	margin-left: 75px;
-}
-.dropdown {
-            position: relative;
-            display: inline-flex;
-			
-        }
-
-        .dropdown-button {
-            background-color: #f9f9f9;
-            border: none;
-            padding: 10px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #fff;
-            min-width: 120px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-		
-        }
-
-        .dropdown-content a {
-            color: #333;
-            padding: 8px 12px;
-            text-decoration: none;
-            display: block;
-			
-        }
-
-        .dropdown-content a:hover {
-            background-color: #f5f5f5;
-        }
-
-.dropdown-menu {
-/* background-color: aqua;	 */
-	width: auto;
-   /* padding: 0px 0px 0px 0px 0px !important; */
-}		
-.dropdown-menu-left {
-  left: auto !important;
-  margin-left: -105px !important;
-}
-.dropdown-item {
-	white-space: initial !important;
-	margin-left: 0px;
-    margin-right: 0px;
-    margin-top: -9px;
-    margin-bottom: -9px;
-	height: 80px !important;
-	width: 160px;
-	color: black !important;
-}
-.dropdown-menu-main{
-	/* background-color: #333; */
-	margin-left: 0px;
-	height: 70px ;
-	
-}
-.dropdown-menu-main-content{
-color: white;
-margin-left: 0px;
-margin-right: 0px;
-margin-top: -9px;
-margin-bottom: -9px;	
-}
 </style>
 </head>
-<body>
+<body class="ops-page">
 
 	<div class="topnav">
 		<div class="links"> 
 			<button style="background-color: #333;border: none;" class=" btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Menu</button>
-			 <div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
-				  <a class="dropdown-item dropdown-menu-main-content" th:each="menu : ${nav_menus}" th:href="@{${menu.menu_link}}" th:text="${menu.menu_name}" th:classappend="${#strings.contains(menu.menu_link, currentMenu) ? 'active' : ''}"></a>
-				<!-- <a class="dropdown-item dropdown-menu-main-content" href="#orders">RF Menu</a>
-				<a class="dropdown-item dropdown-menu-main-content" href="#reports">Category</a>
-				<a class="dropdown-item dropdown-menu-main-content" href="#settings">Item</a>
-				<a class="dropdown-item dropdown-menu-main-content" href="#orders">Location</a>
-				<a class="dropdown-item dropdown-menu-main-content" href="#reports">LPN</a>
-				<a class="dropdown-item dropdown-menu-main-content" href="#settings">Inventory</a>  -->
-			 </div>	
+			 <div
+          class="dropdown-menu dropdown-menu-left"
+          aria-labelledby="dropdownMenuButton"
+        >
+          <div th:each="menu : ${nav_menus}">
+            <div class="dropdown-item-container">
+              <a
+                class="dropdown-item dropdown-menu-main-content"
+                th:if="${menu != null and menu.menu_type != 'CHILD_UI'}"
+                th:href="@{${menu.menu_link}}"
+                th:text="${menu.menuName}"
+                th:classappend="${#strings.contains(menu.menu_link ?: '', currentMenu ?: '') ? 'active' : ''}"
+              >
+                <span
+                  th:if="${menu != null and menu.menu_type == 'PARENT_UI'}"
+                  class="arrow"
+                >
+                  &#9654;
+                </span>
+              </a>
+
+              <!-- Submenu -->
+              <div
+                class="submenu"
+                th:if="${menu != null and menu.menu_type != null and menu.menu_type == 'PARENT_UI'}"
+              >
+                <a
+                  class="submenu-item"
+                  th:each="submenu : ${menu.children}"
+                  th:href="@{${submenu.menu_link}}"
+                  th:text="${submenu.menuName}"
+                ></a>
+              </div>
+
+            </div>
+          </div>
+        </div>
 		 </div>
 		
 		<div class="title">Warehouse Management System</div>
@@ -213,20 +149,32 @@ margin-bottom: -9px;
 		</button>
 		<div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
 		  <a class="dropdown-item"  href="#">Account</a>
-		  <a class="dropdown-item"th:href="@{${settings_url.menu_link}}"th:text="${settings_url.menu_name}"></a>
-		  <a class="dropdown-item" th:href="@{${logout_url.menu_link}}"th:text="${logout_url.menu_name}"></a>
+		  <a class="dropdown-item"th:href="@{${settings_url.menu_link}}"th:text="${settings_url.menuName}"></a>
+		  <a class="dropdown-item" th:href="@{${logout_url.menu_link}}"th:text="${logout_url.menuName}"></a>
 		</div>
 		</div>
 		&nbsp;&nbsp;&nbsp;&nbsp;
 	  </div>
-	<div class="container">
+	<div class="container ops-shell">
 		
 		<h1 class="text-decoration">LPN</h1>
+		<div class="refresh-toolbar">
+			<div class="refresh-toolbar-meta">
+				<span class="badge badge-info" id="realtimeRefreshStatus">Realtime On</span>
+				<small class="text-muted" id="realtimeRefreshLastUpdated">Last updated: Not yet</small>
+			</div>
+			<div class="refresh-toolbar-controls">
+				<input type="number" min="5" step="5" id="realtimeRefreshSeconds" class="form-control form-control-sm refresh-toolbar-seconds" value="10">
+				<button type="button" class="btn btn-outline-primary btn-sm" onclick="applyRealtimeRefreshInterval()">Apply</button>
+				<button type="button" class="btn btn-outline-secondary btn-sm" id="toggleRealtimeRefreshButton" onclick="toggleRealtimeRefresh()">Pause Realtime</button>
+				<button type="button" class="btn btn-primary btn-sm" onclick="refreshCurrentPage(true)"><i class="fa fa-refresh"></i> Refresh Now</button>
+			</div>
+		</div>
 		<!-- Category table -->
 		<div class="scrollable-container">
 			<!-- <input data-toggle="modal" data-target="#exampleModal" type="button" 
             class="btn btn-primary" value="Add Location" id="addLocationButton" onclick="showButtons()"> -->
-			<table class="table table-striped">
+			<table class="table table-striped" data-enhance-table="true">
 				<thead class="thead-dark">
 					<tr>
 						<th scope="col">#</th>
@@ -271,6 +219,7 @@ margin-bottom: -9px;
 								View</button>
 							<button th:data-lpn-id="${lpn.lpn_id}"
                                     th:data-lpn-name="${lpn.lpn_name}"
+								th:disabled="${uiActions == null or !uiActions.manageLpns}"
 							    	onclick="confirmDeallocateLpn(this.getAttribute('data-lpn-id'),this.getAttribute('data-lpn-name'),true)"
 								    class="btn btn-danger">Deallocate</button>
 
@@ -288,7 +237,7 @@ margin-bottom: -9px;
                 <h5 class="modal-title" id="exampleModalLabel">LPN Details</h5>
                 <button type="button" class="close" data-dismiss="modal"
                     aria-label="Close">
-                    <span aria-hidden="true">×</span>
+                    <span aria-hidden="true">Ã—</span>
                 </button>
             </div>
             <div class="modal-body">
@@ -350,9 +299,9 @@ margin-bottom: -9px;
                 <button type="button" class="btn btn-primary"   onclick="saveLpnButton()">Save</button>
             </div> -->
 			<div id= "editLpnButton" class="modal-footer">
-				<button type="button" class="btn btn-primary"   onclick="adjustQty()">Adjust Quanity</button>
+				<button type="button" class="btn btn-primary" th:disabled="${uiActions == null or !uiActions.manageLpns}" onclick="adjustQty()">Adjust Quanity</button>
                 <button type="button" class="btn btn-secondary"	onclick="cancelViewLpn()" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary"   onclick="saveEditLpn()">Save</button>
+				<button type="button" class="btn btn-primary" th:disabled="${uiActions == null or !uiActions.manageLpns}" onclick="saveEditLpn()">Save</button>
             </div>
         </div>
     </div>
@@ -367,7 +316,165 @@ margin-bottom: -9px;
 			src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script src="/inventory-ui/js/ui-feedback.js"></script>
+		<script src="/inventory-ui/js/table-enhancements.js"></script>
 		<script type='text/javascript'>
+		const REFRESH_STORAGE_KEY = 'inventory.page.refresh.lpn';
+		const DEFAULT_REFRESH_INTERVAL_MS = 10000;
+		const MIN_REFRESH_INTERVAL_SECONDS = 5;
+		var realtimeRefreshTimer = null;
+		var realtimeRefreshEnabled = true;
+		var currentRealtimeIntervalMs = DEFAULT_REFRESH_INTERVAL_MS;
+		var lastRefreshTimestamp = null;
+
+		function loadRefreshSettings() {
+			try {
+				var savedSettings = JSON.parse(localStorage.getItem(REFRESH_STORAGE_KEY) || '{}');
+				if (typeof savedSettings.enabled === 'boolean') {
+					realtimeRefreshEnabled = savedSettings.enabled;
+				}
+				if (typeof savedSettings.intervalMs === 'number' && savedSettings.intervalMs >= (MIN_REFRESH_INTERVAL_SECONDS * 1000)) {
+					currentRealtimeIntervalMs = savedSettings.intervalMs;
+				}
+				if (savedSettings.lastUpdated) {
+					lastRefreshTimestamp = savedSettings.lastUpdated;
+				}
+			} catch (error) {
+				console.warn('Unable to load refresh settings', error);
+			}
+
+			if (!lastRefreshTimestamp) {
+				lastRefreshTimestamp = new Date().toISOString();
+				persistRefreshSettings();
+			}
+		}
+
+		function persistRefreshSettings() {
+			localStorage.setItem(REFRESH_STORAGE_KEY, JSON.stringify({
+				enabled: realtimeRefreshEnabled,
+				intervalMs: currentRealtimeIntervalMs,
+				lastUpdated: lastRefreshTimestamp
+			}));
+		}
+
+		function formatRefreshTimestamp(timestamp) {
+			if (!timestamp) {
+				return 'Not yet';
+			}
+
+			var parsedDate = new Date(timestamp);
+			if (Number.isNaN(parsedDate.getTime())) {
+				return 'Not yet';
+			}
+
+			return parsedDate.toLocaleString();
+		}
+
+		function updateRefreshControls() {
+			var statusBadge = document.getElementById('realtimeRefreshStatus');
+			var lastUpdatedLabel = document.getElementById('realtimeRefreshLastUpdated');
+			var toggleButton = document.getElementById('toggleRealtimeRefreshButton');
+			var intervalInput = document.getElementById('realtimeRefreshSeconds');
+
+			if (statusBadge) {
+				statusBadge.textContent = realtimeRefreshEnabled ? 'Realtime On' : 'Realtime Paused';
+				statusBadge.className = realtimeRefreshEnabled ? 'badge badge-info' : 'badge badge-secondary';
+			}
+
+			if (lastUpdatedLabel) {
+				lastUpdatedLabel.textContent = 'Last updated: ' + formatRefreshTimestamp(lastRefreshTimestamp);
+			}
+
+			if (toggleButton) {
+				toggleButton.textContent = realtimeRefreshEnabled ? 'Pause Realtime' : 'Resume Realtime';
+				toggleButton.className = realtimeRefreshEnabled ? 'btn btn-outline-secondary btn-sm' : 'btn btn-outline-success btn-sm';
+			}
+
+			if (intervalInput) {
+				intervalInput.value = currentRealtimeIntervalMs / 1000;
+			}
+		}
+
+		function stopRealtimeRefresh() {
+			if (realtimeRefreshTimer) {
+				clearInterval(realtimeRefreshTimer);
+				realtimeRefreshTimer = null;
+			}
+		}
+
+		function startRealtimeRefresh() {
+			stopRealtimeRefresh();
+			if (!realtimeRefreshEnabled) {
+				return;
+			}
+
+			realtimeRefreshTimer = setInterval(function() {
+				refreshCurrentPage(false);
+			}, currentRealtimeIntervalMs);
+		}
+
+		function isRefreshBlocked() {
+			var activeModal = document.querySelector('.modal.show');
+			return !!activeModal;
+		}
+
+		function refreshCurrentPage(forceRefresh) {
+			if (!forceRefresh && isRefreshBlocked()) {
+				return;
+			}
+
+			lastRefreshTimestamp = new Date().toISOString();
+			persistRefreshSettings();
+			window.location.reload();
+		}
+
+		function toggleRealtimeRefresh() {
+			realtimeRefreshEnabled = !realtimeRefreshEnabled;
+			persistRefreshSettings();
+			updateRefreshControls();
+
+			if (realtimeRefreshEnabled) {
+				startRealtimeRefresh();
+			} else {
+				stopRealtimeRefresh();
+			}
+		}
+
+		function applyRealtimeRefreshInterval() {
+			var intervalInput = document.getElementById('realtimeRefreshSeconds');
+			var seconds = parseInt(intervalInput.value, 10);
+
+			if (Number.isNaN(seconds) || seconds < MIN_REFRESH_INTERVAL_SECONDS) {
+				Swal.fire('Invalid interval', 'Enter a refresh interval of at least 5 seconds.', 'warning');
+				intervalInput.value = currentRealtimeIntervalMs / 1000;
+				return;
+			}
+
+			currentRealtimeIntervalMs = seconds * 1000;
+			persistRefreshSettings();
+			updateRefreshControls();
+			if (realtimeRefreshEnabled) {
+				startRealtimeRefresh();
+			}
+		}
+
+		document.addEventListener('DOMContentLoaded', function() {
+			loadRefreshSettings();
+			updateRefreshControls();
+			if (realtimeRefreshEnabled) {
+				startRealtimeRefresh();
+			}
+
+			var intervalInput = document.getElementById('realtimeRefreshSeconds');
+			if (intervalInput) {
+				intervalInput.addEventListener('keydown', function(event) {
+					if (event.key === 'Enter') {
+						event.preventDefault();
+						applyRealtimeRefreshInterval();
+					}
+				});
+			}
+		});
 
 		function cancelViewLpn(){
 			document.getElementById('lpn_id').value = null;
@@ -429,14 +536,14 @@ margin-bottom: -9px;
 				success : function(response, textStatus, xhr) {
 					console.log("Status Code:", xhr.status
 							+ ", Status Message " + textStatus);
-					alert('Lpn edited successfully');
+					InventoryUI.success('Lpn edited successfully');
 					
 					isItemShown = false;
 					location.reload();
 
 				},
 				error : function(response) {
-					alert('Error editing Lpn');
+					InventoryUI.error('Error editing Lpn');
 					location.reload();
 				}
 			};
@@ -492,3 +599,5 @@ margin-bottom: -9px;
 	</script>
 </body>
 </html>
+
+
