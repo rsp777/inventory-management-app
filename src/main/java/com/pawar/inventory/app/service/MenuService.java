@@ -103,7 +103,15 @@ public interface MenuService {
 
     String getUrl(String menuName);
 
-    String userAdd(String firstname, String middlename, String lastname, String username, String password, String email);
+    String userAdd(String firstname, String middlename, String lastname, String username, String password, String email, List<String> roles, List<String> permissions) throws ClientProtocolException, IOException;
+
+        String assignRoleToUser(Integer userId, Integer roleId) throws ClientProtocolException, IOException;
+
+        String unassignRoleFromUser(Integer userId, Integer roleId) throws ClientProtocolException, IOException;
+
+        String getUserRoles(Integer userId) throws ClientProtocolException, IOException;
+
+        String deleteUser(Integer userId) throws ClientProtocolException, IOException;
 
     String checkActiveInventory(String lpn_name) throws ClientProtocolException, IOException;
 

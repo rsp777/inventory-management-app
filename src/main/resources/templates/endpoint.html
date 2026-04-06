@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <title>Listeners & Endpoints</title>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/inventory-ui/css/operations-ui.css">
     
 <style>
 body { background-color: #f8f9fa; }
@@ -13,23 +14,7 @@ body { background-color: #f8f9fa; }
 .form-group { margin-top: 2rem; }
 
 /* Navigation */
-.topnav { overflow: visible; background-color: #333; display: flex; justify-content: space-around; align-items: center; position: sticky; top: 0; width: 100%; }
-.topnav a { float: left; display: block; color: #f2f2f2; text-align: center; padding: 20px 16px; text-decoration: none; font-size: 17px; }
-.topnav a:hover { background-color: #ddd; color: black; }
-.topnav a.active { background-color: royalblue; color: white; }
-.topnav .title { color: #f2f2f2; font-size: 20px; font-weight: bold; }
-.title { margin-left: 579px; }
-.links { margin-left: 75px; }
-.icon-name { margin-left: 200px; color: white; }
-
 /* Dropdown */
-.dropdown { position: relative; display: inline-flex; }
-.dropdown-menu { width: auto; position: relative; }
-.dropdown-menu-left { left: auto !important; margin-left: -105px !important; }
-.dropdown-item-container { position: relative; }
-.submenu { display: none; position: absolute; margin-top: 227%; left: 100%; background-color: #333; padding: 10px; border: 1px solid #333; width: 200px; }
-.dropdown-item-container:hover .submenu { display: block; }
-
 /* Tabs */
 .tabs-container { margin-top: 20px; }
 .nav-tabs { border-bottom: 2px solid #dee2e6; }
@@ -94,7 +79,7 @@ body { background-color: #f8f9fa; }
 .badge-dark { background-color: #343a40; }
 </style>
 </head>
-<body>
+<body class="ops-page">
 
 <div class="topnav">
      <div class="links"> 
@@ -134,7 +119,7 @@ body { background-color: #f8f9fa; }
   &nbsp;&nbsp;&nbsp;&nbsp;
 </div>
 
-<div class="container">
+<div class="container ops-shell">
     <h1 class="text-center">Listeners & Endpoints</h1>
     <input type="hidden" id="responseMessage" th:value="${responseMessage}"/>
     
@@ -1625,3 +1610,4 @@ window.disableAll = disableAll;
 </script>
 </body>
 </html>
+

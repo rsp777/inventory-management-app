@@ -1,42 +1,23 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <title>Role Management</title>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/inventory-ui/css/access-admin.css">
 <style>
 body { background-color: #f8f9fa; }
 .container { max-width: 960px; margin-top: 2rem; padding: 2rem; background-color: #fff; border-radius: 0.5rem; box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15); }
 table { margin-top: 2rem; }
 .table th, .table td { vertical-align: middle; }
 .form-group { margin-top: 2rem; }
-.topnav { overflow: visible; background-color: #333; display: flex; justify-content: space-around; align-items: center; position: sticky; top: 0; width: 100%; }
-.topnav a { float: left; display: block; color: #f2f2f2; text-align: center; padding: 20px 16px; text-decoration: none; font-size: 17px; }
-.topnav a:hover { background-color: #ddd; color: black; }
-.topnav a.active { background-color: royalblue; color: white; }
-.topnav .title { color: #f2f2f2; font-size: 20px; font-weight: bold; }
 .scrollable-container { width: 100%; height: 520px; overflow-y: auto; }
 .scrollable-container table { width: 100%; }
 .scrollable-container thead { position: sticky; top: 0; background-color: #f8f9fa; z-index: 0; }
-.icon-name { margin-left: 200px; color: white; }
-.title { margin-left: 579px; }
-.links { margin-left: 75px; }
-.dropdown { position: relative; display: inline-flex; }
-.dropdown-button { background-color: #f9f9f9; border: none; padding: 10px; font-size: 14px; cursor: pointer; }
-.dropdown-menu { width: auto; }
-.dropdown-menu-left { left: auto !important; margin-left: -105px !important; }
-.dropdown-item { white-space: initial !important; margin-right: 0; margin-top: -8px; margin-bottom: -8px; height: 80px !important; width: 160px; color: black !important; }
-.dropdown-menu-main-content { color: white; margin-left: 0; }
-.arrow { float: right; font-size: 12px; margin-left: 10px; }
-.submenu-item { color: white; padding: 10px; display: block; text-decoration: none; }
-.submenu-item:hover { background-color: #575757; }
-.dropdown-item-container { position: relative; }
-.submenu { display: none; position: absolute; margin-top: 227%; left: 100%; background-color: #333; padding: 10px; border: 1px solid #333; width: 200px; }
-.dropdown-item-container:hover .submenu { display: block; }
 .add-section { margin-top: 1.5rem; padding: 1rem; background: #f1f3f5; border-radius: 0.4rem; border: 1px solid #dee2e6; }
 </style>
 </head>
-<body>
+<body class="access-admin-page">
 
 <div class="topnav">
   <div class="links">
@@ -77,18 +58,45 @@ table { margin-top: 2rem; }
   &nbsp;&nbsp;&nbsp;&nbsp;
 </div>
 
-<div class="container">
-  <h1 class="text-center">Role Management</h1>
-  <input type="hidden" id="responseMessage" th:value="${responseMessage}"/>
-
-  <div class="d-flex justify-content-between align-items-center mb-2 mt-3">
+<div class="container access-admin-shell">
+  <div class="page-header">
     <div>
-      <a href="/inventory-ui/api/permissions" class="btn btn-outline-secondary btn-sm mr-2"><i class="fa fa-key"></i> Manage Permissions</a>
-      <a href="/inventory-ui/api/role-permissions" class="btn btn-outline-secondary btn-sm mr-2"><i class="fa fa-link"></i> Role-Permission Assignment</a>
-      <a href="/inventory-ui/api/menu-access-management" class="btn btn-outline-secondary btn-sm"><i class="fa fa-bars"></i> Menu Access</a>
+      <h1 class="page-title">Role Management</h1>
+      <p class="page-subtitle">Organize operational roles, inspect their effective permissions, and review how many menus each role unlocks.</p>
     </div>
     <button class="btn btn-primary btn-sm" th:disabled="${uiActions == null or !uiActions.manageUsers}"
             onclick="showAddRoleSection()"><i class="fa fa-plus"></i> Add Role</button>
+  </div>
+  <input type="hidden" id="responseMessage" th:value="${responseMessage}"/>
+
+  <div class="admin-nav-shell">
+    <div class="admin-nav-head">
+      <p class="admin-nav-title">Access Administration</p>
+      <span class="admin-nav-meta" th:text="'Roles: ' + ${#lists.size(roles)}"></span>
+    </div>
+    <div class="admin-pills">
+      <a href="/inventory-ui/api/userlist" class="admin-pill"><i class="fa fa-users"></i> Users</a>
+      <a href="/inventory-ui/api/roles" class="admin-pill active"><i class="fa fa-user-secret"></i> Roles</a>
+      <a href="/inventory-ui/api/permissions" class="admin-pill"><i class="fa fa-key"></i> Permissions</a>
+      <a href="/inventory-ui/api/role-permissions" class="admin-pill"><i class="fa fa-link"></i> Role-Permissions</a>
+      <a href="/inventory-ui/api/menu-access-management" class="admin-pill"><i class="fa fa-bars"></i> Menu Access</a>
+    </div>
+  </div>
+
+  <div class="filter-panel">
+    <input id="roleSearch" type="text" class="form-control form-control-sm" style="width: 260px;"
+           placeholder="Search role name" onkeyup="applyRoleFilters()">
+    <select id="rolePermissionFilter" class="form-control form-control-sm" style="width: 190px;" onchange="applyRoleFilters()">
+      <option value="">Any permission count</option>
+      <option value="with">With permissions</option>
+      <option value="without">Without permissions</option>
+    </select>
+    <select id="roleMenuFilter" class="form-control form-control-sm" style="width: 170px;" onchange="applyRoleFilters()">
+      <option value="">Any menu count</option>
+      <option value="with">With menus</option>
+      <option value="without">Without menus</option>
+    </select>
+    <span id="roleResultsMeta" class="results-pill ml-auto"><i class="fa fa-filter"></i> 0 visible</span>
   </div>
 
   <!-- Add Role Section -->
@@ -104,7 +112,7 @@ table { margin-top: 2rem; }
   </div>
 
   <div class="scrollable-container mt-3">
-    <table class="table table-striped" data-enhance-table="true">
+    <table class="table table-striped access-table" data-enhance-table="true">
       <thead class="thead-dark">
         <tr>
           <th>Role ID</th>
@@ -116,10 +124,11 @@ table { margin-top: 2rem; }
         </tr>
       </thead>
       <tbody>
-        <tr th:each="role : ${roles}">
+        <tr th:each="role : ${roles}" class="role-row"
+            th:attr="data-role-name=${role.name},data-permission-count=${#sets.size(role.permissions)},data-menu-count=${#sets.size(role.menus)}">
           <td th:text="${role.role_id}"></td>
-          <td><strong th:text="${role.name}"></strong></td>
-          <td th:text="${#temporals.format(role.createdDttm, 'yyyy-MM-dd HH:mm') ?: '—'}"></td>
+          <td><span class="entity-name" th:text="${role.name}"></span></td>
+          <td th:text="${#temporals.format(role.createdDttm, 'yyyy-MM-dd HH:mm') ?: 'â€”'}"></td>
           <td>
             <span class="badge badge-secondary" th:text="${#sets.size(role.permissions)}"></span>
             <a th:href="@{/api/role-permissions(roleId=${role.role_id})}" class="btn btn-link btn-sm p-0 ml-1">manage</a>
@@ -200,6 +209,38 @@ table { margin-top: 2rem; }
         });
     });
   }
+
+  function normalizeRoleText(value) {
+    return (value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  }
+
+  function applyRoleFilters() {
+    var search = normalizeRoleText(document.getElementById('roleSearch').value);
+    var permissionFilter = document.getElementById('rolePermissionFilter').value;
+    var menuFilter = document.getElementById('roleMenuFilter').value;
+    var visibleCount = 0;
+
+    document.querySelectorAll('tr.role-row').forEach(function(row) {
+      var name = normalizeRoleText(row.getAttribute('data-role-name'));
+      var permissionCount = parseInt(row.getAttribute('data-permission-count') || '0', 10);
+      var menuCount = parseInt(row.getAttribute('data-menu-count') || '0', 10);
+      var matchesSearch = !search || name.indexOf(search) !== -1;
+      var matchesPermission = !permissionFilter
+        || (permissionFilter === 'with' && permissionCount > 0)
+        || (permissionFilter === 'without' && permissionCount === 0);
+      var matchesMenu = !menuFilter
+        || (menuFilter === 'with' && menuCount > 0)
+        || (menuFilter === 'without' && menuCount === 0);
+      var visible = matchesSearch && matchesPermission && matchesMenu;
+      row.style.display = visible ? '' : 'none';
+      if (visible) visibleCount += 1;
+    });
+
+    document.getElementById('roleResultsMeta').innerHTML = '<i class="fa fa-filter"></i> ' + visibleCount + ' visible';
+  }
+
+  document.addEventListener('DOMContentLoaded', applyRoleFilters);
 </script>
 </body>
 </html>
+

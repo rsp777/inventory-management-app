@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.management.relation.RoleNotFoundException;
@@ -136,7 +138,8 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 		Set<Role> userRoles = new HashSet<>();
 		logger.info("decodedToken[2] : {}", decodedToken[2]);
 
-		for (int i = 0; i < decodedToken.length - 1; i++) {
+		for (int i = 0; i < decodedToken.length; i++) {
+			logger.info("decodedToken[{}] : {}", i, decodedToken[i]);
 			if (decodedToken[i].contains("Role")) {
 				String result = decodedToken[i].replaceAll("^\\[", "").replaceAll("\\]$", "");
 				String json = "{" +
@@ -151,7 +154,7 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 						+ result.substring(result.indexOf("name=") + 5, result.indexOf(", createdDttm")).trim() + "\"}]"
 						+
 						"}";
-				logger.info("result in loop : {}", json);
+				logger.info("result in loop : {}", result);
 
 				Role role = mapper.readValue(json, Role.class);
 				userRoles.add(role);
@@ -210,17 +213,56 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 		return uiActions;
 	}
 
-	private Set<Role> getPersistedRoles(String[] decodedToken) throws JsonMappingException, JsonProcessingException {
-		Set<Role> tokenRoles = getRoles(decodedToken);
-		if (tokenRoles.isEmpty()) {
+	// Regex patterns for extracting role names from token segments
+	private static final Pattern ROLE_NAME_PATTERN = Pattern.compile("name=([A-Z][A-Z0-9_]*)");
+	private static final Pattern PLAIN_ROLE_PATTERN = Pattern.compile("\\b([A-Z][A-Z0-9_]{2,})\\b");
+
+	/**
+	 * Resolves fully-loaded Role entities (with permissions) from the decoded token.
+	 * Roles are in token segments starting at index 2.
+	 * Strategy 1: extract via "name=ROLENAME" pattern (toString format).
+	 * Strategy 2: fall back to plain UPPER_SNAKE_CASE word matching, each checked
+	 * against the DB so only real role names match.
+	 */
+	private Set<Role> getPersistedRoles(String[] decodedToken) {
+		if (decodedToken == null || decodedToken.length < 3) {
+			logger.warn("Token does not contain a role segment (length={})",
+					decodedToken == null ? 0 : decodedToken.length);
 			return Set.of();
 		}
 
 		Set<Role> persistedRoles = new LinkedHashSet<>();
-		for (Role tokenRole : tokenRoles) {
-			Role persistedRole = roleRepository.findById(tokenRole.getRole_id()).orElse(tokenRole);
-			persistedRoles.add(persistedRole);
+
+		for (int i = 1; i < decodedToken.length; i++) {
+			String segment = decodedToken[i];
+			if (segment == null || segment.isBlank()) continue;
+			// logger.info("Processing token segment[{}]: {}", i, segment);
+			// Strategy 1: parse "name=ROLENAME" present in toString() format
+			Matcher nameMatcher = ROLE_NAME_PATTERN.matcher(segment);
+			boolean foundAny = false;
+			while (nameMatcher.find()) {
+				String roleName = nameMatcher.group(1);
+				roleRepository.findByName(roleName).ifPresent(r -> {
+					persistedRoles.add(r);
+					logger.info("Resolved role '{}' via name= pattern", r.getName());
+				});
+				foundAny = true;
+			}
+
+			// Strategy 2: plain UPPER_SNAKE_CASE tokens (e.g. "ADMIN" or "[ADMIN, OPERATIONS]")
+			if (!foundAny) {
+				Matcher plainMatcher = PLAIN_ROLE_PATTERN.matcher(segment);
+				while (plainMatcher.find()) {
+					String candidate = plainMatcher.group(1);
+					roleRepository.findByName(candidate).ifPresent(r -> {
+						persistedRoles.add(r);
+						logger.info("Resolved role '{}' via plain pattern", r.getName());
+					});
+				}
+			}
 		}
+
+		logger.info("Resolved {} persisted role(s) from token", persistedRoles.size());
 		return persistedRoles;
 	}
 
@@ -298,7 +340,7 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 		if (json == null || json.isBlank()) {
 			return List.of();
 		}
-		logger.info(json);
+		// logger.info(json);
 		List<UserDto> fetchedUsers = mapper.readValue(json, new TypeReference<List<UserDto>>() {
 		});
 
