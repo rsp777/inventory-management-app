@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <title>Inventory Management</title>
@@ -6,6 +6,7 @@
 	href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 <link rel="stylesheet"
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/inventory-ui/css/operations-ui.css">
 
 <style>
 body {
@@ -40,43 +41,6 @@ table {
 	display: inline-block;
 	margin-right: 10px; /* Add a little space between buttons */
 }
-
-.topnav {
-	overflow: visible;
-	background-color: #333;
-	display: flex;
-	justify-content: space-around;
-	align-items: center;
-	position: sticky;
-    top: 0;
-    width: 100%;
-}
-
-.topnav a {
-	float: left;
-	display: block;
-	color: #f2f2f2;
-	text-align: center;
-	padding: 20px 16px; /* Increase the vertical padding */
-	text-decoration: none;
-	font-size: 17px;
-}
-
-.topnav a:hover {
-	background-color: #ddd;
-	color: black;
-}
-
-.topnav a.active {
-	background-color: royalblue;
-	color: white;
-}
-
-.topnav .title {
-	color: #f2f2f2;
-	font-size: 20px;
-	font-weight: bold;
-}
 .indicator {
         width: 20px;
         height:20px;
@@ -105,133 +69,14 @@ table {
 	z-index: 0; 
 
   }
-
-  .scrollable-container th {
-   
-  }
-  .bi bi-person-circle{
-	font-size: 10px;
- }
- /* .icon-container {
+/* .icon-container {
     display: flex;
     align-items: right;
    
 } */
-
-.icon-name {
-    margin-left: 200px; /* Adjust spacing between icon and name */
-    /* Add styles for the name (e.g., font-size, color) */
-	color: white;
-}
-.title{
-	margin-left: 579px;
-}
-.links{
-	margin-left: 75px;
-}
-.dropdown {
-        position: relative;
-        display: inline-flex;
-      }
-
-      .dropdown-button {
-        background-color: #f9f9f9;
-        border: none;
-        padding: 10px;
-        font-size: 14px;
-        cursor: pointer;
-      }
-
-      .dropdown-content {
-        display: none;
-        position: absolute;
-        background-color: #fff;
-        min-width: 120px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-
-      .dropdown-content a {
-        color: #333;
-        padding: 8px 12px;
-        text-decoration: none;
-        display: block;
-      }
-
-      .dropdown-content a:hover {
-        background-color: #f5f5f5;
-      }
-
-      .dropdown-menu {
-        /* background-color: aqua;	 */
-        width: auto;
-        position: relative; /* Ensure the submenu is positioned relative to the dropdown */
-
-        /* padding: 0px 0px 0px 0px 0px !important; */
-      }
-      .dropdown-menu-left {
-        left: auto !important;
-        margin-left: -105px !important;
-      }
-      .dropdown-item {
-        white-space: initial !important;
-        margin-left: 0px;
-        margin-right: 0px;
-        margin-top: -9px;
-        margin-bottom: -9px;
-        height: 80px !important;
-
-        width: 160px;
-        color: black !important;
-      }
-
-      .dropdown-menu-main-content {
-        color: white;
-        margin-left: 0px;
-        margin-right: 0px;
-        margin-top: -9px;
-        margin-bottom: -9px;
-      }
-
-      .arrow {
-        float: right;
-        font-size: 12px;
-        margin-left: 10px;
-      }
-      
-      .submenu-item {
-        color: white;
-        padding: 10px;
-        display: block;
-        text-decoration: none;
-      }
-      .submenu-item:hover {
-        background-color: #575757;
-      }
-      .dropdown-menu {
-        position: relative; /* Ensure the submenu is positioned relative to the dropdown */
-      }
-
-      .dropdown-item-container {
-        position: relative; /* Position relative to allow absolute positioning of submenu */
-      }
-
-      .submenu {
-        display: none;
-        position: absolute;
-        margin-top: 227%;
-        left: 100%;
-        background-color: #333;
-        padding: 10px;
-        border: 1px solid #333;
-        width: 200px;
-      }
-
-      .dropdown-item-container:hover .submenu {
-        display: block; /* Show the submenu when hovering over the parent item */
-      }
 </style>
 </head>
-<body>
+<body class="ops-page">
 
 	<div class="topnav">
 		<div class="links"> 
@@ -293,14 +138,14 @@ table {
 		</div>
 		&nbsp;&nbsp;&nbsp;&nbsp;
 	  </div>
-	<div class="container">
+	<div class="container ops-shell">
 		
 		<h1 class="text-decoration">Inventory Management</h1>
 		<!-- Category table -->
 		<div class="scrollable-container">
 			<!-- <input data-toggle="modal" data-target="#exampleModal" type="button" 
             class="btn btn-primary" value="Add Location" id="addLocationButton" onclick="showButtons()"> -->
-			<table class="table table-striped sortable">
+			<table class="table table-striped" data-enhance-table="true">
 				<thead class="thead-dark">
 					<tr>
 						<th scope="col">#</th>
@@ -374,7 +219,7 @@ table {
                 <h5 class="modal-title" id="exampleModalLabel">LPN Details</h5>
                 <button type="button" class="close" data-dismiss="modal"
                     aria-label="Close">
-                    <span aria-hidden="true">×</span>
+                    <span aria-hidden="true">Ã—</span>
                 </button>
             </div>
             <div class="modal-body">
@@ -443,7 +288,8 @@ table {
 			src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+		<script src="/inventory-ui/js/ui-feedback.js"></script>
+		<script src="/inventory-ui/js/table-enhancements.js"></script>
 		<script type='text/javascript'>
 		
 		function showButtons(){
@@ -545,14 +391,14 @@ table {
 				success : function(response, textStatus, xhr) {
 					console.log("Status Code:", xhr.status
 							+ ", Status Message " + textStatus);
-					alert('Location edited successfully');
+					InventoryUI.success('Location edited successfully');
 					
 					isItemShown = false;
 					location.reload();
 
 				},
 				error : function(response) {
-					alert('Error editing Location');
+					InventoryUI.error('Error editing Location');
 					location.reload();
 				}
 			};
@@ -608,3 +454,4 @@ table {
 	</script>
 </body>
 </html>
+

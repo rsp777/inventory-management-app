@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <title>Listeners & Endpoints</title>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/inventory-ui/css/operations-ui.css">
     
 <style>
 body { background-color: #f8f9fa; }
@@ -13,23 +14,7 @@ body { background-color: #f8f9fa; }
 .form-group { margin-top: 2rem; }
 
 /* Navigation */
-.topnav { overflow: visible; background-color: #333; display: flex; justify-content: space-around; align-items: center; position: sticky; top: 0; width: 100%; }
-.topnav a { float: left; display: block; color: #f2f2f2; text-align: center; padding: 20px 16px; text-decoration: none; font-size: 17px; }
-.topnav a:hover { background-color: #ddd; color: black; }
-.topnav a.active { background-color: royalblue; color: white; }
-.topnav .title { color: #f2f2f2; font-size: 20px; font-weight: bold; }
-.title { margin-left: 579px; }
-.links { margin-left: 75px; }
-.icon-name { margin-left: 200px; color: white; }
-
 /* Dropdown */
-.dropdown { position: relative; display: inline-flex; }
-.dropdown-menu { width: auto; position: relative; }
-.dropdown-menu-left { left: auto !important; margin-left: -105px !important; }
-.dropdown-item-container { position: relative; }
-.submenu { display: none; position: absolute; margin-top: 227%; left: 100%; background-color: #333; padding: 10px; border: 1px solid #333; width: 200px; }
-.dropdown-item-container:hover .submenu { display: block; }
-
 /* Tabs */
 .tabs-container { margin-top: 20px; }
 .nav-tabs { border-bottom: 2px solid #dee2e6; }
@@ -94,7 +79,7 @@ body { background-color: #f8f9fa; }
 .badge-dark { background-color: #343a40; }
 </style>
 </head>
-<body>
+<body class="ops-page">
 
 <div class="topnav">
      <div class="links"> 
@@ -134,7 +119,7 @@ body { background-color: #f8f9fa; }
   &nbsp;&nbsp;&nbsp;&nbsp;
 </div>
 
-<div class="container">
+<div class="container ops-shell">
     <h1 class="text-center">Listeners & Endpoints</h1>
     <input type="hidden" id="responseMessage" th:value="${responseMessage}"/>
     
@@ -168,10 +153,21 @@ body { background-color: #f8f9fa; }
         <button class="btn btn-info" onclick="addNewListener()">
             <i class="fa fa-plus"></i> Add Listener
         </button>
-        <span class="badge badge-light" id="realtimeStatusBadge" style="font-size: 12px; padding: 8px 12px;">
-            Realtime: ON (10s)
-        </span>
-        <small class="text-muted" id="lastRealtimeSync" style="margin-left: 10px;">Last sync: never</small>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-left:auto;">
+            <div style="display:flex; align-items:center; gap:6px;">
+                <input type="number" min="1" step="1" class="form-control form-control-sm" id="realtimeIntervalInput" style="width:90px;" placeholder="Seconds" onkeydown="handleRealtimeIntervalInputKeyDown(event)">
+                <button class="btn btn-sm btn-outline-primary" onclick="applyRealtimeInterval()">
+                    Apply
+                </button>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" id="realtimeToggleButton" onclick="toggleRealtimeUpdates()">
+                Pause Realtime
+            </button>
+            <span class="badge badge-light" id="realtimeStatusBadge" style="font-size: 12px; padding: 8px 12px;">
+                Realtime: ON (10s)
+            </span>
+            <small class="text-muted" id="lastRealtimeSync">Last sync: never</small>
+        </div>
     </div>
     
     <div class="tabs-container">
@@ -397,7 +393,8 @@ const API_BASE_URL = '/inventory-ui/api';
 const listenersEndpoint = API_BASE_URL + '/listeners';
 const endpointsEndpoint = API_BASE_URL + '/endpoints';
 const listenerRuntimeRefreshEndpoint = listenersEndpoint + '/runtime/refresh';
-const REALTIME_REFRESH_INTERVAL_MS = 10000;
+const DEFAULT_REALTIME_REFRESH_INTERVAL_MS = 10000;
+const REALTIME_SETTINGS_STORAGE_KEY = 'inventory-ui.listener-realtime-settings';
 
 // Global Variables
 var listenersData = [];
@@ -408,10 +405,14 @@ var editingListenerId = null;
 var editingEndpointId = null;
 var realtimeRefreshTimer = null;
 var realtimeRefreshInProgress = false;
+var realtimeRefreshEnabled = true;
+var currentRealtimeIntervalMs = DEFAULT_REALTIME_REFRESH_INTERVAL_MS;
 var selectedListenerIds = new Set();
 
 // ==================== INITIALIZATION ====================
 $(document).ready(function() {
+    initializeRealtimeSettings();
+
     // Show initial loading state
     Swal.fire({
         title: 'Loading Data...',
@@ -471,6 +472,10 @@ async function refreshListenerRuntimeStatuses() {
 }
 
 async function realtimeRefreshTick() {
+    if (!realtimeRefreshEnabled) {
+        return;
+    }
+
     if (realtimeRefreshInProgress) {
         return;
     }
@@ -490,11 +495,16 @@ async function realtimeRefreshTick() {
 }
 
 function startRealtimeStatusUpdates() {
-    if (realtimeRefreshTimer) {
-        clearInterval(realtimeRefreshTimer);
+    stopRealtimeStatusUpdates();
+
+    if (!realtimeRefreshEnabled) {
+        updateRealtimeStatusBadge();
+        return;
     }
+
     realtimeRefreshTick();
-    realtimeRefreshTimer = setInterval(realtimeRefreshTick, REALTIME_REFRESH_INTERVAL_MS);
+    realtimeRefreshTimer = setInterval(realtimeRefreshTick, currentRealtimeIntervalMs);
+    updateRealtimeStatusBadge();
 }
 
 function stopRealtimeStatusUpdates() {
@@ -502,6 +512,8 @@ function stopRealtimeStatusUpdates() {
         clearInterval(realtimeRefreshTimer);
         realtimeRefreshTimer = null;
     }
+
+    updateRealtimeStatusBadge();
 }
 
 function updateRealtimeSyncLabel() {
@@ -510,6 +522,123 @@ function updateRealtimeSyncLabel() {
         return;
     }
     label.textContent = 'Last sync: ' + new Date().toLocaleTimeString();
+}
+
+function initializeRealtimeSettings() {
+    loadRealtimeSettings();
+    applyRealtimeControls();
+    updateRealtimeStatusBadge();
+}
+
+function loadRealtimeSettings() {
+    try {
+        var raw = window.localStorage.getItem(REALTIME_SETTINGS_STORAGE_KEY);
+        if (!raw) {
+            return;
+        }
+
+        var saved = JSON.parse(raw);
+        if (saved && typeof saved.enabled === 'boolean') {
+            realtimeRefreshEnabled = saved.enabled;
+        }
+        if (saved && saved.intervalMs) {
+            var parsedInterval = parseInt(saved.intervalMs, 10);
+            if (!isNaN(parsedInterval) && parsedInterval > 0) {
+                currentRealtimeIntervalMs = parsedInterval;
+            }
+        }
+    } catch (error) {
+        console.warn('Failed to load realtime settings:', error);
+    }
+}
+
+function saveRealtimeSettings() {
+    try {
+        window.localStorage.setItem(REALTIME_SETTINGS_STORAGE_KEY, JSON.stringify({
+            enabled: realtimeRefreshEnabled,
+            intervalMs: currentRealtimeIntervalMs
+        }));
+    } catch (error) {
+        console.warn('Failed to save realtime settings:', error);
+    }
+}
+
+function applyRealtimeControls() {
+    var intervalInput = document.getElementById('realtimeIntervalInput');
+    var toggleButton = document.getElementById('realtimeToggleButton');
+
+    if (intervalInput) {
+        intervalInput.value = String(Math.round(currentRealtimeIntervalMs / 1000));
+    }
+
+    if (toggleButton) {
+        toggleButton.textContent = realtimeRefreshEnabled ? 'Pause Realtime' : 'Resume Realtime';
+        toggleButton.className = realtimeRefreshEnabled
+            ? 'btn btn-sm btn-outline-secondary'
+            : 'btn btn-sm btn-outline-success';
+    }
+}
+
+function updateRealtimeStatusBadge() {
+    var badge = document.getElementById('realtimeStatusBadge');
+    if (!badge) {
+        return;
+    }
+
+    if (realtimeRefreshEnabled) {
+        badge.textContent = 'Realtime: ON (' + formatRealtimeInterval(currentRealtimeIntervalMs) + ')';
+        badge.className = 'badge badge-light';
+    } else {
+        badge.textContent = 'Realtime: PAUSED';
+        badge.className = 'badge badge-warning';
+    }
+
+    applyRealtimeControls();
+}
+
+function formatRealtimeInterval(intervalMs) {
+    return Math.round(intervalMs / 1000) + 's';
+}
+
+function toggleRealtimeUpdates() {
+    realtimeRefreshEnabled = !realtimeRefreshEnabled;
+    saveRealtimeSettings();
+    if (realtimeRefreshEnabled) {
+        startRealtimeStatusUpdates();
+    } else {
+        stopRealtimeStatusUpdates();
+    }
+}
+
+function applyRealtimeInterval() {
+    var intervalInput = document.getElementById('realtimeIntervalInput');
+    if (!intervalInput) {
+        return;
+    }
+
+    var parsedSeconds = parseInt(intervalInput.value, 10);
+    if (isNaN(parsedSeconds) || parsedSeconds <= 0) {
+        showValidationError('Realtime interval must be a whole number greater than 0');
+        intervalInput.value = String(Math.round(currentRealtimeIntervalMs / 1000));
+        return;
+    }
+
+    currentRealtimeIntervalMs = parsedSeconds * 1000;
+    saveRealtimeSettings();
+    if (realtimeRefreshEnabled) {
+        startRealtimeStatusUpdates();
+    } else {
+        updateRealtimeStatusBadge();
+    }
+
+    showNotification('Realtime interval updated to ' + parsedSeconds + ' second(s)');
+}
+
+function handleRealtimeIntervalInputKeyDown(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        applyRealtimeInterval();
+    }
 }
 
 // ==================== API SERVICE ====================
@@ -1045,24 +1174,20 @@ async function saveListener() {
 function deleteListener(id) {
     var listener = listenersData.find(function(l) { return l.id === id; });
     if (!listener) return;
-    
-    Swal.fire({
+
+    confirmAction({
         title: 'Are you sure?',
         text: 'You are about to delete "' + listener.listenerName + '". This action cannot be undone!',
         icon: 'warning',
-        showCancelButton: true,
         confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
         confirmButtonText: 'Yes, delete it!'
-    }).then(function(result) {
-        if (result.value) {
-            ListenerService.delete(id).then(function() {
-                loadAllData();
-                showNotification('Listener deleted successfully');
-            }).catch(function(error) {
-                showError('Failed to delete listener');
-            });
-        }
+    }, function() {
+        ListenerService.delete(id).then(function() {
+            loadAllData();
+            showNotification('Listener deleted successfully');
+        }).catch(function() {
+            showError('Failed to delete listener');
+        });
     });
 }
 
@@ -1070,24 +1195,20 @@ function toggleListenerStatus(id) {
     var listener = listenersData.find(function(l) { return l.id === id; });
     if (!listener) return;
     var action = listener.status === 'active' ? 'deactivate' : 'activate';
-    
-    Swal.fire({
+
+    confirmAction({
         title: 'Confirm Action',
         text: 'Do you want to ' + action + ' "' + listener.listenerName + '"?',
         icon: 'question',
-        showCancelButton: true,
         confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#6c757d',
         confirmButtonText: 'Yes, ' + action + ' it!'
-    }).then(function(result) {
-        if (result.value) {
-            ListenerService.toggleStatus(id).then(function() {
-                loadAllData();
-                showNotification('Listener ' + action + 'd successfully');
-            }).catch(function(error) {
-                showError('Failed to ' + action + ' listener');
-            });
-        }
+    }, function() {
+        ListenerService.toggleStatus(id).then(function() {
+            loadAllData();
+            showNotification('Listener ' + action + 'd successfully');
+        }).catch(function() {
+            showError('Failed to ' + action + ' listener');
+        });
     });
 }
 
@@ -1149,24 +1270,20 @@ function saveEndpoint() {
 function deleteEndpoint(id) {
     var endpoint = endpointsData.find(function(e) { return e.id === id; });
     if (!endpoint) return;
-    
-    Swal.fire({
+
+    confirmAction({
         title: 'Are you sure?',
         text: 'You are about to delete endpoint "' + endpoint.method + ' ' + endpoint.path + '". This action cannot be undone!',
         icon: 'warning',
-        showCancelButton: true,
         confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
         confirmButtonText: 'Yes, delete it!'
-    }).then(function(result) {
-        if (result.value) {
-            EndpointService.delete(id).then(function() {
-                loadAllData();
-                showNotification('Endpoint deleted successfully');
-            }).catch(function(error) {
-                showError('Failed to delete endpoint');
-            });
-        }
+    }, function() {
+        EndpointService.delete(id).then(function() {
+            loadAllData();
+            showNotification('Endpoint deleted successfully');
+        }).catch(function() {
+            showError('Failed to delete endpoint');
+        });
     });
 }
 
@@ -1174,24 +1291,20 @@ function toggleEndpointStatus(id) {
     var endpoint = endpointsData.find(function(e) { return e.id === id; });
     if (!endpoint) return;
     var action = endpoint.status === 'active' ? 'deactivate' : 'activate';
-    
-    Swal.fire({
+
+    confirmAction({
         title: 'Confirm Action',
         text: 'Do you want to ' + action + ' endpoint "' + endpoint.method + ' ' + endpoint.path + '"?',
         icon: 'question',
-        showCancelButton: true,
         confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#6c757d',
         confirmButtonText: 'Yes, ' + action + ' it!'
-    }).then(function(result) {
-        if (result.value) {
-            EndpointService.toggleStatus(id).then(function() {
-                loadAllData();
-                showNotification('Endpoint ' + action + 'd successfully');
-            }).catch(function(error) {
-                showError('Failed to ' + action + ' endpoint');
-            });
-        }
+    }, function() {
+        EndpointService.toggleStatus(id).then(function() {
+            loadAllData();
+            showNotification('Endpoint ' + action + 'd successfully');
+        }).catch(function() {
+            showError('Failed to ' + action + ' endpoint');
+        });
     });
 }
 
@@ -1217,6 +1330,22 @@ function formatDateTime(dateTimeStr) {
     var date = new Date(dateTimeStr);
     if (isNaN(date.getTime())) return dateTimeStr;
     return date.toLocaleString();
+}
+
+function confirmAction(options, onConfirm) {
+    Swal.fire({
+        title: options.title || 'Confirm Action',
+        text: options.text || 'Are you sure?',
+        icon: options.icon || 'question',
+        showCancelButton: true,
+        confirmButtonColor: options.confirmButtonColor || '#3085d6',
+        cancelButtonColor: options.cancelButtonColor || '#6c757d',
+        confirmButtonText: options.confirmButtonText || 'Yes, proceed!'
+    }).then(function(result) {
+        if (result.value && typeof onConfirm === 'function') {
+            onConfirm();
+        }
+    });
 }
 
 function showNotification(message) {
@@ -1364,16 +1493,16 @@ function disableAll() {
 }
 
 function confirmBulkAction(action, count, callback) {
-    Swal.fire({
+    confirmAction({
         title: 'Confirm Bulk Action',
         text: 'Are you sure you want to ' + action + ' ' + count + ' listener(s)?',
         icon: 'question',
-        showCancelButton: true,
         confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#6c757d',
         confirmButtonText: 'Yes, proceed!'
-    }).then(function(result) {
-        if (result.value) { callback(); }
+    }, function() {
+        if (typeof callback === 'function') {
+            callback();
+        }
     });
 }
 
@@ -1468,6 +1597,9 @@ window.toggleEndpointStatus = toggleEndpointStatus;
 window.filterListeners = filterListeners;
 window.filterEndpoints = filterEndpoints;
 window.searchData = searchData;
+window.toggleRealtimeUpdates = toggleRealtimeUpdates;
+window.applyRealtimeInterval = applyRealtimeInterval;
+window.handleRealtimeIntervalInputKeyDown = handleRealtimeIntervalInputKeyDown;
 window.toggleSelectAll = toggleSelectAll;
 window.onListenerSelectionChange = onListenerSelectionChange;
 window.updateBulkActionBar = updateBulkActionBar;
@@ -1478,3 +1610,4 @@ window.disableAll = disableAll;
 </script>
 </body>
 </html>
+

@@ -38,6 +38,8 @@ import com.pawar.inventory.app.model.ResponseMessage;
 import com.pawar.inventory.app.service.MenuAccessService;
 import com.pawar.inventory.app.service.MenuService;
 import com.pawar.inventory.app.service.NavigationService;
+import com.pawar.inventory.app.service.PermissionService;
+import com.pawar.inventory.app.service.RoleService;
 import com.pawar.inventory.app.util.SessionUtil;
 import com.pawar.inventory.entity.Category;
 import com.pawar.inventory.entity.SopActionTypeDto;
@@ -57,27 +59,34 @@ public class MenuController {
 	private final static Logger logger = LoggerFactory.getLogger(MenuController.class);
 
 	// Make these final so they MUST be initialized by the constructor
-    private final MenuService menuService;
-    private final MenuAccessService menuAccessService;
-    private final NavigationService navigationService;
+	private final MenuService menuService;
+	private final MenuAccessService menuAccessService;
+	private final NavigationService navigationService;
+	private final RoleService roleService;
+	private final PermissionService permissionService;
 
-	// Single constructor for all dependencies (No @Autowired needed on individual fields)
-    public MenuController(MenuService menuService, 
-                          MenuAccessService menuAccessService, 
-                          NavigationService navigationService) {
-        this.menuService = menuService;
-        this.menuAccessService = menuAccessService;
-        this.navigationService = navigationService;
-    }
+	// Single constructor for all dependencies (No @Autowired needed on individual
+	// fields)
+	public MenuController(MenuService menuService,
+			MenuAccessService menuAccessService,
+			NavigationService navigationService,
+			RoleService roleService,
+			PermissionService permissionService) {
+		this.menuService = menuService;
+		this.menuAccessService = menuAccessService;
+		this.navigationService = navigationService;
+		this.roleService = roleService;
+		this.permissionService = permissionService;
+	}
 
 	/**
-     * This method runs automatically before every request in this controller.
-     * It ensures the navigation menus are always present in the model.
-     */
-    @ModelAttribute
-    public void handleNavigation(Model model, HttpServletRequest request, HttpSession httpSession) {
-        navigationService.populateNavigation(model, request, httpSession);
-    }
+	 * This method runs automatically before every request in this controller.
+	 * It ensures the navigation menus are always present in the model.
+	 */
+	@ModelAttribute
+	public void handleNavigation(Model model, HttpServletRequest request, HttpSession httpSession) {
+		navigationService.populateNavigation(model, request, httpSession);
+	}
 
 	@GetMapping("/index")
 	public String index() {
@@ -395,33 +404,107 @@ public class MenuController {
 	}
 
 	@GetMapping("/userlist")
-	public String userListAlias(Model model) {
-		return handleLegacyUserList(model);
+	public String userListAlias(Model model, HttpSession session) {
+		return handleLegacyUserList(model, session);
 	}
 
 	@GetMapping("/legacy/userlist")
-	public String userList(Model model) { // Removed unused parameters
-		return handleLegacyUserList(model);
+	public String userList(Model model, HttpSession session) { // Removed unused parameters
+		return handleLegacyUserList(model, session);
 	}
 
 	@PostMapping("/userAdd")
 	public String userAddAlias(Model model, @Valid @ModelAttribute MenuUserAddRequestDTO requestDTO,
-			BindingResult bindingResult) {
+			BindingResult bindingResult, HttpSession session) {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("responseMessage", "Invalid user data");
 			return AppConstants.View.USER_LIST;
 		}
-		return handleLegacyUserAdd(model, requestDTO);
+		return handleLegacyUserAdd(model, requestDTO, session);
 	}
 
 	@PostMapping("/legacy/userAdd")
 	public String userAdd(Model model, @Valid @ModelAttribute MenuUserAddRequestDTO requestDTO,
-			BindingResult bindingResult) {
+			BindingResult bindingResult, HttpSession session) {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("responseMessage", "Invalid user data");
 			return AppConstants.View.USER_LIST;
 		}
-		return handleLegacyUserAdd(model, requestDTO);
+		return handleLegacyUserAdd(model, requestDTO, session);
+	}
+
+	@PostMapping("/assign/roles/user/{userId}/role/{roleId}")
+	@ResponseBody
+	public ResponseEntity<?> assignRoleToExistingUser(@PathVariable Integer userId, @PathVariable Integer roleId,
+			HttpSession session) {
+		if (!hasManageUsersAccess(session)) {
+			return ResponseEntity.status(403).body("You do not have permission to manage users.");
+		}
+		try {
+			String response = menuService.assignRoleToUser(userId, roleId);
+			return ResponseEntity.ok(response);
+		} catch (IOException e) {
+			logger.error("Failed to assign role {} to user {}", roleId, userId, e);
+			return ResponseEntity.internalServerError().body("Unable to assign role at this time.");
+		} catch (Exception e) {
+			logger.error("Unexpected error assigning role {} to user {}", roleId, userId, e);
+			return ResponseEntity.internalServerError().body("Unexpected error while assigning role.");
+		}
+	}
+
+	@DeleteMapping("/unassign/roles/user/{userId}/role/{roleId}")
+	@ResponseBody
+	public ResponseEntity<?> unassignRoleFromExistingUser(@PathVariable Integer userId, @PathVariable Integer roleId,
+			HttpSession session) {
+		if (!hasManageUsersAccess(session)) {
+			return ResponseEntity.status(403).body("You do not have permission to manage users.");
+		}
+		try {
+			String response = menuService.unassignRoleFromUser(userId, roleId);
+			return ResponseEntity.ok(response);
+		} catch (IOException e) {
+			logger.error("Failed to unassign role {} from user {}", roleId, userId, e);
+			return ResponseEntity.internalServerError().body("Unable to unassign role at this time.");
+		} catch (Exception e) {
+			logger.error("Unexpected error unassigning role {} from user {}", roleId, userId, e);
+			return ResponseEntity.internalServerError().body("Unexpected error while unassigning role.");
+		}
+	}
+
+	@GetMapping("/user/{userId}/roles")
+	@ResponseBody
+	public ResponseEntity<?> getExistingUserRoles(@PathVariable Integer userId, HttpSession session) {
+		if (!hasManageUsersAccess(session)) {
+			return ResponseEntity.status(403).body("You do not have permission to manage users.");
+		}
+		try {
+			String response = menuService.getUserRoles(userId);
+			return ResponseEntity.ok(response);
+		} catch (IOException e) {
+			logger.error("Failed to fetch roles for user {}", userId, e);
+			return ResponseEntity.internalServerError().body("Unable to fetch user roles at this time.");
+		} catch (Exception e) {
+			logger.error("Unexpected error fetching roles for user {}", userId, e);
+			return ResponseEntity.internalServerError().body("Unexpected error while fetching user roles.");
+		}
+	}
+
+	@DeleteMapping("/user/{userId}")
+	@ResponseBody
+	public ResponseEntity<?> deleteExistingUser(@PathVariable Integer userId, HttpSession session) {
+		if (!hasManageUsersAccess(session)) {
+			return ResponseEntity.status(403).body("You do not have permission to manage users.");
+		}
+		try {
+			String response = menuService.deleteUser(userId);
+			return ResponseEntity.ok(response);
+		} catch (IOException e) {
+			logger.error("Failed to delete user {}", userId, e);
+			return ResponseEntity.internalServerError().body("Unable to delete user at this time.");
+		} catch (Exception e) {
+			logger.error("Unexpected error deleting user {}", userId, e);
+			return ResponseEntity.internalServerError().body("Unexpected error while deleting user.");
+		}
 	}
 
 	@GetMapping("/legacy/menulist")
@@ -434,8 +517,18 @@ public class MenuController {
 		return handleLegacySopConfig(model);
 	}
 
+	@GetMapping("/sop-config")
+	public String sopConfigHyphenAlias(Model model) {
+		return handleLegacySopConfig(model);
+	}
+
 	@GetMapping("/legacy/sopConfig")
 	public String sopConfig(Model model) {
+		return handleLegacySopConfig(model);
+	}
+
+	@GetMapping("/legacy/sop-config")
+	public String sopConfigHyphenLegacy(Model model) {
 		return handleLegacySopConfig(model);
 	}
 
@@ -867,11 +960,18 @@ public class MenuController {
 		}
 	}
 
-	private String handleLegacyUserList(Model model) {
+	private String handleLegacyUserList(Model model, HttpSession session) {
 		logger.info("Accessing userlist");
+		if (!hasManageUsersAccess(session)) {
+			logger.warn("Blocked unauthorized user-list access attempt");
+			model.addAttribute("errorMessage", "You do not have permission to manage users.");
+			return AppConstants.View.ERROR;
+		}
 		try {
 			List<UserDto> userDtos = menuAccessService.getUsers();
 			model.addAttribute("users", userDtos);
+			model.addAttribute("allRoles", roleService.getAllRoles());
+			model.addAttribute("allPermissions", permissionService.getAllPermissions());
 			return AppConstants.View.USER_LIST;
 		} catch (IOException e) {
 			logger.error("Failed to fetch users", e);
@@ -880,15 +980,42 @@ public class MenuController {
 		}
 	}
 
-	private String handleLegacyUserAdd(Model model, MenuUserAddRequestDTO requestDTO) {
+	private String handleLegacyUserAdd(Model model, MenuUserAddRequestDTO requestDTO, HttpSession session) {
 		logger.info("New User to Add : {}", requestDTO.getUsername());
-		String response = menuService.userAdd(requestDTO.getFirstname(), requestDTO.getMiddlename(),
-				requestDTO.getLastname(), requestDTO.getUsername(), requestDTO.getPassword(), requestDTO.getEmail());
-		ResponseMessage responseMessage = new ResponseMessage();
-		responseMessage.setResponseMessage(response);
-		model.addAttribute("responseMessage", responseMessage.getResponseMessage());
-		logger.info("Response Message : {}", responseMessage);
-		return AppConstants.View.USER_LIST;
+		if (!hasManageUsersAccess(session)) {
+			logger.warn("Blocked unauthorized user-add attempt for username: {}", requestDTO.getUsername());
+			model.addAttribute("errorMessage", "You do not have permission to create users.");
+			return AppConstants.View.ERROR;
+		}
+		String response;
+		try {
+			response = menuService.userAdd(requestDTO.getFirstname(), requestDTO.getMiddlename(),
+					requestDTO.getLastname(), requestDTO.getUsername(), requestDTO.getPassword(), requestDTO.getEmail(),
+					requestDTO.getRoles(), requestDTO.getPermissions());
+			ResponseMessage responseMessage = new ResponseMessage();
+			responseMessage.setResponseMessage(response);
+			model.addAttribute("responseMessage", responseMessage.getResponseMessage());
+			logger.info("Response Message : {}", responseMessage);
+			return AppConstants.View.USER_LIST;
+		} catch (IOException e) {
+			logger.error("Failed to add user: {}", requestDTO.getUsername(), e);
+			model.addAttribute("errorMessage", "Unable to add the user at this time.");
+			return AppConstants.View.ERROR;
+		} catch (Exception e) {
+			logger.error("Unexpected error while adding user: {}", requestDTO.getUsername(), e);
+			model.addAttribute("errorMessage", "An unexpected error occurred while adding the user.");
+			return AppConstants.View.ERROR;
+		}
+
+	}
+
+	private boolean hasManageUsersAccess(HttpSession session) {
+		String jwtToken = SessionUtil.getSessionToken(session);
+		if (jwtToken == null || jwtToken.isBlank()) {
+			return false;
+		}
+		Map<String, Boolean> uiActions = menuAccessService.getUiActions(jwtToken);
+		return uiActions != null && Boolean.TRUE.equals(uiActions.get("manageUsers"));
 	}
 
 	private String handleLegacyCubiscanLog(Model model) {

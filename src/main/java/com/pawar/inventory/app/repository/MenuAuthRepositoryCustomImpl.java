@@ -2,6 +2,7 @@ package com.pawar.inventory.app.repository;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONObject;
@@ -10,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.http.ResponseEntity;
 
 import com.pawar.inventory.app.config.AppConstants;
 import com.pawar.inventory.app.model.Menu;
@@ -68,14 +71,14 @@ public class MenuAuthRepositoryCustomImpl implements MenuAuthRepositoryCustom {
 
 	@Override
 	public String signIn(String username, String password) throws ClientProtocolException, IOException {
-		String url = getUrl(AppConstants.MenuEndpoint.LOGIN);
+		String url = requireUrl(AppConstants.MenuEndpoint.LOGIN);
 		logger.info("Sign-in URL : {}", url);
 
 		JSONObject userJson = new JSONObject();
 		userJson.put("username", username);
 		userJson.put("passwordHash", password);
 
-		return httpService.restCall(null, url, HttpMethod.POST, userJson.toString(), null).getBody().toString();
+		return extractBody(httpService.restCall(null, url, HttpMethod.POST, userJson.toString(), null));
 	}
 
 	@Override
@@ -84,7 +87,7 @@ public class MenuAuthRepositoryCustomImpl implements MenuAuthRepositoryCustom {
 		String url = getUrl(AppConstants.MenuEndpoint.SIGNOUT);
 		logger.info("Sign-out URL : {}", url);
 
-		httpService.restCall(decodedToken, url, HttpMethod.POST, null, null);
+		httpService.restCall(decodedToken, url, HttpMethod.GET, null, null);
 		return "Logged out";
 	}
 
@@ -97,6 +100,7 @@ public class MenuAuthRepositoryCustomImpl implements MenuAuthRepositoryCustom {
 	public String getUrl(String menuName) {
 		Menu menu = menuRepository.findMenuByMenuName(menuName);
 		if (menu == null) {
+			logger.warn("No endpoint configuration found in menu table for key: '{}'", menuName);
 			return "";
 		}
 
@@ -106,9 +110,21 @@ public class MenuAuthRepositoryCustomImpl implements MenuAuthRepositoryCustom {
 		return String.format("%s%s%s", protocol, hostname, menuLink);
 	}
 
+	private String requireUrl(String menuName) throws IOException {
+		String url = getUrl(menuName);
+		if (url == null || url.isBlank()) {
+			throw new IOException("Endpoint '" + menuName + "' is not configured. Add a menu table row with that name.");
+		}
+		return url;
+	}
+
+	private String extractBody(ResponseEntity<?> response) {
+		return (response != null && response.getBody() != null) ? response.getBody().toString() : "";
+	}
+
 	@Override
 	public String userAdd(String firstname, String middlename, String lastname, String username, String password,
-			String email) {
+			String email, List<String> roles, List<String> permissions) throws ClientProtocolException, IOException {
 		JSONObject userJson = new JSONObject();
 		userJson.put("username", username);
 		userJson.put("email", email);
@@ -116,9 +132,44 @@ public class MenuAuthRepositoryCustomImpl implements MenuAuthRepositoryCustom {
 		userJson.put("firstName", firstname);
 		userJson.put("middleName", middlename);
 		userJson.put("lastName", lastname);
-
+		userJson.put("roles", roles);
+		userJson.put("permissions", permissions);
 		String url = getUrl(AppConstants.MenuEndpoint.REGISTER);
 		logger.info("User registration URL : {}", url);
-		return httpService.restCall(null, url, HttpMethod.POST, userJson.toString(), null).getBody().toString();
+		return extractBody(httpService.restCall(null, url, HttpMethod.POST, userJson.toString(), null));
+	}
+
+	@Override
+	public String assignRoleToUser(Integer userId, Integer roleId) throws ClientProtocolException, IOException {
+		String url = requireUrl(AppConstants.MenuEndpoint.ASSIGN_ROLE_TO_USER)
+				.replace("{userId}", String.valueOf(userId))
+				.replace("{roleId}", String.valueOf(roleId));
+		logger.info("Assign-role URL : {}", url);
+		return extractBody(httpService.restCall(null, url, HttpMethod.POST, null, null));
+	}
+
+	@Override
+	public String unassignRoleFromUser(Integer userId, Integer roleId) throws ClientProtocolException, IOException {
+		String url = requireUrl(AppConstants.MenuEndpoint.UNASSIGN_ROLE_FROM_USER)
+				.replace("{userId}", String.valueOf(userId))
+				.replace("{roleId}", String.valueOf(roleId));
+		logger.info("Unassign-role URL : {}", url);
+		return extractBody(httpService.restCall(null, url, HttpMethod.DELETE, null, null));
+	}
+
+	@Override
+	public String getUserRoles(Integer userId) throws ClientProtocolException, IOException {
+		String url = requireUrl(AppConstants.MenuEndpoint.GET_USER_ROLES)
+				.replace("{userId}", String.valueOf(userId));
+		logger.info("Get user roles URL : {}", url);
+		return extractBody(httpService.restCall(null, url, HttpMethod.GET, null, null));
+	}
+
+	@Override
+	public String deleteUser(Integer userId) throws ClientProtocolException, IOException {
+		String url = requireUrl(AppConstants.MenuEndpoint.DELETE_USER)
+				.replace("{userId}", String.valueOf(userId));
+		logger.info("Delete user URL : {}", url);
+		return extractBody(httpService.restCall(null, url, HttpMethod.DELETE, null, null));
 	}
 }

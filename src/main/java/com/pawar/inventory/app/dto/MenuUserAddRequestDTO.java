@@ -1,5 +1,8 @@
 package com.pawar.inventory.app.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -28,6 +31,10 @@ public class MenuUserAddRequestDTO {
 	@NotBlank(message = "Email is required")
 	@Email(message = "Email must be valid")
 	private String email;
+
+	private List<String> roles = new ArrayList<>();
+
+	private List<String> permissions = new ArrayList<>();
 
 	public String getFirstname() {
 		return firstname;
@@ -75,5 +82,21 @@ public class MenuUserAddRequestDTO {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public List<String> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(List<String> roles) {
+		this.roles = roles;
+	}
+
+	public List<String> getPermissions() {
+		return permissions;
+	}
+
+	public void setPermissions(List<String> permissions) {
+		this.permissions = permissions;
 	}
 }

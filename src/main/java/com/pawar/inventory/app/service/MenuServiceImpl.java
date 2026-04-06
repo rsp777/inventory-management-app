@@ -286,8 +286,28 @@ public class MenuServiceImpl extends AbstractBaseService implements MenuService 
 
     @Override
     public String userAdd(String firstname, String middlename, String lastname, String username, String password,
-            String email) {
-        return menuAuthRepositoryCustom.userAdd(firstname, middlename, lastname, username, password, email);
+            String email, List<String> roles, List<String> permissions) throws ClientProtocolException, IOException {
+        return menuAuthRepositoryCustom.userAdd(firstname, middlename, lastname, username, password, email, roles, permissions);
+    }
+
+    @Override
+    public String assignRoleToUser(Integer userId, Integer roleId) throws ClientProtocolException, IOException {
+        return menuAuthRepositoryCustom.assignRoleToUser(userId, roleId);
+    }
+
+    @Override
+    public String unassignRoleFromUser(Integer userId, Integer roleId) throws ClientProtocolException, IOException {
+        return menuAuthRepositoryCustom.unassignRoleFromUser(userId, roleId);
+    }
+
+    @Override
+    public String getUserRoles(Integer userId) throws ClientProtocolException, IOException {
+        return menuAuthRepositoryCustom.getUserRoles(userId);
+    }
+
+    @Override
+    public String deleteUser(Integer userId) throws ClientProtocolException, IOException {
+        return menuAuthRepositoryCustom.deleteUser(userId);
     }
 
     @Override

@@ -71,6 +71,7 @@ public class InventoryController {
 			ResponseUtil.addViewAttributes(model, categories, "/inventory");
 			
 			List<Inventory> inventories = ControllerReflectionUtil.toList(menuService.getInventories());
+			model.addAttribute("inventories", inventories);
 			model.addAttribute("inventorySummary", inventories);
 			model.addAttribute("currentUser", SessionUtil.getSessionUserName(session));
 			

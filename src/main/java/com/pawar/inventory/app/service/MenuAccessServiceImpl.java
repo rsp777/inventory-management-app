@@ -4,8 +4,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.management.relation.RoleNotFoundException;
@@ -28,6 +34,7 @@ import com.pawar.inventory.app.config.AppConstants;
 import com.pawar.inventory.app.exception.MenuNotFoundException;
 import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.app.model.MenuAccess;
+import com.pawar.inventory.app.model.Permission;
 import com.pawar.inventory.app.model.Role;
 
 import com.pawar.inventory.app.repository.MenuAccessRepository;
@@ -68,7 +75,7 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 			throws JsonMappingException, JsonProcessingException, MenuNotFoundException {
 		logger.info("Getting accessible menus for user: {}", tokenService.getUserName(jwtToken));
 		String[] decodedToken = tokenService.decodeToken(jwtToken);
-		Set<Role> userRoles = getRoles(decodedToken);
+		Set<Role> userRoles = getPersistedRoles(decodedToken);
 		logger.info("Fetched total User roles: {}", userRoles.size());
 		logger.debug("Fetched User roles: {}", userRoles);
 
@@ -131,7 +138,8 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 		Set<Role> userRoles = new HashSet<>();
 		logger.info("decodedToken[2] : {}", decodedToken[2]);
 
-		for (int i = 0; i < decodedToken.length - 1; i++) {
+		for (int i = 0; i < decodedToken.length; i++) {
+			logger.info("decodedToken[{}] : {}", i, decodedToken[i]);
 			if (decodedToken[i].contains("Role")) {
 				String result = decodedToken[i].replaceAll("^\\[", "").replaceAll("\\]$", "");
 				String json = "{" +
@@ -146,7 +154,7 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 						+ result.substring(result.indexOf("name=") + 5, result.indexOf(", createdDttm")).trim() + "\"}]"
 						+
 						"}";
-				logger.info("result in loop : {}", json);
+				logger.info("result in loop : {}", result);
 
 				Role role = mapper.readValue(json, Role.class);
 				userRoles.add(role);
@@ -157,6 +165,136 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 
 	public String getUserName(String jwtToken) {
 		return tokenService.getUserName(jwtToken);
+	}
+
+	@Override
+	public Set<String> getRoleNames(String jwtToken) {
+		if (jwtToken == null || jwtToken.isBlank()) {
+			return Set.of();
+		}
+
+		try {
+			String[] decodedToken = tokenService.decodeToken(jwtToken);
+			return getPersistedRoles(decodedToken).stream()
+					.map(Role::getName)
+					.filter(name -> name != null && !name.isBlank())
+					.collect(Collectors.toCollection(LinkedHashSet::new));
+		} catch (Exception exception) {
+			logger.warn("Unable to extract role names from token", exception);
+			return Set.of();
+		}
+	}
+
+	@Override
+	public Map<String, Boolean> getUiActions(String jwtToken) {
+		Set<String> normalizedPermissions = getPermissionNames(jwtToken).stream()
+				.map(permission -> permission.toLowerCase(Locale.ROOT))
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+
+		boolean canAdminister = containsKeyword(normalizedPermissions,
+				"admin", "role", "permission", "user.manage", "user.write", "settings.write");
+		boolean canManageReferenceData = canAdminister || containsKeyword(normalizedPermissions,
+				"category", "item", "location", "reference", "menu", "write", "edit", "delete", "create");
+		boolean canManageOperations = canManageReferenceData || containsKeyword(normalizedPermissions,
+				"lpn", "inventory", "putaway", "allocate", "deallocate", "warehouse");
+		boolean canManageRuntime = canAdminister || containsKeyword(normalizedPermissions,
+				"listener", "endpoint", "runtime", "toggle", "activate", "deactivate");
+
+		Map<String, Boolean> uiActions = new LinkedHashMap<>();
+		uiActions.put("manageCategories", canManageReferenceData);
+		uiActions.put("manageItems", canManageReferenceData);
+		uiActions.put("manageLocations", canManageReferenceData);
+		uiActions.put("manageLpns", canManageOperations);
+		uiActions.put("manageMenus", canAdminister || containsKeyword(normalizedPermissions, "menu"));
+		uiActions.put("manageUsers", canAdminister);
+		uiActions.put("manageSopConfig", canAdminister || containsKeyword(normalizedPermissions, "sop", "slotting", "batch"));
+		uiActions.put("manageRuntime", canManageRuntime);
+		uiActions.put("manageSettings", canAdminister);
+		return uiActions;
+	}
+
+	// Regex patterns for extracting role names from token segments
+	private static final Pattern ROLE_NAME_PATTERN = Pattern.compile("name=([A-Z][A-Z0-9_]*)");
+	private static final Pattern PLAIN_ROLE_PATTERN = Pattern.compile("\\b([A-Z][A-Z0-9_]{2,})\\b");
+
+	/**
+	 * Resolves fully-loaded Role entities (with permissions) from the decoded token.
+	 * Roles are in token segments starting at index 2.
+	 * Strategy 1: extract via "name=ROLENAME" pattern (toString format).
+	 * Strategy 2: fall back to plain UPPER_SNAKE_CASE word matching, each checked
+	 * against the DB so only real role names match.
+	 */
+	private Set<Role> getPersistedRoles(String[] decodedToken) {
+		if (decodedToken == null || decodedToken.length < 3) {
+			logger.warn("Token does not contain a role segment (length={})",
+					decodedToken == null ? 0 : decodedToken.length);
+			return Set.of();
+		}
+
+		Set<Role> persistedRoles = new LinkedHashSet<>();
+
+		for (int i = 1; i < decodedToken.length; i++) {
+			String segment = decodedToken[i];
+			if (segment == null || segment.isBlank()) continue;
+			// logger.info("Processing token segment[{}]: {}", i, segment);
+			// Strategy 1: parse "name=ROLENAME" present in toString() format
+			Matcher nameMatcher = ROLE_NAME_PATTERN.matcher(segment);
+			boolean foundAny = false;
+			while (nameMatcher.find()) {
+				String roleName = nameMatcher.group(1);
+				roleRepository.findByName(roleName).ifPresent(r -> {
+					persistedRoles.add(r);
+					logger.info("Resolved role '{}' via name= pattern", r.getName());
+				});
+				foundAny = true;
+			}
+
+			// Strategy 2: plain UPPER_SNAKE_CASE tokens (e.g. "ADMIN" or "[ADMIN, OPERATIONS]")
+			if (!foundAny) {
+				Matcher plainMatcher = PLAIN_ROLE_PATTERN.matcher(segment);
+				while (plainMatcher.find()) {
+					String candidate = plainMatcher.group(1);
+					roleRepository.findByName(candidate).ifPresent(r -> {
+						persistedRoles.add(r);
+						logger.info("Resolved role '{}' via plain pattern", r.getName());
+					});
+				}
+			}
+		}
+
+		logger.info("Resolved {} persisted role(s) from token", persistedRoles.size());
+		return persistedRoles;
+	}
+
+	private Set<String> getPermissionNames(String jwtToken) {
+		if (jwtToken == null || jwtToken.isBlank()) {
+			return Set.of();
+		}
+
+		try {
+			String[] decodedToken = tokenService.decodeToken(jwtToken);
+			return getPersistedRoles(decodedToken).stream()
+					.map(Role::getPermissions)
+					.filter(permissions -> permissions != null && !permissions.isEmpty())
+					.flatMap(Set::stream)
+					.map(Permission::getName)
+					.filter(name -> name != null && !name.isBlank())
+					.collect(Collectors.toCollection(LinkedHashSet::new));
+		} catch (Exception exception) {
+			logger.warn("Unable to extract permissions from token roles", exception);
+			return Set.of();
+		}
+	}
+
+	private boolean containsKeyword(Set<String> normalizedValues, String... keywords) {
+		for (String value : normalizedValues) {
+			for (String keyword : keywords) {
+				if (value.contains(keyword)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -202,7 +340,7 @@ public class MenuAccessServiceImpl implements MenuAccessService {
 		if (json == null || json.isBlank()) {
 			return List.of();
 		}
-		logger.info(json);
+		// logger.info(json);
 		List<UserDto> fetchedUsers = mapper.readValue(json, new TypeReference<List<UserDto>>() {
 		});
 

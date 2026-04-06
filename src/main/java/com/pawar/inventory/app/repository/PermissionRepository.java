@@ -9,5 +9,5 @@ import com.pawar.inventory.app.model.Permission;
 
 @Repository
 public interface PermissionRepository extends JpaRepository<Permission, Integer> {
-//	Optional<Permission> findByName(String name);
+	java.util.Optional<Permission> findByName(String name);
 }

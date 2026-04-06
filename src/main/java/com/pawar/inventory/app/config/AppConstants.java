@@ -80,6 +80,10 @@ public final class AppConstants {
 		public static final String LOGIN = "Login";
 		public static final String SIGNOUT = "Signout";
 		public static final String REGISTER = "Register";
+		public static final String ASSIGN_ROLE_TO_USER = "AssignRoleToUser";
+		public static final String UNASSIGN_ROLE_FROM_USER = "UnassignRoleFromUser";
+		public static final String GET_USER_ROLES = "GetUserRoles";
+		public static final String DELETE_USER = "DeleteUser";
 		public static final String CHECK_ACTIVE_INVENTORY = "CheckActiveInventory";
 		public static final String GET_GRPS = "GetGrps";
 		public static final String GET_ACTION_TYPES = "GetActionTypes";
@@ -113,6 +117,10 @@ public final class AppConstants {
 	}
 
 	public static final class View {
+		public static final String ROLES = "roles";
+		public static final String PERMISSIONS = "permissions";
+		public static final String ROLE_PERMISSIONS = "role-permissions";
+		public static final String MENU_ACCESS_MGMT = "menu-access";
 		public static final String CATEGORY = "category";
 		public static final String ENDPOINT = "endpoint";
 		public static final String ITEM = "item";

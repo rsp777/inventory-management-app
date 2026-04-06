@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <title>Menu List</title>
@@ -7,6 +7,7 @@
 	href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 <link rel="stylesheet"
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/inventory-ui/css/access-admin.css">
 
 <style>
 body {
@@ -14,7 +15,7 @@ body {
 }
 
 .container {
-	max-width: 960px;
+	max-width: 1180px;
 	margin-top: 2rem;
 	padding: 2rem;
 	background-color: #fff;
@@ -22,179 +23,140 @@ body {
 	box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
 
-table {
-	margin-top: 2rem;
-}
-
-.table th, .table td {
-	vertical-align: middle;
-}
-
-.form-group {
-	margin-top: 2rem;
-}
-
-#saveCategoryButton, #toggleButton {
-	display: inline-block;
-	margin-right: 10px; /* Add a little space between buttons */
-}
-
-.topnav {
-	overflow: visible;
-	background-color: #333;
-	display: flex;
-	justify-content: space-around;
-	align-items: center;
-	position: sticky;
-    top: 0;
-    width: 100%;
-}
-
-.topnav a {
-	float: left;
-	display: block;
-	color: #f2f2f2;
-	text-align: center;
-	padding: 20px 16px; /* Increase the vertical padding */
-	text-decoration: none;
-	font-size: 17px;
-}
-
-.topnav a:hover {
-	background-color: #ddd;
-	color: black;
-}
-
-.topnav a.active {
-	background-color: royalblue;
-	color: white;
-}
-
-.topnav .title {
-	color: #f2f2f2;
-	font-size: 20px;
-	font-weight: bold;
-}
 .scrollable-container {
-    width:100%;
+    width: 100%;
     height: 600px; 
     overflow-y: auto; 
 }
 
-  .scrollable-container table {
-    width: 100%;
-  }
-
-  .scrollable-container thead {
-    position: sticky;
-    top: 0;
-    background-color: #f8f9fa; 
-	z-index: 0; 
-
-  }
-
-  .scrollable-container th {
-   
-  }
- 
-  .bi bi-person-circle{
-	font-size: 10px;
- }
- /* .icon-container {
-    display: flex;
-    align-items: right;
-   
-} */
-
-.icon-name {
-    margin-left: 200px; /* Adjust spacing between icon and name */
-    /* Add styles for the name (e.g., font-size, color) */
-	color: white;
+.menu-table th,
+.menu-table td {
+	vertical-align: middle;
 }
-.title{
-	margin-left: 579px;
-}
-.links{
-	margin-left: 75px;
-}
-.dropdown {
-            position: relative;
-            display: inline-flex;
-			
-        }
 
-        .dropdown-button {
-            background-color: #f9f9f9;
-            border: none;
-            padding: 10px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #fff;
-            min-width: 120px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-		
-        }
-
-        .dropdown-content a {
-            color: #333;
-            padding: 8px 12px;
-            text-decoration: none;
-            display: block;
-			
-        }
-
-        .dropdown-content a:hover {
-            background-color: #f5f5f5;
-        }
-
-.dropdown-menu {
-/* background-color: aqua;	 */
-	width: auto;
-   /* padding: 0px 0px 0px 0px 0px !important; */
-}		
-.dropdown-menu-left {
-  left: auto !important;
-  margin-left: -105px !important;
+.menu-table td {
+	font-size: 0.9rem;
 }
-.dropdown-item {
-	white-space: initial !important;
-	margin-right: 0px;
-	margin-top: -8px ;
-	margin-bottom: -8px ;
-	height: 80px !important;
-	width: 160px;
-	color: black !important;
+
+.menu-toolbar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.7rem;
+	margin-top: 0.9rem;
 }
-.dropdown-menu-main{
-	/* background-color: #333; */
-	margin-left: 0px;
-	height: 70px ;
-	
+
+.menu-actions .btn {
+	min-width: 72px;
 }
-.dropdown-menu-main-content{
-color: white;
-margin-left: 0px;	
+
+.menu-type-pill {
+	font-size: 0.74rem;
+	padding: 0.22rem 0.55rem;
+	border-radius: 999px;
+	background: #ecf3ff;
+	border: 1px solid #d2e1ff;
+	color: #33598f;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.menu-id {
+	font-family: Consolas, 'Courier New', monospace;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: #2c3d57;
+}
+
+.table-note {
+	font-size: 0.8rem;
+	color: #6a7686;
 }
 </style>
 </head>
-<body>
+<body class="access-admin-page">
 
-	<body>
-		
-		
-	<div class="container">
-		
-		<h1 class="text-center">Menu List</h1>
+	<div class="topnav">
+		<div class="links">
+			<button style="background-color: #333; border: none" class="btn btn-secondary dropdown-toggle" type="button"
+				id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+				Menu
+			</button>
+			<div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
+				<div th:each="menu : ${nav_menus}">
+					<div class="dropdown-item-container">
+						<a class="dropdown-item dropdown-menu-main-content"
+							th:if="${menu != null and menu.menu_type != 'CHILD_UI'}"
+							th:href="@{${menu.menu_link}}"
+							th:text="${menu.menuName}"
+							th:classappend="${#strings.contains(menu.menu_link ?: '', currentMenu ?: '') ? 'active' : ''}">
+							<span th:if="${menu != null and menu.menu_type == 'PARENT_UI'}" class="arrow">&#9654;</span>
+						</a>
+						<div class="submenu" th:if="${menu != null and menu.menu_type != null and menu.menu_type == 'PARENT_UI'}">
+							<a class="submenu-item" th:each="submenu : ${menu.children}" th:href="@{${submenu.menu_link}}" th:text="${submenu.menuName}"></a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="title">Warehouse Management System</div>
+		<span class="icon-name" th:text="${user_name}"></span>
+		&nbsp;&nbsp;&nbsp;&nbsp;
+
+		<div class="dropdown">
+			<button style="background-color: #333; border: none" class="btn btn-secondary dropdown-toggle" type="button"
+				id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+				<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-person-circle"
+					viewBox="0 0 16 16">
+					<path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+					<path fill-rule="evenodd"
+						d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
+				</svg>
+			</button>
+			<div class="dropdown-menu dropdown-menu-left" aria-labelledby="dropdownMenuButton">
+				<a class="dropdown-item" href="#">Account</a>
+				<a class="dropdown-item" th:href="@{${settings_url.menu_link}}" th:text="${settings_url.menuName}"></a>
+				<a class="dropdown-item" th:href="@{${logout_url.menu_link}}" th:text="${logout_url.menuName}"></a>
+			</div>
+		</div>
+		&nbsp;&nbsp;&nbsp;&nbsp;
+	</div>
+
+	<div class="container access-admin-shell">
+		<div class="page-header">
+			<div>
+				<h1 class="page-title">Menu List</h1>
+				<p class="page-subtitle">Manage menu definitions, links, and hierarchy used across navigation and access control.</p>
+			</div>
+			<input data-toggle="modal" data-target="#exampleModal" type="button" class="btn btn-primary" value="Add Menu" id="addItemButton" onclick="showButtons()"
+				th:disabled="${uiActions == null or !uiActions.manageMenus}">
+		</div>
+
+		<div class="admin-nav-shell">
+			<div class="admin-nav-head">
+				<p class="admin-nav-title">Access Administration</p>
+				<span class="admin-nav-meta" th:text="'Menus: ' + ${#lists.size(allMenus)}"></span>
+			</div>
+			<div class="admin-pills">
+				<a href="/inventory-ui/api/userlist" class="admin-pill"><i class="fa fa-users"></i> Users</a>
+				<a href="/inventory-ui/api/roles" class="admin-pill"><i class="fa fa-user-secret"></i> Roles</a>
+				<a href="/inventory-ui/api/permissions" class="admin-pill"><i class="fa fa-key"></i> Permissions</a>
+				<a href="/inventory-ui/api/role-permissions" class="admin-pill"><i class="fa fa-link"></i> Role-Permissions</a>
+				<a href="/inventory-ui/api/menu-access-management" class="admin-pill"><i class="fa fa-bars"></i> Menu Access</a>
+				<a href="/inventory-ui/api/menulist" class="admin-pill active"><i class="fa fa-sitemap"></i> Menu List</a>
+			</div>
+		</div>
+
 		<input type="hidden" id="responseMessage" th:value="${responseMessage}"></input>
-		<!-- Category table -->
-		<input style="width: 100px;" data-toggle="modal" data-target="#exampleModal" type="button" class="btn btn-primary" value="Add Menu" id="addItemButton" onclick="showButtons()">
+
+		<div class="menu-toolbar">
+			<span class="admin-nav-meta" th:text="'Total menus: ' + ${#lists.size(allMenus)}"></span>
+			<span class="table-note">Tip: Use View to edit menu details, protocol, and parent relationships.</span>
+		</div>
+
 		<div class="scrollable-container">
-			<table class="table table-striped">
+			<table class="table table-striped table-hover menu-table access-table" data-enhance-table="true">
 				<thead class="thead-dark">
 					<tr>
 						<th scope="col">Menu ID</th>
@@ -210,17 +172,16 @@ margin-left: 0px;
 				</thead>
 				<tbody>
 					<tr th:each="menu : ${allMenus}">
-						<th scope="row" th:text="${menu.menu_id}"></th>
-						<td th:text="${menu.menuName}"></td>
-						<td th:text="${menu.protocol}"></td>
-						<td th:text="${menu.hostname}"></td>
-						<td th:text="${menu.menu_link}"></td>
-						<td th:text="${menu.menu_type}"></td>
-                        <td th:text="${menu.parentId}"></td>
-						<!-- <td th:text="${menu.menu_type}"></td> -->
+						<th scope="row"><span class="menu-id" th:text="${menu.menu_id}"></span></th>
+						<td><span class="entity-name" th:text="${menu.menuName}"></span></td>
+						<td><span class="entity-code" th:text="${menu.protocol}"></span></td>
+						<td><span th:text="${menu.hostname}"></span></td>
+						<td><span class="entity-code" th:text="${menu.menu_link}"></span></td>
+						<td><span class="menu-type-pill" th:text="${menu.menu_type}"></span></td>
+						<td><span class="entity-code" th:text="${menu.parentId}"></span></td>
                         
-						<td>
-							<button style="width: 60px;"type="button" class="btn btn-primary" data-toggle="modal"
+						<td class="menu-actions">
+							<button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
 								data-target="#exampleModal" 
 								th:data-menu-id="${menu.menu_id}"
 								th:data-menuname="${menu.menuName}"
@@ -232,11 +193,26 @@ margin-left: 0px;
 								
 								onclick="showMenu(this.getAttribute('data-menu-id'),this.getAttribute('data-menuname'),this.getAttribute('data-protocol'),this.getAttribute('data-hostname'),
 								this.getAttribute('data-menu_link'),this.getAttribute('data-menu_type'),this.getAttribute('data-parentId'), true)">
-								View</button>
+								View
+							</button>
 
-								<button style="width: 80px;"th:data-menu-id="${menu.menu_id}" th:data-menuname="${menu.menuName}"
+							<button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="modal"
+								data-target="#exampleModal"
+								th:disabled="${uiActions == null or !uiActions.manageMenus}"
+								th:data-menuname="${menu.menuName}"
+								th:data-protocol="${menu.protocol}"
+								th:data-hostname="${menu.hostname}"
+								th:data-menu_link="${menu.menu_link}"
+								th:data-menu_type="${menu.menu_type}"
+								th:data-parentId="${menu.parentId}"
+								onclick="copyMenu(this.getAttribute('data-menuname'),this.getAttribute('data-protocol'),this.getAttribute('data-hostname'),this.getAttribute('data-menu_link'),this.getAttribute('data-menu_type'),this.getAttribute('data-parentId'))">
+								Copy
+							</button>
+
+								<button th:data-menu-id="${menu.menu_id}" th:data-menuname="${menu.menuName}"
+								th:disabled="${uiActions == null or !uiActions.manageMenus}"
 								onclick="confirmMenuDeletion(this.getAttribute('data-menu-id'),this.getAttribute('data-menuname'), true)"
-								class="btn btn-danger">Delete</button>
+								class="btn btn-danger btn-sm">Delete</button>
 						</td>
 					</tr>
 				</tbody>
@@ -247,10 +223,10 @@ margin-left: 0px;
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">User Details</h5>
+				<h5 class="modal-title" id="exampleModalLabel">Menu Details</h5>
                 <button type="button" class="close" data-dismiss="modal"
                     aria-label="Close">
-                    <span aria-hidden="true">×</span>
+                    <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
@@ -303,14 +279,16 @@ margin-left: 0px;
 				onclick="canelViewMenu()" data-dismiss="modal">Cancel</button>
                 &nbsp;
                 <button style="width: 60px;" id="saveButton" type="button" class="btn btn-primary"
+					th:disabled="${uiActions == null or !uiActions.manageMenus}"
                     onclick="saveMenu()">Save</button>
             </div>
             
-			<div id= "editItemButton" class="modal-footer">
+			<div id= "editItemButton" class="modal-footer" style="display:none;">
                 <button type="button" class="btn btn-secondary"
 				onclick="canelViewEditMenu()" data-dismiss="modal">Cancel</button>
                 &nbsp;
                 <button style="width: 60px;"  type="button" class="btn btn-primary"
+					th:disabled="${uiActions == null or !uiActions.manageMenus}"
                     onclick="saveEditMenu()">Save</button>
             </div>
         </div>
@@ -326,6 +304,8 @@ margin-left: 0px;
 			src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script src="/inventory-ui/js/ui-feedback.js"></script>
+		<script src="/inventory-ui/js/table-enhancements.js"></script>
 		<script type='text/javascript'>
 		
         function canelViewEditMenu(){
@@ -334,6 +314,7 @@ margin-left: 0px;
         }    
 
 		function showButtons(){
+			document.getElementById('exampleModalLabel').textContent = 'Menu Details';
 			document.getElementById("editItemButton").style.display = 'none';
 			document.getElementById("saveMenuButton").style.display = 'block';
 			canelViewMenu();
@@ -345,11 +326,12 @@ margin-left: 0px;
 		
 		function canelViewMenu(){
 			document.getElementById('menu_id').value = null;
-			const emptyFields = ['menu_id', 'menuName', 'protocol', 'hostname','menu_link','menu_type','parentId']
+			const emptyFields = ['menu_id', 'menuName', 'protocol', 'hostname','menu_link','menu_type','parentMenuName']
 			.filter(fieldId => !deColourFieldAndNull(fieldId));	
 		}
 		function showMenu(menu_id,menuname,protocol,hostname,menu_link,menu_type,parentId){
-			const emptyFields = ['menu_id', 'menuName', 'protocol', 'hostname','menu_link','menu_type','parentId']
+			document.getElementById('exampleModalLabel').textContent = 'Menu Details';
+			const emptyFields = ['menu_id', 'menuName', 'protocol', 'hostname','menu_link','menu_type','parentMenuName']
 			.filter(fieldId => !deColourFieldAndNull(fieldId));	
 			console.log('Menu Type : '+menu_type);
 			document.getElementById('menu_id').value = menu_id;
@@ -358,10 +340,22 @@ margin-left: 0px;
 			document.getElementById('hostname').value = hostname;
 			document.getElementById('menu_link').value = menu_link;
             document.getElementById('menu_type').value = menu_type;
-			document.getElementById('parentId').value = parentId;
+			document.getElementById('parentMenuName').value = parentId;
 			document.getElementById("editItemButton").style.display = 'block';
 			document.getElementById("saveMenuButton").style.display = 'none';
 
+		}
+
+		function copyMenu(menuname, protocol, hostname, menu_link, menu_type, parentId) {
+			showButtons();
+			document.getElementById('exampleModalLabel').textContent = 'Copy Menu';
+			document.getElementById('menu_id').value = '';
+			document.getElementById('menuName').value = menuname ? menuname + ' Copy' : '';
+			document.getElementById('protocol').value = protocol;
+			document.getElementById('hostname').value = hostname;
+			document.getElementById('menu_link').value = menu_link;
+			document.getElementById('menu_type').value = menu_type;
+			document.getElementById('parentMenuName').value = parentId;
 		}
 		function handleFormSubmission() {
          const emptyFields = ['menuName', 'protocol', 'hostname','menu_link','menu_type']
@@ -369,11 +363,11 @@ margin-left: 0px;
 
 		 if (emptyFields.length == 1) {
 			console.log(emptyFields.length == 1);
-			alert('One field is blank!');
+			InventoryUI.warning('One field is blank!');
 			return true;
 		 }
          else if (emptyFields.length > 1) {
-             alert('More than one field is blank!');
+	             InventoryUI.warning('More than one field is blank!');
              return true;
          }
 		 else{
@@ -395,6 +389,20 @@ function validateField(fieldId) {
     }
     return true;
 }
+
+function getAjaxSuccessMessage(response, xhr, fallbackMessage) {
+	if (typeof response === 'string' && response.trim().length > 0) {
+		return response.trim();
+	}
+	if (response && typeof response === 'object') {
+		if (response.responseMessage) return response.responseMessage;
+		if (response.message) return response.message;
+	}
+	if (xhr && typeof xhr.responseText === 'string' && xhr.responseText.trim().length > 0) {
+		return xhr.responseText.trim();
+	}
+	return fallbackMessage;
+}
 // const formElement = document.getElementById('saveButton');
 //     console.log(formElement);
 //     formElement.addEventListener('click', function (event) {
@@ -414,6 +422,9 @@ function validateField(fieldId) {
 
 			console.log("menuName : " + menuName);
 			if (!handleFormSubmission()) {
+				var saveBtn = document.getElementById('saveButton');
+				saveBtn.disabled = true;
+				saveBtn.textContent = 'Saving…';
 				const ajaxRequest = {
             	url: 'addMenu',
             	type: 'post',
@@ -427,19 +438,16 @@ function validateField(fieldId) {
 				},
             success: function (response, textStatus, xhr) {
                 console.log("Status Code:", xhr.status + ", Status Message " + textStatus);
-              			 var parser = new DOMParser();
-						var xmlDoc = parser.parseFromString(xhr.responseText, "text/html");
-						var targetTag = xmlDoc.querySelector("#responseMessage"); // Replace with your actual tag ID
-						// console.log(xmlDoc);
-						console.log('Response Message '+targetTag.value);
-                    
-					alert(targetTag.value);
+					saveBtn.disabled = false;
+					saveBtn.textContent = 'Save';
+					InventoryUI.success(getAjaxSuccessMessage(response, xhr, 'Menu added successfully.'));
                 isItemShown = false;
                 location.reload();
             },
             error: function (response) {
-                alert('Error adding menu');
-                //location.reload();
+					saveBtn.disabled = false;
+					saveBtn.textContent = 'Save';
+	                InventoryUI.error('Error adding menu');
             }
         };
 
@@ -479,32 +487,30 @@ function validateField(fieldId) {
 			var hostname = document.getElementById('hostname').value;
 			var menu_type = document.getElementById('menu_type').value;
 			var menu_link = document.getElementById('menu_link').value;
-            var parentId = document.getElementById('parentId').value;
+            var parentMenuName = document.getElementById('parentMenuName').value;
 
 
 			console.log("Menu Name : " + menuName);
 			if (!handleFormSubmission()) {
+				var editSaveBtn = document.querySelector('#editItemButton .btn-primary');
+				if (editSaveBtn) { editSaveBtn.disabled = true; editSaveBtn.textContent = 'Saving…'; }
 			const ajaxRequest = {
 				url : 'updateMenu',
 				type : 'patch',
-				data:{newProtocol: protocol,newMenuName: menuName,newMenuLink: menu_link,newHostname: hostname,newMenuType: menu_type },
+				data:{newProtocol: protocol,newMenuName: menuName,newMenuLink: menu_link,newHostname: hostname,newMenuType: menu_type, newParentMenuName: parentMenuName },
 				success : function(response, textStatus, xhr) {
 					console.log("Status Code:", xhr.status
 							+ ", Status Message " + textStatus);
-							var parser = new DOMParser();
-						var xmlDoc = parser.parseFromString(xhr.responseText, "text/html");
-						var targetTag = xmlDoc.querySelector("#responseMessage"); // Replace with your actual tag ID
-						// console.log(xmlDoc);
-						console.log('Response Message '+targetTag.value);
-                    
-					alert(targetTag.value);
+					if (editSaveBtn) { editSaveBtn.disabled = false; editSaveBtn.textContent = 'Save'; }
+					InventoryUI.success(getAjaxSuccessMessage(response, xhr, 'Menu updated successfully.'));
 					
 					isItemShown = false;
 					location.reload();
 
 				},
 				error : function(response) {
-					alert('Error editing menu');
+					if (editSaveBtn) { editSaveBtn.disabled = false; editSaveBtn.textContent = 'Save'; }
+					InventoryUI.error('Error editing menu');
 					location.reload();
 				}
 			};
@@ -522,7 +528,7 @@ function validateField(fieldId) {
 			//	}
 				 Swal.fire({
 			            title: 'Are you sure?',
-			            text: `Are you sure you want to delete item '${menuname}'?`,
+			            text: `Are you sure you want to delete menu '${menuname}'?`,
 			            icon: 'warning',
 			            showCancelButton: true,
 			            confirmButtonColor: '#3085d6',
@@ -563,3 +569,4 @@ function validateField(fieldId) {
 	</script>
 </body>
 </html>
+
