@@ -69,8 +69,8 @@ body {
 					oninput="showFields()">
 			</div>
 			<div class="form-group" id="resvLocDiv" style="display: none;">
-				<label for="resvLocn">Rloc:</label> <input type="text" id="resv"
-					name="resvLocn" class="form-control" required>
+				<label for="locationCode">Rloc:</label> <input type="text" id="resv"
+					name="locationCode" class="form-control" required>
 			</div>
 			<button type="submit" class="btn btn-primary">Submit</button>
 		</form>
@@ -97,30 +97,27 @@ body {
 		}
 
 		function submitForm() {
-			var lpn_name = document.getElementById('lpn').value;
-			var resv_locn = document.getElementById('resv').value;
-			console.log('LPN : ' + lpn_name + ' , Reserve Location : '
-					+ resv_locn);
+			var lpnNumber = document.getElementById('lpn').value;
+			var locationCode = document.getElementById('resv').value;
+			console.log('LPN : ' + lpnNumber + ' , Reserve Location : ' + locationCode);
 
 			const ajaxRequest = {
-				url : '/api/locateLpnToReserve',
+				url : '/inventory-ui/lpn/' + encodeURIComponent(lpnNumber) + '/putaway-reserve',
 				type : 'post',
 				data : {
-					lpn_name : lpn_name,
-					resv_locn : resv_locn
+					locationCode : locationCode
 				},
-				success : function(response, textStatus, xhr) {
-					var parser = new DOMParser();
-					var xmlDoc = parser.parseFromString(xhr.responseText,
-							"text/html");
-					var targetTag = xmlDoc.querySelector("#responseMessage"); // Replace with your actual tag ID
-					console.log(xmlDoc);
-					console.log('Response Message ' + targetTag.value);
-
-						InventoryUI.success(targetTag.value);
+				success : function(response) {
+					var msg = (response && response.message) ? response.message : 'LPN moved to reserve location';
+					console.log('Response Message: ' + msg);
+					InventoryUI.success(msg);
 				},
-				error : function(response) {
-						InventoryUI.error('Error locating LPN');
+				error : function(xhr) {
+					var errMsg = 'Error locating LPN';
+					if (xhr.responseJSON && xhr.responseJSON.error) {
+						errMsg = xhr.responseJSON.error;
+					}
+					InventoryUI.error(errMsg);
 				}
 			}
 			$.ajax(ajaxRequest);

@@ -3,7 +3,7 @@ package com.pawar.inventory.app.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.data.relational.core.mapping.Table;
+import jakarta.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;

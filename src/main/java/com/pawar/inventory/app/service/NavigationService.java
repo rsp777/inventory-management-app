@@ -20,9 +20,11 @@ public class NavigationService {
     private static final Logger logger = LoggerFactory.getLogger(NavigationService.class);
 
     private final MenuAccessService menuAccessService;
+    private final TransactionLogService transactionLogService;
 
-    public NavigationService(MenuAccessService menuAccessService) {
+    public NavigationService(MenuAccessService menuAccessService, TransactionLogService transactionLogService) {
         this.menuAccessService = menuAccessService;
+        this.transactionLogService = transactionLogService;
     }
 
     public void populateNavigation(Model model, HttpServletRequest request, HttpSession session) {
@@ -68,6 +70,12 @@ public class NavigationService {
             model.addAttribute("nav_menus", nav);
             model.addAttribute("side_menus", side);
             model.addAttribute("currentMenu", request.getRequestURI());
+
+            transactionLogService.recordMenuTransaction(
+                    "MENU_FLOW_RENDER",
+                    "uri=" + request.getRequestURI() + ",rf=" + rf.size() + ",nav=" + nav.size()
+                            + ",side=" + side.size(),
+                    SessionUtil.getSessionUserName(session));
 
         } catch (Exception e) {
             logger.error("Error building navigation", e);

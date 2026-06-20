@@ -48,7 +48,7 @@ padding-top: 70px;
 		<script>
 			var backLink = document.getElementById('back-link');
 			backLink.href = 'http://' + window.location.hostname
-					+ ':8086/api/showMenu';
+					+ ':8086/inventory-ui/api/showMenu';
 		</script>
 		<!-- <a href="#orders">Orders</a>
     <a href="#reports">Reports</a>
@@ -65,12 +65,12 @@ padding-top: 70px;
 			onsubmit="event.preventDefault(); submitForm();">
 			<div class="form-group">
 				<label for="lpn_name">LPN:</label> <input type="text" id="lpn"
-					name="lpn_name" class="form-control" required
+					name="lpnNumber" class="form-control" required
 					oninput="showFields()">
 			</div>
 			<div class="form-group" id="itemDiv" style="display: none;">
 				<label for="item_name">Item:</label> <input type="text" id="item"
-					name="item_name" class="form-control" required>
+					name="itemName" class="form-control" required>
 			</div>
 			<div class="form-group" id="quantityDiv" style="display: none;">
 				<label for="quantity">Quantity:</label> <input type="number"
@@ -103,16 +103,16 @@ padding-top: 70px;
 		}
 
 		function submitForm() {
-			var lpn_name = document.getElementById('lpn').value;
-			var item_name = document.getElementById('item').value;
+			var lpnNumber = document.getElementById('lpn').value;
+			var itemName = document.getElementById('item').value;
 			var quantity = document.getElementById('quantity').value;
-
+			console.log('Submitting form with LPN:', lpnNumber, 'Item:', itemName, 'Quantity:', quantity);
 			$.ajax({
-				url : 'newLpn',
+				url : 'create',
 				type : 'post',
 				data : {
-					lpn_name : lpn_name,
-					item_name : item_name,
+					lpnNumber : lpnNumber,
+					itemName : itemName,
 					quantity : quantity
 				},
 				success : function(response) {

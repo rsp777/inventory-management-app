@@ -23,6 +23,7 @@ import com.pawar.inventory.app.exception.ResourceNotFoundException;
 import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.app.service.MenuAccessService;
 import com.pawar.inventory.app.service.MenuService;
+import com.pawar.inventory.app.service.TransactionLogService;
 import com.pawar.inventory.app.util.MenuFilterUtil;
 import com.pawar.inventory.app.util.MenuFilterUtil.MenuCategories;
 import com.pawar.inventory.app.util.ResponseUtil;
@@ -44,10 +45,13 @@ public class MenuNavigationController {
     
     private final MenuService menuService;
     private final MenuAccessService menuAccessService;
+    private final TransactionLogService transactionLogService;
 
-    public MenuNavigationController(MenuService menuService, MenuAccessService menuAccessService) {
+    public MenuNavigationController(MenuService menuService, MenuAccessService menuAccessService,
+            TransactionLogService transactionLogService) {
         this.menuService = menuService;
         this.menuAccessService = menuAccessService;
+        this.transactionLogService = transactionLogService;
     }
     
     /**
@@ -68,6 +72,12 @@ public class MenuNavigationController {
             
             // Add to model
             ResponseUtil.addViewAttributes(model, categories, request.getRequestURI());
+
+            transactionLogService.recordMenuTransaction(
+                    "MENU_NAVIGATION_SHOW",
+                    "uri=" + request.getRequestURI() + ",rf=" + categories.rightFrameMenus.size() + ",nav="
+                            + categories.navigationMenus.size() + ",side=" + categories.sideMenus.size(),
+                    SessionUtil.getSessionUserName(httpSession));
             
             return "menu";
             
@@ -99,6 +109,11 @@ public class MenuNavigationController {
             
             Menu newMenu = menuService.addMenu(newProtocol, newMenuName, newMenuLink, 
                     newHostname, newMenuType, newParentMenuName);
+
+                transactionLogService.recordMenuTransaction(
+                    "MENU_CREATE",
+                    "menuName=" + newMenuName + ",menuType=" + newMenuType + ",menuLink=" + newMenuLink,
+                    null);
             
             return ResponseEntity.status(HttpStatus.CREATED).body(newMenu);
         } catch (ParentMenuNotFoundException exception) {
@@ -131,6 +146,11 @@ public class MenuNavigationController {
             
             menuService.updateMenu(newProtocol, newMenuName, newMenuLink, 
                     newHostname, newMenuType);
+
+                transactionLogService.recordMenuTransaction(
+                    "MENU_UPDATE",
+                    "menuName=" + newMenuName + ",menuType=" + newMenuType + ",menuLink=" + newMenuLink,
+                    null);
             
             return ResponseEntity.ok("Menu updated successfully");
             
@@ -165,6 +185,12 @@ public class MenuNavigationController {
             // Add to model
             ResponseUtil.addViewAttributes(model, categories, request.getRequestURI());
             model.addAttribute("allMenus", allMenus);
+
+            transactionLogService.recordMenuTransaction(
+                    "MENU_NAVIGATION_LIST",
+                    "uri=" + request.getRequestURI() + ",accessible=" + accessibleMenus.size() + ",all="
+                            + allMenus.size(),
+                    SessionUtil.getSessionUserName(httpSession));
             
             logger.info("Menu list loaded - Total: {}", allMenus.size());
             
