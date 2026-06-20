@@ -1,5 +1,6 @@
-[![Build and Depploy Artifact to Maven Registry](https://github.com/rsp777/inventory-management-app/actions/workflows/maven-publish-artifact.yml/badge.svg)](https://github.com/rsp777/inventory-management-app/actions/workflows/maven-publish-artifact.yml)
 # Inventory Management App
+Build Status
+[![Build and Depploy Artifact to Maven Registry](https://github.com/rsp777/inventory-management-app/actions/workflows/maven-publish-artifact.yml/badge.svg)](https://github.com/rsp777/inventory-management-app/actions/workflows/maven-publish-artifact.yml)
 
 Inventory Management App is a Spring Boot 3 backend and server-rendered UI for warehouse inventory operations, including LPN management, item and category management, location management, inquiry screens, putaway workflows, user access, and operational health endpoints.
 
