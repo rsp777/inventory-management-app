@@ -31,7 +31,7 @@ jobs:
       - name: Write Maven settings.xml
         run: |
           mkdir -p $HOME/.m2
-          echo "${{ secrets.MAVEN_SETTINGS }}" > $HOME/.m2/settings.xml
+          printf "%s" "${{ secrets.MAVEN_SETTINGS }}" > $HOME/.m2/settings.xml
 
       - name: Maven Build
         run: mvn clean package -s $HOME/.m2/settings.xml -DskipTests
@@ -50,7 +50,7 @@ jobs:
       - name: Write Maven settings.xml
         run: |
           mkdir -p $HOME/.m2
-          echo "${{ secrets.MAVEN_SETTINGS }}" > $HOME/.m2/settings.xml
+          printf "%s" "${{ secrets.MAVEN_SETTINGS }}" > $HOME/.m2/settings.xml
 
       - name: Run tests
         run: mvn test -s $HOME/.m2/settings.xml
@@ -69,7 +69,7 @@ jobs:
       - name: Write Maven settings.xml
         run: |
           mkdir -p $HOME/.m2
-          echo "${{ secrets.MAVEN_SETTINGS }}" > $HOME/.m2/settings.xml
+          printf "%s" "${{ secrets.MAVEN_SETTINGS }}" > $HOME/.m2/settings.xml
 
       - name: Deploy to GitHub Packages
         run: mvn deploy -s $HOME/.m2/settings.xml
