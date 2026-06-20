@@ -31,13 +31,18 @@ jobs:
         with:
           java-version: "17"
           distribution: "temurin"
-          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-          settings-path: ${{ github.workspace }} # location for the settings.xml file
+          server-id: github # matches <id> in pom.xml distributionManagement
+          settings-path: $HOME/.m2 # Maven will look here for settings.xml
+
+      - name: Write Maven settings.xml
+        run: |
+          mkdir -p $HOME/.m2
+          echo "${{ secrets.MAVEN_SETTINGS }}" > $HOME/.m2/settings.xml
 
       - name: Build and Publish to GitHub Packages Apache Maven
-        run: mvn clean package -s $GITHUB_WORKSPACE/settings.xml
+        run: mvn clean deploy -s $HOME/.m2/settings.xml
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test:
     runs-on: ubuntu-latest
