@@ -1,0 +1,23 @@
+name: Ping Server on Tailscale Network
+on: 
+   workflow_dispatch:
+
+jobs:
+  ping-jenkins:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Connect Tailscale
+        # You may pin to the exact commit or the version.
+        # uses: tailscale/github-action@4e4c49acaa9818630ce0bd7a564372c17e33fb4d
+        uses: tailscale/github-action@v2
+        with:
+          # Your Tailscale OAuth Client ID.
+          oauth-client-id:  ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          # Your Tailscale OAuth Client Secret.
+          oauth-secret:  ${{ secrets.TS_OAUTH_SECRET }}
+          # Comma separated list of Tags to be applied to nodes. The OAuth client must have permission to apply these tags.
+          tags: tag
+
+      - name: Ping to Server on Tailscale Network
+        run: |
+            ping -c 4 inventory-wms
