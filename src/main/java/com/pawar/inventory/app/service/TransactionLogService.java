@@ -10,6 +10,7 @@ public interface TransactionLogService {
     List<TransactionLog> getAllTransactionLogs();
     TransactionLog getTransactionLogById(Long id);
     TransactionLog createTransactionLog(TransactionLogRequestDTO requestDTO);
+    void recordMenuTransaction(String transactionName, String data, String source);
     TransactionLog updateTransactionLog(Long id, TransactionLogRequestDTO requestDTO);
     void deleteTransactionLog(Long id);
     TransactionLogDTO convertToDTO(TransactionLog transactionLog);

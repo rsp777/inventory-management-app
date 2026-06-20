@@ -56,6 +56,22 @@ public class TransactionLogServiceImpl implements TransactionLogService {
     }
 
     @Override
+    public void recordMenuTransaction(String transactionName, String data, String source) {
+        try {
+            TransactionLog transactionLog = new TransactionLog();
+            transactionLog.setTransactionName(truncate(transactionName, 255));
+            transactionLog.setData(truncate(data, 4000));
+            String resolvedSource = resolveSource(source, null);
+            transactionLog.setCreatedSource(resolvedSource);
+            transactionLog.setLastUpdatedSource(resolvedSource);
+            transactionLogRepository.save(transactionLog);
+            logger.debug("Recorded menu transaction: {}", transactionName);
+        } catch (Exception exception) {
+            logger.warn("Unable to persist transaction log for transaction: {}", transactionName, exception);
+        }
+    }
+
+    @Override
 	public TransactionLog updateTransactionLog(Long id, TransactionLogRequestDTO requestDTO) {
         logger.info("Updating transaction log with ID: {}", id);
         TransactionLog existingLog = getTransactionLogById(id);
@@ -109,5 +125,12 @@ public class TransactionLogServiceImpl implements TransactionLogService {
             return fallbackSource;
         }
         return AppConstants.Application.AUDIT_SOURCE_SYSTEM;
+    }
+
+    private String truncate(String value, int maxLength) {
+        if (value == null) {
+            return null;
+        }
+        return value.length() > maxLength ? value.substring(0, maxLength) : value;
     }
 }

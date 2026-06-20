@@ -252,6 +252,8 @@ public class LpnController {
 	public ResponseEntity<?> createLpn(@Valid @ModelAttribute LpnCreateRequestDTO requestDTO,
 			BindingResult bindingResult, HttpSession session) {
 		if (bindingResult.hasErrors()) {
+			logger.info("requestDTO : {}",requestDTO.toString());
+			logger.info("bindingResult : {}",bindingResult.getAllErrors());
 			return ResponseUtil.error("Invalid LPN data");
 		}
 		try {

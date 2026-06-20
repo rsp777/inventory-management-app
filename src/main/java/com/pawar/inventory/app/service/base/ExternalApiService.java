@@ -153,7 +153,7 @@ public class ExternalApiService extends AbstractBaseRepository {
 					.replace("{lpn_name}", lpnName)
 					.replace("{resv_locn}", reserveLocation);
 			logger.info("Moving LPN to reserve location at: {}", url);
-			ResponseEntity<String> response = httpService.restCall(null, url, HttpMethod.GET, null, null);
+			ResponseEntity<String> response = httpService.restCall(null, url, HttpMethod.POST, null, null);
 			return response.getBody();
 		} catch (Exception e) {
 			logger.warn("Error moving LPN to reserve", e);

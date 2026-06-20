@@ -18,6 +18,16 @@ node {
             }
         }
     }
+    stage('Deploy to Artifatory') {
+        // Run the maven build
+        withEnv(["MVN_HOME=$mvnHome"]) {
+            if (isUnix()) {
+                sh '"$MVN_HOME/bin/mvn" -Dmaven.test.failure.ignore deploy'
+            } else {
+                bat(/"%MVN_HOME%\bin\mvn" -Dmaven.test.failure.ignore deploy/)
+            }
+        }
+    }
     stage('Archive Artifacts') {
         archiveArtifacts 'target/*.jar'
         //withEnv(["MVN_HOME=$mvnHome"]){

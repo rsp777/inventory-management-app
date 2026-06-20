@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
+import com.google.inject.internal.Nullable;
 import com.pawar.inventory.app.dto.ListenerDTO;
 import com.pawar.inventory.app.dto.ListenerRequestDTO;
 import com.pawar.inventory.app.exception.DuplicateResourceException;
@@ -65,8 +66,7 @@ public class ListenerServiceImpl implements ListenerService {
     @Value("${listener.runtime.control-base-urls:}")
     private String remoteControlBaseUrls;
 
-    public ListenerServiceImpl(ListenerRepository listenerRepository,
-            KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry) {
+    public ListenerServiceImpl(ListenerRepository listenerRepository, @Nullable KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry) {
         this.listenerRepository = listenerRepository;
         this.kafkaListenerEndpointRegistry = kafkaListenerEndpointRegistry;
         this.restTemplate = new RestTemplate();
