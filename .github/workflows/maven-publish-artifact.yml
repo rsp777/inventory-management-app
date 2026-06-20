@@ -1,4 +1,4 @@
-name: Ping Server on Tailscale Network
+name: Build and Publish Artifact to Maven Registry
 on:
   workflow_dispatch:
 
