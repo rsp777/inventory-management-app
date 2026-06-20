@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.pawar.inventory.app.dto.ListenerDTO;
 import com.pawar.inventory.app.dto.ListenerRequestDTO;
@@ -44,7 +45,7 @@ public class ListenerServiceImpl implements ListenerService {
     private static final Logger logger = LoggerFactory.getLogger(ListenerServiceImpl.class);
 
     private final ListenerRepository listenerRepository;
-    private final KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
+    private KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
     private final RestTemplate restTemplate;
 
     @Value("${spring.kafka.bootstrap-servers:}")
@@ -66,7 +67,7 @@ public class ListenerServiceImpl implements ListenerService {
     private String remoteControlBaseUrls;
 
     public ListenerServiceImpl(ListenerRepository listenerRepository,
-            KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry) {
+            @Autowired(required = false) KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry) {
         this.listenerRepository = listenerRepository;
         this.kafkaListenerEndpointRegistry = kafkaListenerEndpointRegistry;
         this.restTemplate = new RestTemplate();
@@ -621,6 +622,18 @@ public class ListenerServiceImpl implements ListenerService {
         if (!"kafka".equalsIgnoreCase(listener.getListenerType())) {
             return;
         }
+
+        if (kafkaListenerEndpointRegistry == null) {
+            if (remoteControlEnabled && StringUtils.hasText(resolveRemoteBaseUrl(listener))) {
+                logger.info("KafkaListenerEndpointRegistry not available; remote control is enabled, skipping local enforcement for listener '{}' and channel '{}'",
+                        listener.getListenerName(), listener.getPortChannel());
+            } else {
+                logger.warn("KafkaListenerEndpointRegistry not available; skipping local listener state enforcement for listener '{}' and channel '{}'",
+                        listener.getListenerName(), listener.getPortChannel());
+            }
+            return;
+        }
+
         logger.info(
                 (listener.isActive() ? "Enabling" : "Disabling")
                         + " local Kafka listener containers for listener '{}' and channel '{}'",
@@ -636,7 +649,7 @@ public class ListenerServiceImpl implements ListenerService {
                         "No local Kafka listener container found for listener '{}' and channel '{}'; remote control is enabled, skipping local enforcement",
                         listener.getListenerName(), listener.getPortChannel());
             } else {
-                logger.warn("No local Kafka listener container found for listener '{}' and channel '{}'",
+                logger.warn("No local Kafka listener container found for listener '{}' and channel '{}",
                         listener.getListenerName(), listener.getPortChannel());
             }
             return;
