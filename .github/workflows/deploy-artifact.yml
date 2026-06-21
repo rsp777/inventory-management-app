@@ -47,7 +47,7 @@ jobs:
       - name: Setup Maven settings
         uses: s4u/maven-settings-action@v4.0.0
         with:
-          override: true
+          overwrite: true
           servers: |
             [{"id":"github","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
           repositories: |
