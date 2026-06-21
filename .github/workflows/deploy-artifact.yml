@@ -51,7 +51,8 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: "17"
-          distribution: "temurin"      
+          distribution: "temurin"
+          server-id: ''
 
       # 3. Handle Mapping & Fetching Remote Versions
       - name: Set Environment Variables & Resolve Version
