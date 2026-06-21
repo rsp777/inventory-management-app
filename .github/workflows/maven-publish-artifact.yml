@@ -22,7 +22,7 @@ jobs:
             [{"id":"github","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
           repositories: |
             [{"id":"github","name":"${{ secrets.REPO_NAME }}","url":"${{ secrets.REPO_URL }}","snapshots":{"enabled":true}}]
-          run: cat $HOME/.m2/settings.xml | grep "<server>"
+          
           
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -33,7 +33,7 @@ jobs:
         
 
       - name: Maven Build
-        run: mvn clean package -DskipTests
+        run: cat $HOME/.m2/settings.xml | grep "<server>" && mvn clean package -DskipTests
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v7
