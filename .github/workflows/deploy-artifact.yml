@@ -44,7 +44,6 @@ jobs:
         with:
           java-version: "17"
           distribution: "temurin"
-          server-id: ''
           
       - name: Remove existing settings.xml
         run: rm -f $HOME/.m2/settings.xml
