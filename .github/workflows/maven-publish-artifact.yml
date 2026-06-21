@@ -19,7 +19,7 @@ jobs:
         with:
           java-version: "17"
           distribution: "temurin"
-          server-id: "my-server-id"
+          server-id: "github"
           server-username: "${{ github.actor }}"
           server-password: "${{ secrets.GITHUB_TOKEN }}"
 
