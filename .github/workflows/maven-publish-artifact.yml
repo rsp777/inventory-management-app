@@ -33,7 +33,7 @@ jobs:
         
 
       - name: Maven Build
-        run: cat $HOME/.m2/settings.xml | grep "<server>" && mvn clean package -DskipTests
+        run: cat $HOME/.m2/settings.xml && mvn clean package -DskipTests
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v7
