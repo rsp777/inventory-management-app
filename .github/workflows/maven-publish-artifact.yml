@@ -33,7 +33,7 @@ jobs:
       #     run: cat /home/runner/.m2/settings.xml  
 
       - name: Maven Build
-        run: mvn clean package -DskipTests
+        run: cat /home/runner/.m2/settings.xml && mvn clean package -DskipTests
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v7
