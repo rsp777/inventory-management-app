@@ -97,6 +97,14 @@ jobs:
             -DoutputDirectory=/target \
             -s $HOME/.m2/settings.xml
 
+      # NEW STEP: Connect runner container as a temporary secure Tailscale network node
+      - name: Connect to Tailscale Network
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TAILSCALE_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TAILSCALE_CLIENT_SECRET }}
+          tags: tag:sop # Forces device into your restricted firewall security tag rules
+      
       # 5. Copy JAR to Linux Server via SCP (Runs locally on GitHub Runner)
       - name: Copy JAR to Linux Server via SCP
         uses: appleboy/scp-action@master
