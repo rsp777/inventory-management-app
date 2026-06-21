@@ -20,8 +20,9 @@ jobs:
           java-version: "17"
           distribution: "temurin"
           server-id: "github"
-          server-username: "${{ github.actor }}"
+          server-username: "${{ secrets.USERNAME }}"
           server-password: "${{ secrets.GITHUB_TOKEN }}"
+          
 
       # - name: Setup Maven settings
       #   uses: s4u/maven-settings-action@v4.0.0
