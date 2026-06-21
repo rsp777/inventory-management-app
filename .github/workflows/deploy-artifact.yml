@@ -32,15 +32,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      # 1. Set up JDK first
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: "17"
-          distribution: "temurin"
-
-      # 2. Setup Custom Maven Settings (Overwrites automatically)
+        
+      # 1. Setup Custom Maven Settings (Overwrites automatically)
       - name: Setup Maven settings
         uses: s4u/maven-settings-action@v4.0.0
         with:
@@ -49,6 +42,13 @@ jobs:
             [{"id":"github","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
           repositories: |
             [{"id":"github","name":"${{ secrets.REPO_NAME }}","url":"${{ secrets.REPO_URL }}","snapshots":{"enabled":true}}]
+            
+      # 2. Set up JDK first
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: "17"
+          distribution: "temurin"      
 
       # 3. Handle Mapping & Fetching Remote Versions
       - name: Set Environment Variables & Resolve Version
