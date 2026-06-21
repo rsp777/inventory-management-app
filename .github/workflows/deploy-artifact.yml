@@ -48,12 +48,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: "17"
-          distribution: "temurin"
-          # Forces setup-java to write its unwanted automated configurations to a temp directory 
-          # instead of poluting your primary ~/.m2/settings.xml location
-          settings-path: ${{ runner.temp }} 
-
-      
+          distribution: "temurin"      
 
       # 3. Handle Mapping & Fetching Remote Versions
       - name: Set Environment Variables & Resolve Version
