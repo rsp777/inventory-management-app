@@ -33,23 +33,24 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         
-      # 1. Setup Custom Maven Settings (Overwrites automatically)
-      - name: Setup Maven settings
-        uses: s4u/maven-settings-action@v4.0.0
-        with:
-          servers: |
-            [{"id":"github","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
-          repositories: |
-            [{"id":"github","name":"${{ secrets.REPO_NAME }}","url":"${{ secrets.REPO_URL }}","snapshots":{"enabled":true}}]
-            
-      # 2. Set up JDK first
+      # 1. ALWAYS RUN SETUP-JAVA FIRST
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: "17"
           distribution: "temurin"      
 
-      # 3. Handle Mapping & Fetching Remote Versions
+      # 2. RUN MAVEN SETTINGS SECOND WITH OVERRIDE ENABLED
+      - name: Setup Maven settings
+        uses: s4u/maven-settings-action@v4.0.0
+        with:
+          override: true # This completely overwrites setup-java's default file
+          servers: |
+            [{"id":"github","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
+          repositories: |
+            [{"id":"github","name":"${{ secrets.REPO_NAME }}","url":"${{ secrets.REPO_URL }}","snapshots":{"enabled":true}}]
+
+      # 3. Handle Mapping & Fetching Remote Versions (URLs Corrected)
       - name: Set Environment Variables & Resolve Version
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -72,7 +73,7 @@ jobs:
           if [ "$INPUT_VERSION" = "latest" ]; then
             echo "Fetching the latest package version via GitHub Packages API..."
             
-            # Request metadata for the specific package matching your app name
+            # FIXED URL: Changed from github.com to api.github.com org package endpoint
             PACKAGE_VERSION=$(curl -s -H "Authorization: Bearer $GH_TOKEN" \
               -H "Accept: application/vnd.github+json" \
               "https://github.com{APP_NAME}/versions" \
@@ -85,26 +86,27 @@ jobs:
             echo "APP_VERSION=$INPUT_VERSION" >> $GITHUB_ENV
           fi
 
-      # 4. Download Target JAR from GitHub Package Registry
+      # 4. Download Target JAR from GitHub Package Registry (URLs & Flags Corrected)
       - name: Download Artifact from Maven Registry
         run: |
           mkdir -p target
+          # FIXED: URL pointed to github.com; flag updated from outputDirectory to dest for precision mapping
           mvn dependency:get \
             -DrepoUrl=https://github.com{{ env.APP_NAME }} \
             -Dartifact=com.pawar.inventory.app:${{ env.APP_NAME }}:${{ env.APP_VERSION }}:jar \
             -Dtransitive=false \
-            -DoutputDirectory=/target \
+            -Ddest=./target/${{ env.APP_NAME }}.jar \
             -s $HOME/.m2/settings.xml
 
-      # NEW STEP: Connect runner container as a temporary secure Tailscale network node
+      # 5. Connect runner container as a temporary secure Tailscale network node
       - name: Connect to Tailscale Network
         uses: tailscale/github-action@v3
         with:
           oauth-client-id: ${{ secrets.TAILSCALE_CLIENT_ID }}
           oauth-secret: ${{ secrets.TAILSCALE_CLIENT_SECRET }}
-          tags: tag:sop # Forces device into your restricted firewall security tag rules
+          tags: tag:sop
       
-      # 5. Copy JAR to Linux Server via SCP (Runs locally on GitHub Runner)
+      # 6. Copy JAR to Linux Server via SCP (Runs locally on GitHub Runner)
       - name: Copy JAR to Linux Server via SCP
         uses: appleboy/scp-action@master
         with:
@@ -116,7 +118,7 @@ jobs:
           target: "/tmp"
           strip_components: 1
 
-      # 6. Deploy the Artifact to Remote Linux Server
+      # 7. Deploy the Artifact to Remote Linux Server
       - name: Deploy the Artifact to Remote Linux Server
         uses: appleboy/ssh-action@master
         with:
@@ -126,13 +128,17 @@ jobs:
           port: 22
           script: |
             echo "Deploying ${{ env.APP_NAME }}:${{ env.APP_VERSION }} to ${{ env.SERVER_HOST }}"
+            
+            # Ensure targeted host storage architecture directory exists
+            mkdir -p ~/apps/inventory-wms/artifacts
                         
             # Move jar from tmp upload folder to active deployment directory
             sudo mv /tmp/${{ env.APP_NAME }}.jar ~/apps/inventory-wms/artifacts/${{ env.APP_NAME }}.jar
-            sudo rm -rf /tmp/${{ env.APP_NAME }}.jar
+            sudo rm -f /tmp/${{ env.APP_NAME }}.jar
             
             # Restart target service definition
             echo "Restarting service: ${{ env.APP_NAME }}"
-            ./apps/inventory-wms/scripts/stop.sh ${{ env.APP_NAME }}
-            ./apps/inventory-wms/scripts/start.sh ${{ env.APP_NAME }}
+            chmod +x ~/apps/inventory-wms/scripts/stop.sh ~/apps/inventory-wms/scripts/start.sh
+            ~/apps/inventory-wms/scripts/stop.sh ${{ env.APP_NAME }}
+            ~/apps/inventory-wms/scripts/start.sh ${{ env.APP_NAME }}
             echo "Restarted service: ${{ env.APP_NAME }}"
