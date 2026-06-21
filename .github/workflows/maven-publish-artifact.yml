@@ -28,13 +28,13 @@ jobs:
           java-version: "17"
           distribution: "temurin"
 
-      - name: Write Maven settings.xml
-        run: |
-          mkdir -p $HOME/.m2
-          printf "%s" "${{ secrets.MAVEN_SETTINGS }}" > $HOME/.m2/settings.xml
+      # - name: Write Maven settings.xml
+      #   run: |
+      #     mkdir -p $HOME/.m2
+      #     printf "%s" "${{ secrets.MAVEN_SETTINGS }}" > $HOME/.m2/settings.xml
 
       - name: Maven Build
-        run: mvn clean package -s $HOME/.m2/settings.xml -DskipTests
+        run: mvn clean package -s $GITHUB_WORKSPACE/settings.xml
 
   test:
     runs-on: ubuntu-latest
@@ -47,10 +47,10 @@ jobs:
           java-version: "17"
           distribution: "temurin"
 
-      - name: Write Maven settings.xml
-        run: |
-          mkdir -p $HOME/.m2
-          printf "%s" "${{ secrets.MAVEN_SETTINGS }}" > $HOME/.m2/settings.xml
+      # - name: Write Maven settings.xml
+      #   run: |
+      #     mkdir -p $HOME/.m2
+      #     printf "%s" "${{ secrets.MAVEN_SETTINGS }}" > $HOME/.m2/settings.xml
 
       - name: Run tests
         run: mvn test -s $HOME/.m2/settings.xml
@@ -66,12 +66,12 @@ jobs:
           java-version: "17"
           distribution: "temurin"
 
-      - name: Write Maven settings.xml
-        run: |
-          mkdir -p $HOME/.m2
-          printf "%s" "${{ secrets.MAVEN_SETTINGS }}" > $HOME/.m2/settings.xml
+      # - name: Write Maven settings.xml
+      #   run: |
+      #     mkdir -p $HOME/.m2
+      #     printf "%s" "${{ secrets.MAVEN_SETTINGS }}" > $HOME/.m2/settings.xml
 
       - name: Deploy to GitHub Packages
-        run: mvn deploy -s $HOME/.m2/settings.xml
+        run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
