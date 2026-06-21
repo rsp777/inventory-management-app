@@ -20,6 +20,8 @@ jobs:
           java-version: "17"
           distribution: "temurin"
           overwrite-settings: "true"
+      - name: Remove any existing settings.xml
+        run: rm -f $HOME/.m2/settings.xml    
 
       - name: Setup Maven settings
         uses: s4u/maven-settings-action@v4.0.0
