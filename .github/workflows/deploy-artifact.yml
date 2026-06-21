@@ -37,7 +37,6 @@ jobs:
       - name: Setup Maven settings
         uses: s4u/maven-settings-action@v4.0.0
         with:
-          override: true
           servers: |
             [{"id":"github","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
           repositories: |
@@ -49,7 +48,7 @@ jobs:
         with:
           java-version: "17"
           distribution: "temurin"      
-          overwrite-settings: false
+
       # 3. Handle Mapping & Fetching Remote Versions
       - name: Set Environment Variables & Resolve Version
         env:
