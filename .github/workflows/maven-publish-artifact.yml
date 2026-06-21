@@ -24,9 +24,9 @@ jobs:
         uses: s4u/maven-settings-action@v4.0.0
         with:
           servers: |
-            [{"id":"${{ secrets.SERVER_ID }}","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
+            [{"id":"github","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
           repositories: |
-            [{"id":"${{ secrets.SERVER_ID }}","name":"${{ secrets.REPO_NAME }}","url":"${{ secrets.REPO_URL }}","snapshots":{"enabled":true}}]
+            [{"id":"github","name":"${{ secrets.REPO_NAME }}","url":"${{ secrets.REPO_URL }}","snapshots":{"enabled":true}}]
 
       - name: Maven Build
         run: mvn clean package -DskipTests
@@ -61,9 +61,9 @@ jobs:
         uses: s4u/maven-settings-action@v4.0.0
         with:
           servers: |
-            [{"id":"${{ secrets.SERVER_ID }}","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
+            [{"id":"github","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
           repositories: |
-            [{"id":"${{ secrets.SERVER_ID }}","name":"${{ secrets.REPO_NAME }}","url":"${{ secrets.REPO_URL }}","snapshots":{"enabled":true}}]
+            [{"id":"github","name":"${{ secrets.REPO_NAME }}","url":"${{ secrets.REPO_URL }}","snapshots":{"enabled":true}}]
 
       - name: Run tests
         run: mvn test
@@ -90,9 +90,9 @@ jobs:
         uses: s4u/maven-settings-action@v4.0.0
         with:
           servers: |
-            [{"id":"${{ secrets.SERVER_ID }}","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
+            [{"id":"github","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
           repositories: |
-            [{"id":"${{ secrets.SERVER_ID }}","name":"${{ secrets.REPO_NAME }}","url":"${{ secrets.REPO_URL }}","snapshots":{"enabled":true}}]
+            [{"id":"github","name":"${{ secrets.REPO_NAME }}","url":"${{ secrets.REPO_URL }}","snapshots":{"enabled":true}}]
      
       - name: Download a Build Artifact
         uses: actions/download-artifact@v3.1.0
