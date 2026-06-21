@@ -96,7 +96,7 @@ jobs:
           mkdir -p target
           # Uses explicit settings routing file flag (-s) just like your working setup
           mvn dependency:get \
-            -DrepoUrl=https://github.com/rsp777/{{ env.APP_NAME }} \
+            -DrepoUrl=https://maven.pkg.github.com/rsp777/{{ env.APP_NAME }} \
             -Dartifact=com.pawar.inventory.app:${{ env.APP_NAME }}:${{ env.APP_VERSION }}:jar \
             -Dtransitive=false \
             -Ddest=./target/${{ env.APP_NAME }}.jar \
