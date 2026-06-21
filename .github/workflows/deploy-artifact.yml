@@ -36,19 +36,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         
-      
-
-        # 1. Set up JDK SECOND using v3 (Matches your working workflow)
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: "17"
-          distribution: "temurin"
-          
+        # 1. Delete the file
       - name: Remove existing settings.xml
         run: rm -f $HOME/.m2/settings.xml
-        
-      # 2. Setup Maven Settings FIRST (Matches your working workflow)
+
+      # 2. Setup Maven settings FIRST
       - name: Setup Maven settings
         uses: s4u/maven-settings-action@v4.0.0
         with:
@@ -57,6 +49,13 @@ jobs:
             [{"id":"github","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
           repositories: |
             [{"id":"github","name":"${{ secrets.REPO_NAME }}","url":"${{ secrets.REPO_URL }}","snapshots":{"enabled":true}}]
+
+      # 3. Set up JDK SECOND
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: "17"
+          distribution: "temurin"
 
       
 
