@@ -27,6 +27,7 @@ jobs:
             [{"id":"github","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
           repositories: |
             [{"id":"github","name":"${{ secrets.REPO_NAME }}","url":"${{ secrets.REPO_URL }}","snapshots":{"enabled":true}}]
+          run: cat /home/runner/.m2/settings.xml  
 
       - name: Maven Build
         run: mvn clean package -DskipTests
