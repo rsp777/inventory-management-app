@@ -48,7 +48,8 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: "17"
-          distribution: "temurin"      
+          distribution: "temurin"
+          overwrite-settings: false
 
       # 3. Handle Mapping & Fetching Remote Versions
       - name: Set Environment Variables & Resolve Version
