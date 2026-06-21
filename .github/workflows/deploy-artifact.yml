@@ -45,7 +45,7 @@ jobs:
             [{"id":"github","name":"${{ secrets.REPO_NAME }}","url":"${{ secrets.REPO_URL }}","snapshots":{"enabled":true}}]  
       # 2. UPGRADED TO V4 + HIDDEN SETTINGS PATH REDIRECTION
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v3
         with:
           java-version: "17"
           distribution: "temurin"
