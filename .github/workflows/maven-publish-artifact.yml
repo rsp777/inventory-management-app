@@ -19,19 +19,16 @@ jobs:
         with:
           java-version: "17"
           distribution: "temurin"
-          server-id: "github"
-          server-username: "${{ secrets.USERNAME }}"
-          server-password: "${{ secrets.GITHUB_TOKEN }}"
-          
+          overwrite-settings: "true"
 
-      # - name: Setup Maven settings
-      #   uses: s4u/maven-settings-action@v4.0.0
-      #   with:
-      #     servers: |
-      #       [{"id":"github","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
-      #     repositories: |
-      #       [{"id":"github","name":"${{ secrets.REPO_NAME }}","url":"${{ secrets.REPO_URL }}","snapshots":{"enabled":true}}]
-      #     run: cat /home/runner/.m2/settings.xml  
+      - name: Setup Maven settings
+        uses: s4u/maven-settings-action@v4.0.0
+        with:
+          servers: |
+            [{"id":"github","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
+          repositories: |
+            [{"id":"github","name":"${{ secrets.REPO_NAME }}","url":"${{ secrets.REPO_URL }}","snapshots":{"enabled":true}}]
+          run: cat /home/runner/.m2/settings.xml  
 
       - name: Maven Build
         run: cat /home/runner/.m2/settings.xml && mvn clean package -DskipTests
