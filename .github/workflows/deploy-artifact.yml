@@ -49,7 +49,7 @@ jobs:
         with:
           java-version: "17"
           distribution: "temurin"      
-
+          overwrite-settings: false
       # 3. Handle Mapping & Fetching Remote Versions
       - name: Set Environment Variables & Resolve Version
         env:
