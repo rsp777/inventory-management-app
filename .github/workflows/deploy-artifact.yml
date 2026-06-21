@@ -1,32 +1,131 @@
-# This is a basic workflow that is manually triggered
+name: Deploy Service to Linux Server
 
-name: Manual workflow
-
-# Controls when the action will run. Workflow runs when manually triggered using the UI
-# or API.
 on:
   workflow_dispatch:
-    # Inputs the workflow accepts.
     inputs:
-      name:
-        # Friendly description to be shown in the UI instead of 'name'
-        description: 'Person to greet'
-        # Default value if no value is explicitly provided
-        default: 'World'
-        # Input has to be provided for the workflow to run
+      environment:
+        description: 'Select Target Linux Server / Environment'
         required: true
-        # The data type of the input
+        type: choice
+        options:
+          - 'inventory-wms'
+          - 'staging-server-01'
+          - 'development-server-01'
+      application:
+        description: 'Select Spring Boot Application to Deploy'
+        required: true
+        type: choice
+        options:
+          - 'inventory-management-app'
+          - 'payment-service'
+          - 'inventory-service'
+      version:
+        description: 'Target Application Version (Type concrete version or leave as "latest" to fetch most recent)'
+        required: true
         type: string
+        default: 'latest'
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "greet"
-  greet:
-    # The type of runner that the job will run on
+  deploy:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    
     steps:
-    # Runs a single command using the runners shell
-    - name: Send greeting
-      run: echo "Hello ${{ inputs.name }}"
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 1. Set up JDK first
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: "17"
+          distribution: "temurin"
+
+      # 2. Setup Custom Maven Settings (Overwrites automatically)
+      - name: Setup Maven settings
+        uses: s4u/maven-settings-action@v4.0.0
+        with:
+          override: true
+          servers: |
+            [{"id":"github","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
+          repositories: |
+            [{"id":"github","name":"${{ secrets.REPO_NAME }}","url":"${{ secrets.REPO_URL }}","snapshots":{"enabled":true}}]
+
+      # 3. Handle Mapping & Fetching Remote Versions
+      - name: Set Environment Variables & Resolve Version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Map selected environment to specific server IPs
+          if [ "${{ github.event.inputs.environment }}" = "inventory-wms" ]; then
+            echo "SERVER_HOST=${{ secrets.PROD_SERVER_IP }}" >> $GITHUB_ENV
+          elif [ "${{ github.event.inputs.environment }}" = "staging-server-01" ]; then
+            echo "SERVER_HOST=${{ secrets.STAGING_SERVER_IP }}" >> $GITHUB_ENV
+          else
+            echo "SERVER_HOST=${{ secrets.DEV_SERVER_IP }}" >> $GITHUB_ENV
+          fi
+          
+          # Initialize baseline variables
+          APP_NAME="${{ github.event.inputs.application }}"
+          INPUT_VERSION="${{ github.event.inputs.version }}"
+          echo "APP_NAME=${APP_NAME}" >> $GITHUB_ENV
+          
+          # Dynamic resolution fallback for 'latest' versions using GitHub API
+          if [ "$INPUT_VERSION" = "latest" ]; then
+            echo "Fetching the latest package version via GitHub Packages API..."
+            
+            # Request metadata for the specific package matching your app name
+            PACKAGE_VERSION=$(curl -s -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://github.com{APP_NAME}/versions" \
+              | jq -r '.[0].name // "1.0.0-SNAPSHOT"')
+              
+            echo "Resolved latest version: $PACKAGE_VERSION"
+            echo "APP_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
+          else
+            echo "Using manual input version: $INPUT_VERSION"
+            echo "APP_VERSION=$INPUT_VERSION" >> $GITHUB_ENV
+          fi
+
+      # 4. Download Target JAR from GitHub Package Registry
+      - name: Download Artifact from Maven Registry
+        run: |
+          mkdir -p target
+          mvn dependency:get \
+            -DrepoUrl=https://github.com{{ env.APP_NAME }} \
+            -Dartifact=com.pawar.inventory.app:${{ env.APP_NAME }}:${{ env.APP_VERSION }}:jar \
+            -Dtransitive=false \
+            -DoutputDirectory=/target \
+            -s $HOME/.m2/settings.xml
+
+      # 5. Copy JAR to Linux Server via SCP (Runs locally on GitHub Runner)
+      - name: Copy JAR to Linux Server via SCP
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ env.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          source: "target/${{ env.APP_NAME }}.jar"
+          target: "/tmp"
+          strip_components: 1
+
+      # 6. Deploy the Artifact to Remote Linux Server
+      - name: Deploy the Artifact to Remote Linux Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          script: |
+            echo "Deploying ${{ env.APP_NAME }}:${{ env.APP_VERSION }} to ${{ env.SERVER_HOST }}"
+                        
+            # Move jar from tmp upload folder to active deployment directory
+            sudo mv /tmp/${{ env.APP_NAME }}.jar ~/apps/inventory-wms/artifacts/${{ env.APP_NAME }}.jar
+            sudo rm -rf /tmp/${{ env.APP_NAME }}.jar
+            
+            # Restart target service definition
+            echo "Restarting service: ${{ env.APP_NAME }}"
+            ./apps/inventory-wms/scripts/stop.sh ${{ env.APP_NAME }}
+            ./apps/inventory-wms/scripts/start.sh ${{ env.APP_NAME }}
+            echo "Restarted service: ${{ env.APP_NAME }}"
