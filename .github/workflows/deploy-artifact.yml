@@ -48,7 +48,8 @@ jobs:
           servers: |
             [{"id":"github","username":"${{ secrets.USERNAME }}","password":"${{ secrets.PASSWORD }}"}]
           repositories: |
-            [{"id":"github","name":"${{ secrets.REPO_NAME }}","url":"${{ secrets.REPO_URL }}","snapshots":{"enabled":true}}]
+            [
+             {"id":"github","name":"inventory-management-app","url":"https://maven.pkg.github.com/rsp777/inventory-management-app"}]
 
       # 3. Set up JDK SECOND
       - name: Set up JDK 17
@@ -80,7 +81,7 @@ jobs:
             echo "Fetching the latest package version via GitHub Packages API..."
             PACKAGE_VERSION=$(curl -s -H "Authorization: Bearer $GH_TOKEN" \
               -H "Accept: application/vnd.github+json" \
-              "https://maven.pkg.github.com/rsp777/$APP_NAME/versions" \
+              "https://maven.pkg.github.com/rsp777//com.pawar.inventory.app.$APP_NAME/versions" \
               | jq -r '..name // "1.0.0-SNAPSHOT"')
               
             echo "Resolved latest version: $PACKAGE_VERSION"
