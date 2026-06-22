@@ -102,7 +102,7 @@ jobs:
           #   -Dtransitive=false \
           #   -Ddest=./target/${{ env.APP_NAME }}.jar \
           #   -s $HOME/.m2/settings.xml
-          mvn dependency:copy -Dartifact='com.pawar.inventory.app':${{ env.APP_NAME }}:${{ env.APP_VERSION }}:jar -DrepoUrl=https://maven.pkg.github.com/rsp777/inventory-management-app -DrepoId=github \
+          mvn dependency:copy -Dartifact='com.pawar.inventory.app':${{ env.APP_NAME }}:${{ env.APP_VERSION }} -DrepoUrl=https://maven.pkg.github.com/rsp777/inventory-management-app -DrepoId=github \
           -Ddest=./target/${{ env.APP_NAME }}.jar -s $HOME/.m2/settings.xml
 
       # 5. Connect runner container as a temporary secure Tailscale network node
