@@ -80,7 +80,7 @@ jobs:
             echo "Fetching the latest package version via GitHub Packages API..."
             PACKAGE_VERSION=$(curl -s -H "Authorization: Bearer $GH_TOKEN" \
               -H "Accept: application/vnd.github+json" \
-              "https://maven.pkg.github.com/rsp777/{APP_NAME}/versions" \
+              "https://maven.pkg.github.com/rsp777/$APP_NAME/versions" \
               | jq -r '..name // "1.0.0-SNAPSHOT"')
               
             echo "Resolved latest version: $PACKAGE_VERSION"
@@ -93,6 +93,7 @@ jobs:
       # 4. Download Target JAR from GitHub Package Registry
       - name: Download Artifact from Maven Registry
         run: |
+         echo https://maven.pkg.github.com/rsp777/${{ env.APP_NAME }} && com.pawar.inventory.app:${{ env.APP_NAME }}:${{ env.APP_VERSION }}:ja
           mkdir -p target
           # Uses explicit settings routing file flag (-s) just like your working setup
           mvn dependency:get \
