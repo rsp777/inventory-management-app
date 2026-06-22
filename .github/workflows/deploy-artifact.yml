@@ -81,7 +81,7 @@ jobs:
             echo "Fetching the latest package version via GitHub Packages API..."
             PACKAGE_VERSION=$(curl -s -H "Authorization: Bearer $GH_TOKEN" \
               -H "Accept: application/vnd.github+json" \
-              "https://maven.pkg.github.com/rsp777//com.pawar.inventory.app.$APP_NAME/versions" \
+              "https://api.github.com/rsp777//com.pawar.inventory.app.$APP_NAME/versions" \
               | jq -r '..name // "1.0.0-SNAPSHOT"')
               
             echo "Resolved latest version: $PACKAGE_VERSION"
