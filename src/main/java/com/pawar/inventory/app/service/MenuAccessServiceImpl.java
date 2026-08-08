@@ -42,7 +42,7 @@ import com.pawar.inventory.app.repository.MenuRepository;
 import com.pawar.inventory.app.repository.RoleRepository;
 import com.pawar.inventory.app.service.base.ExternalApiService;
 import com.pawar.inventory.app.service.base.TokenService;
-import com.pawar.todo.dto.UserDto;
+import com.pawar.inventory.app.dto.UserDto;
 
 @Service
 @Transactional
