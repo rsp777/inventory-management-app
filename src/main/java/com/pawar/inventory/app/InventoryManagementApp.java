@@ -16,6 +16,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.env.Environment;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -24,6 +25,7 @@ import io.swagger.v3.oas.annotations.info.Info;
 @SpringBootApplication(scanBasePackages = {"com.pawar.inventory.app", "com.pawar.sop.http"})
 @EnableScheduling
 @OpenAPIDefinition(info = @Info(title = "Inventory Management API", version = "2.0", description = "API for managing inventory"))
+@EnableKafka
 public class InventoryManagementApp implements ApplicationRunner {
 
 	private static final Logger log = LoggerFactory.getLogger(InventoryManagementApp.class);

@@ -15,7 +15,7 @@ import com.pawar.inventory.app.exception.MenuNotFoundException;
 import com.pawar.inventory.app.model.Menu;
 import com.pawar.inventory.app.model.MenuAccess;
 import com.pawar.inventory.app.model.Role;
-import com.pawar.todo.dto.UserDto;
+import com.pawar.inventory.app.dto.UserDto;
 
 public interface MenuAccessService {
 

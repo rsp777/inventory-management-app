@@ -10,19 +10,12 @@
 	</parent>
 	<groupId>com.pawar.inventory.app</groupId>
 	<artifactId>inventory-management-app</artifactId>
-	<version>Release_v1.0</version>
+	<version>0.0.0</version>
 	<packaging>jar</packaging>
 	<name>inventory-management-app</name>
 	<description>inventory-management-app</description>
 	<properties>
-		<java.version>17</java.version>
-		<deploy.wildfly.host>127.0.0.1</deploy.wildfly.host>
-		<deploy.wildfly.port>9990</deploy.wildfly.port>
-		<deploy.wildfly.username>ravi</deploy.wildfly.username>
-		<deploy.wildfly.password>ravi</deploy.wildfly.password>
 		<jacoco.version>0.8.11</jacoco.version>
-
-
 		<springdoc.version>2.5.0</springdoc.version>
 	</properties>
 	<dependencies>
@@ -45,11 +38,6 @@
 			<groupId>com.auth0</groupId>
 			<artifactId>java-jwt</artifactId>
 			<version>4.2.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.pawar.todo</groupId>
-			<artifactId>common</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<!--
 		https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka -->
@@ -199,37 +187,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- <plugin>
-				<groupId>org.wildfly.plugins</groupId>
-				<artifactId>wildfly-maven-plugin</artifactId>
-				<version>3.0.2.Final</version>
-				<executions>
-					<execution>
-						<phase>install</phase>
-						<goals>
-							<goal>deploy</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>                
-					<filename>${project.build.finalName}.war</filename>
-					<hostname>${deploy.wildfly.host}</hostname>
-					<port>${deploy.wildfly.port}</port>
-					<username>${deploy.wildfly.username}</username>
-					<password>${deploy.wildfly.password}</password>
-				</configuration>
-			</plugin> 
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>build-info</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>  -->
 		</plugins>
 	</build>
 </project>
