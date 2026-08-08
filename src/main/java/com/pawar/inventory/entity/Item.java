@@ -38,14 +38,6 @@ public class Item {
         this.itemId = itemId;
     }
 
-    public Integer getItem_id() {
-        return itemId;
-    }
-
-    public void setItem_id(Integer itemId) {
-        this.itemId = itemId;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -70,28 +62,12 @@ public class Item {
         this.unitLength = unitLength;
     }
 
-    public Float getUnit_width() {
-        return unitLength;
-    }
-
-    public void setUnit_width(Float unitLength) {
-        this.unitLength = unitLength;
-    }
-
     public Float getUnitWidth() {
         return unitWidth;
     }
 
     public void setUnitWidth(Float unitWidth) {
         this.unitWidth = unitWidth;
-    }
-
-    public Float getUnit_height() {
-        return unitHeight;
-    }
-
-    public void setUnit_height(Float unitHeight) {
-        this.unitHeight = unitHeight;
     }
 
     public Float getUnitHeight() {

@@ -26,27 +26,12 @@ public class Category {
         this.categoryId = categoryId;
     }
 
-    public Integer getCategory_id() {
-        return categoryId;
-    }
-
-    public void setCategory_id(Integer categoryId) {
-        this.categoryId = categoryId;
-    }
 
     public String getCategoryName() {
         return categoryName;
     }
 
     public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
-    }
-
-    public String getCategory_name() {
-        return categoryName;
-    }
-
-    public void setCategory_name(String categoryName) {
         this.categoryName = categoryName;
     }
 

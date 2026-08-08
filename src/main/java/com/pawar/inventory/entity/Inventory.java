@@ -92,14 +92,6 @@ public class Inventory {
         this.lpnId = lpnId;
     }
 
-    public Integer getLpn_id() {
-        return lpnId;
-    }
-
-    public void setLpn_id(Integer lpnId) {
-        this.lpnId = lpnId;
-    }
-
     public Integer getQuantity() {
         return quantity;
     }

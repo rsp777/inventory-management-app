@@ -39,14 +39,6 @@ public class Lpn {
         this.lpnId = lpnId;
     }
 
-    public Integer getLpn_id() {
-        return lpnId;
-    }
-
-    public void setLpn_id(Integer lpnId) {
-        this.lpnId = lpnId;
-    }
-
     public Integer getId() {
         return lpnId;
     }
@@ -63,13 +55,6 @@ public class Lpn {
         this.lpnName = lpnName;
     }
 
-    public String getLpn_name() {
-        return lpnName;
-    }
-
-    public void setLpn_name(String lpnName) {
-        this.lpnName = lpnName;
-    }
 
     public String getLpnNumber() {
         return lpnNumber;

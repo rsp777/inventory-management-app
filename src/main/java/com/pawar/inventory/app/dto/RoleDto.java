@@ -51,14 +51,6 @@ public class RoleDto {
         this.role_id = role_id;
     }
 
-    public Integer getRoleId() {
-        return role_id;
-    }
-
-    public void setRoleId(Integer roleId) {
-        this.role_id = roleId;
-    }
-
     public String getName() {
         return name;
     }
