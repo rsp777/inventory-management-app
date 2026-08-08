@@ -45,22 +45,6 @@ public class Location {
         this.locnId = locnId;
     }
 
-    public Integer getLocationId() {
-        return locnId;
-    }
-
-    public void setLocationId(Integer locationId) {
-        this.locnId = locationId;
-    }
-
-    public Integer getId() {
-        return locnId;
-    }
-
-    public void setId(Integer id) {
-        this.locnId = id;
-    }
-
     public String getLocnBrcd() {
         return locnBrcd;
     }
@@ -82,14 +66,6 @@ public class Location {
     }
 
     public void setLocnClass(String locnClass) {
-        this.locnClass = locnClass;
-    }
-
-    public String getLocn_class() {
-        return locnClass;
-    }
-
-    public void setLocn_class(String locnClass) {
         this.locnClass = locnClass;
     }
 

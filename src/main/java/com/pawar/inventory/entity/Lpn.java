@@ -64,13 +64,6 @@ public class Lpn {
         this.lpnNumber = lpnNumber;
     }
 
-    public String getLpnNumberValue() {
-        return lpnNumber;
-    }
-
-    public void setLpnNumberValue(String lpnNumber) {
-        this.lpnNumber = lpnNumber;
-    }
 
     public String getItemDesc() {
         return itemDesc;

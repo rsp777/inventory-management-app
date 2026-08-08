@@ -36,22 +36,6 @@ public class Inventory {
         this.inventoryId = inventoryId;
     }
 
-    public Integer getInventory_id() {
-        return inventoryId;
-    }
-
-    public void setInventory_id(Integer inventoryId) {
-        this.inventoryId = inventoryId;
-    }
-
-    public Integer getId() {
-        return inventoryId;
-    }
-
-    public void setId(Integer id) {
-        this.inventoryId = id;
-    }
-
     public Integer getItemId() {
         return itemId;
     }
@@ -60,27 +44,11 @@ public class Inventory {
         this.itemId = itemId;
     }
 
-    public Integer getItem_id() {
-        return itemId;
-    }
-
-    public void setItem_id(Integer itemId) {
-        this.itemId = itemId;
-    }
-
     public Integer getLocationId() {
         return locationId;
     }
 
     public void setLocationId(Integer locationId) {
-        this.locationId = locationId;
-    }
-
-    public Integer getLocation_id() {
-        return locationId;
-    }
-
-    public void setLocation_id(Integer locationId) {
         this.locationId = locationId;
     }
 

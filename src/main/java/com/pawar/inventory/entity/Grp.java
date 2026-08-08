@@ -13,12 +13,4 @@ public class Grp {
     public void setGrpName(String grpName) {
         this.grpName = grpName;
     }
-
-    public String getGrp() {
-        return grpName;
-    }
-
-    public void setGrp(String grpName) {
-        this.grpName = grpName;
-    }
 }
