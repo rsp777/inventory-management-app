@@ -6,7 +6,7 @@ import java.util.Set;
 
 public class UserDto {
 
-    private Long userId;
+    private Long user_id;
     private String username;
     private String email;
     private String passwordHash;
@@ -35,9 +35,9 @@ public class UserDto {
         this.loggedIn = loggedIn;
     }
 
-    public UserDto(Long userId, String username, String email, String passwordHash, Boolean loggedIn,
+    public UserDto(Long user_id, String username, String email, String passwordHash, Boolean loggedIn,
             Set<RoleDto> roles) {
-        this.userId = userId;
+        this.user_id = user_id;
         this.username = username;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -45,10 +45,10 @@ public class UserDto {
         this.roles = roles != null ? roles : new HashSet<>();
     }
 
-    public UserDto(Long userId, String username, String email, String passwordHash, String firstName,
+    public UserDto(Long user_id, String username, String email, String passwordHash, String firstName,
             String middleName, String lastName, Date createdAt, Date updatedAt,
             Boolean loggedIn, Set<RoleDto> roles, Boolean isActive) {
-        this.userId = userId;
+        this.user_id = user_id;
         this.username = username;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -70,12 +70,12 @@ public class UserDto {
         this.isActive = isActive;
     }
 
-    public Long getUserId() {
-        return userId;
+    public Long getUser_id() {
+        return user_id;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUser_id(Long user_id) {
+        this.user_id = user_id;
     }
 
     public String getUsername() {
@@ -160,7 +160,7 @@ public class UserDto {
 
     @Override
     public String toString() {
-        return "UserDto [userId=" + userId + ", username=" + username + ", email=" + email + ", passwordHash="
+        return "UserDto [user_id=" + user_id + ", username=" + username + ", email=" + email + ", passwordHash="
                 + passwordHash + ", firstName=" + firstName + ", middleName=" + middleName + ", lastName=" + lastName
                 + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + ", loggedIn=" + loggedIn + ", isActive=" + isActive
                 + ", roles=" + roles + "]";
