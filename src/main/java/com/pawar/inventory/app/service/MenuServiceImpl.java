@@ -259,7 +259,7 @@ public class MenuServiceImpl extends AbstractBaseService implements MenuService 
     @Override
     public Menu updateMenu(String newProtocol, String newMenuName, String newMenuLink, String newHostname,
             String newMenuType) {
-        Menu updatedMenu = new Menu(newProtocol, newMenuName, newHostname, newMenuLink, newMenuType);
+        Menu updatedMenu = new Menu(newProtocol, newMenuName, newMenuLink, newHostname, newMenuType);
         return menuAuthRepositoryCustom.updateMenu(updatedMenu);
     }
 

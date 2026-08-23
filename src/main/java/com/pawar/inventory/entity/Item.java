@@ -22,6 +22,9 @@ public class Item {
     @JsonProperty("unit_height")
     private Float unitHeight;
 
+    @JsonProperty("unit_volume")
+    private Float unitVolume;
+
     public Item() {
     }
 
@@ -77,6 +80,15 @@ public class Item {
     public void setUnitHeight(Float unitHeight) {
         this.unitHeight = unitHeight;
     }
+
+    public Float getUnitVolume() {
+        return unitVolume;
+    }
+
+    public void setUnitVolume(Float unitVolume) {
+        this.unitVolume = unitVolume;
+    }
+
 
     @Override
     public String toString() {

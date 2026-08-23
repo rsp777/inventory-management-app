@@ -199,29 +199,29 @@ table {
 				</thead>
 				<tbody>
 					<tr th:each="location : ${locations}">
-						<th scope="row" th:text="${location.locn_id}"></th>
-						<td th:text="${location.locn_brcd}"></td>
-						<td th:text="${location.locn_class}"></td>
+						<th scope="row" th:text="${location.locnId}"></th>
+						<td th:text="${location.locnBrcd}"></td>
+						<td th:text="${location.locnClass}"></td>
 						<td>
 							<button type="button" class="btn btn-primary" data-toggle="modal"
 								data-target="#exampleModal"
-								th:data-locn-id="${location.locn_id}"
-								th:data-locn-brcd="${location.locn_brcd}"
+								th:data-locn-id="${location.locnId}"
+								th:data-locn-brcd="${location.locnBrcd}"
 								th:data-grp="${location.grp}"
-								th:data-locn-class="${location.locn_class}"
+								th:data-locn-class="${location.locnClass}"
 								th:data-length="${location.length}"
 								th:data-width="${location.width}"
 								th:data-height="${location.height}"
-								th:data-max-volume="${location.max_volume}"
-								th:data-max-weight="${location.max_weight}"
-								th:data-max-qty="${location.max_qty}"
+								th:data-max-volume="${location.maxVolume}"
+								th:data-max-weight="${location.maxWeight}"
+								th:data-max-qty="${location.maxQty}"
 								onclick="showLocation(this.getAttribute('data-locn-id'),this.getAttribute('data-locn-brcd'),
 								this.getAttribute('data-grp'),this.getAttribute('data-locn-class'),this.getAttribute('data-length'),this.getAttribute('data-width'),
 								this.getAttribute('data-height'),this.getAttribute('data-max-volume'),
 								this.getAttribute('data-max-qty'),this.getAttribute('data-max-weight'), true)">
 								View</button>
-							<button th:data-locn-id="${location.locn_id}"
-								th:data-locn-brcd="${location.locn_brcd}"
+							<button th:data-locn-id="${location.locnId}"
+								th:data-locn-brcd="${location.locnBrcd}"
 								th:disabled="${uiActions == null or !uiActions.manageLocations}"
 								onclick="confirmLocationDeletion(this.getAttribute('data-locn-id'),this.getAttribute('data-locn-brcd'), true)"
 								class="btn btn-danger">Delete</button>
@@ -263,8 +263,8 @@ table {
 											<select class="form-control" id="grp" name="grp">
 												<option value="">Select Category</option>
 												<option th:each="grp : ${grps}"
-														th:value="${grp.grp_name}"
-														th:text="${grp.grp_desc}"></option>
+														th:value="${grp.grpName}"
+														th:text="${grp.grpDesc}"></option>
 											</select>
 										</div>
 										<div class="form-group">

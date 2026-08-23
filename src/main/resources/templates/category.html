@@ -192,16 +192,16 @@ table.scrolldown {
 			
 				<tbody>
 					<tr th:each="category : ${categories}">
-						<th scope="row" th:text="${category.category_id}"></th>
-						<td th:text="${category.category_name}"></td>
+						<th scope="row" th:text="${category.categoryId}"></th>
+						<td th:text="${category.categoryName}"></td>
 						<td>
-							<button th:data-category-id="${category.category_id}"
-								th:data-category-name="${category.category_name}"
+							<button th:data-category-id="${category.categoryId}"
+								th:data-category-name="${category.categoryName}"
 								th:disabled="${uiActions == null or !uiActions.manageCategories}"
 								onclick="editCategory(this.getAttribute('data-category-id'), this.getAttribute('data-category-name'))"
 								class="btn btn-primary">Edit</button>
-							<button th:data-category-id="${category.category_id}"
-								th:data-category-name="${category.category_name}"
+							<button th:data-category-id="${category.categoryId}"
+								th:data-category-name="${category.categoryName}"
 								th:disabled="${uiActions == null or !uiActions.manageCategories}"
 								onclick="confirmCategoryDeletion(this.getAttribute('data-category-id'),this.getAttribute('data-category-name'), true)"
 								class="btn btn-danger">Delete</button>
