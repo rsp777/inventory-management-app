@@ -142,11 +142,9 @@ public class MenuNavigationController {
         String newMenuType = normalizeNullString(requestDTO.getNewMenuType());
         
         try {
-            logger.info("Updating menu: {}", newMenuName);
             
-            menuService.updateMenu(newProtocol, newMenuName, newMenuLink, 
-                    newHostname, newMenuType);
-
+            menuService.updateMenu(newProtocol, newMenuName, newMenuLink,newHostname, newMenuType);
+            logger.info("Updated menu: {}", requestDTO.toString());
                 transactionLogService.recordMenuTransaction(
                     "MENU_UPDATE",
                     "menuName=" + newMenuName + ",menuType=" + newMenuType + ",menuLink=" + newMenuLink,
