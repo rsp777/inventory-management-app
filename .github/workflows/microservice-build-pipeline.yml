@@ -1,22 +1,72 @@
 name: Microservice Build Pipeline
 
 on:
+  pull_request:
+    branches: [ "main" ]
   push:
     branches: [ "main" ]
-    
+
+permissions:
+  contents: read
+  packages: read
+
 jobs:
-  build-and-deploy:
-    # Point this to your central hub repository
-    uses: rsp777/deployment-workflows/.github/workflows/maven-build.yml@main
+  build-test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_ACTOR: ${{ github.actor }}
+      MAVEN_REPO_USERNAME: ${{ secrets.USERNAME || github.actor }}
+      MAVEN_REPO_TOKEN: ${{ secrets.PASSWORD || secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make Maven wrapper executable
+        run: chmod +x mvnw
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+          cache: "maven"
+          server-id: github
+          server-username: MAVEN_REPO_USERNAME
+          server-password: MAVEN_REPO_TOKEN
+
+      - name: Run tests
+        run: ./mvnw -B -ntp test
+
+      - name: Build package
+        run: ./mvnw -B -ntp clean package -DskipTests
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build-test
+    runs-on: ubuntu-latest
     permissions:
-      contents: write        # Allow pushing commits/tags
-      packages: write        # Allow publishing packages
-    # 1. 'with' is used for public strings and GitHub context variables
-    with:
-      USERNAME: ${{ github.actor }}
-      
-    # 2. 'secrets' is used ONLY for secure tokens
-    secrets:
-      PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-      REPO_URL: ${{ secrets.REPO_URL }}
-      REPO_NAME: ${{ secrets.REPO_NAME }}
+      contents: read
+      packages: write
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_ACTOR: ${{ github.actor }}
+      MAVEN_REPO_USERNAME: ${{ secrets.USERNAME || github.actor }}
+      MAVEN_REPO_TOKEN: ${{ secrets.PASSWORD || secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make Maven wrapper executable
+        run: chmod +x mvnw
+
+      - name: Set up JDK 17 for publish
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+          cache: "maven"
+          server-id: github
+          server-username: MAVEN_REPO_USERNAME
+          server-password: MAVEN_REPO_TOKEN
+
+      - name: Publish to GitHub Packages
+        run: ./mvnw -B -ntp deploy -DskipTests
