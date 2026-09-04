@@ -74,4 +74,13 @@ public class MenuDefinitionRequestDTO {
 	public void setNewParentMenuName(String newParentMenuName) {
 		this.newParentMenuName = newParentMenuName;
 	}
+
+	@Override
+	public String toString() {
+		return "MenuDefinitionRequestDTO [newProtocol=" + newProtocol + ", newMenuName=" + newMenuName
+				+ ", newMenuLink=" + newMenuLink + ", newHostname=" + newHostname + ", newMenuType=" + newMenuType
+				+ ", newParentMenuName=" + newParentMenuName + "]";
+	}
+
+	
 }

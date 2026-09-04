@@ -44,7 +44,7 @@ import com.pawar.inventory.app.util.SessionUtil;
 import com.pawar.inventory.entity.Category;
 import com.pawar.inventory.entity.SopActionTypeDto;
 import com.pawar.inventory.entity.SopLocationRangeDto;
-import com.pawar.todo.dto.UserDto;
+import com.pawar.inventory.app.dto.UserDto;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -756,7 +756,7 @@ public class MenuController {
 
 			Map<Integer, Boolean> selectedRanges = new java.util.HashMap<>();
 			for (SopLocationRangeDto range : sopLocationRangeDtos) {
-				selectedRanges.put(range.getId(), false);
+				selectedRanges.put(range.getId() != null ? range.getId() : 0, false);
 			}
 			logger.info("selectedRanges : {}", selectedRanges);
 			model.addAttribute("selectedRanges", selectedRanges);

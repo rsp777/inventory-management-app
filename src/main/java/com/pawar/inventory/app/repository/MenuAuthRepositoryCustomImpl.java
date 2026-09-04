@@ -57,7 +57,6 @@ public class MenuAuthRepositoryCustomImpl implements MenuAuthRepositoryCustom {
 			logger.warn("No menu found to update for name: {}", updatedMenu.getMenuName());
 			return null;
 		}
-
 		existingMenu.setProtocol(updatedMenu.getProtocol());
 		existingMenu.setMenuName(updatedMenu.getMenuName());
 		existingMenu.setHostname(updatedMenu.getHostname());

@@ -187,11 +187,11 @@ table {
 				</thead>
 				<tbody>
 					<tr th:each="lpn : ${lpns}">
-						<th scope="row" th:text="${lpn.lpn_id}"></th>
-						<td th:text="${lpn.lpn_name}"></td>
+						<th scope="row" th:text="${lpn.lpnId}"></th>
+						<td th:text="${lpn.lpnName}"></td>
 						<td th:text="${lpn.item.description}"></td>
                         <td th:text="${lpn.quantity}"></td>
-						<td th:switch="${lpn.lpn_facility_status}">
+						<td th:switch="${lpn.lpnfacilitystatus}">
 							<span th:case="0">IN-TRANSIT</span>
 							<span th:case="10">CREATED</span>
 							<span th:case="30">PUTAWAY</span>
@@ -202,11 +202,11 @@ table {
 						<td>
 							<button type="button" class="btn btn-primary" data-toggle="modal"
 								data-target="#exampleModal" 
-								th:data-lpn-id="${lpn.lpn_id}"
-								th:data-lpn-name="${lpn.lpn_name}"
+								th:data-lpn-id="${lpn.lpnId}"
+								th:data-lpn-name="${lpn.lpnName}"
 								th:data-description="${lpn.item.description}"
 								th:data-quantity="${lpn.quantity}"
-								th:data-lpn_facility_status="${lpn.lpn_facility_status}"
+								th:data-lpn_facility_status="${lpn.lpnfacilitystatus}"
 								th:data-length="${lpn.length}"
 								th:data-width="${lpn.width}"
 								th:data-height="${lpn.height}"
@@ -217,8 +217,8 @@ table {
                                 this.getAttribute('data-length'),this.getAttribute('data-width'),
 								this.getAttribute('data-height'),this.getAttribute('data-volume'),true)">
 								View</button>
-							<button th:data-lpn-id="${lpn.lpn_id}"
-                                    th:data-lpn-name="${lpn.lpn_name}"
+							<button th:data-lpn-id="${lpn.lpnId}"
+                                    th:data-lpn-name="${lpn.lpnName}"
 								th:disabled="${uiActions == null or !uiActions.manageLpns}"
 							    	onclick="confirmDeallocateLpn(this.getAttribute('data-lpn-id'),this.getAttribute('data-lpn-name'),true)"
 								    class="btn btn-danger">Deallocate</button>

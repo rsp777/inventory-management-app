@@ -187,25 +187,25 @@ table {
 				</thead>
 				<tbody>
 					<tr th:each="item : ${items}">
-						<th scope="row" th:text="${item.item_id}"></th>
+						<th scope="row" th:text="${item.itemId}"></th>
 						<td th:text="${item.description}"></td>
-						<td th:text="${item.category.category_name}"></td>
+						<td th:text="${item.category.categoryName}"></td>
 						<td>
 							<button type="button" class="btn btn-primary" data-toggle="modal"
 								data-target="#exampleModal" 
-								th:data-item-id="${item.item_id}"
+								th:data-item-id="${item.itemId}"
 								th:data-description="${item.description}"
-								th:data-category="${item.category.category_name}"
-								th:data-length="${item.unit_length}"
-								th:data-width="${item.unit_width}"
-								th:data-height="${item.unit_height}"
-								th:data-volume="${item.unit_volume}"
+								th:data-category="${item.category.categoryName}"
+								th:data-length="${item.unitLength}"
+								th:data-width="${item.unitWidth}"
+								th:data-height="${item.unitHeight}"
+								th:data-volume="${item.unitVolume}"
 								onclick="showItem(this.getAttribute('data-item-id'),this.getAttribute('data-description'),
 								this.getAttribute('data-category'),this.getAttribute('data-length'),this.getAttribute('data-width'),
 								this.getAttribute('data-height'),this.getAttribute('data-volume'), true)">
 								View</button>
 
-								<button th:data-item-id="${item.item_id}"
+								<button th:data-item-id="${item.itemId}"
 								th:data-description="${item.description}"
 								th:disabled="${uiActions == null or !uiActions.manageItems}"
 								onclick="confirmItemDeletion(this.getAttribute('data-item-id'),this.getAttribute('data-description'), true)"
@@ -248,8 +248,8 @@ table {
 								<select class="form-control" id="category" name="category">
 									<option value="">Select Category</option>
 									<option th:each="category : ${categories}"
-											th:value="${category.category_name}"
-											th:text="${category.category_name}"></option>
+											th:value="${category.categoryName}"
+											th:text="${category.categoryName}"></option>
 								</select>
                             </div>
                         </div>
