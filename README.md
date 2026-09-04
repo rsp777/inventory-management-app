@@ -185,7 +185,19 @@ kubectl apply -f service.yaml
 
 ## CI
 
-A Jenkinsfile is included with stages:
+GitHub Actions workflow `.github/workflows/ci.yml` runs on:
+
+- pull requests targeting `main`
+- pushes to `main`
+
+Pipeline steps:
+
+- install dependencies (`bash ./mvnw dependency:go-offline`)
+- run tests (`bash ./mvnw test`)
+- build package (`bash ./mvnw -DskipTests package`)
+- run a safe deploy placeholder job on pushes to `main` (no external deployment is executed)
+
+A Jenkinsfile is also included with stages:
 
 - Preparation
 - Build (mvn clean package)
